@@ -1,9 +1,10 @@
-Tên hàm: camelCase — addMember, findViolation, loadAccounts
-Tên struct: PascalCase — Member, Violation, Account
-Hằng số: UPPER_SNAKE — MAX_MEMBERS, FINE_MEMBER, TEAM_ACADEMIC
-Không dùng global variable (trừ mảng members[], violations[], accounts[] và counter)
-Mỗi .h phải có: #ifndef AUTH_H
-#define AUTH_H
+# Quy ước
+
+- **Tên hàm**: camelCase — addMember, findViolation, loadAccounts
+- **Tên struct**: PascalCase — Member, Violation, Account
+- **Hằng số**: UPPER_SNAKE — MAX_MEMBERS, FINE_MEMBER, TEAM_ACADEMIC
+- Không dùng global variable (trừ mảng 'members[]', 'violations[]', 'accounts[]' và 'counter[]')
+- Mỗi .h phải có: '#ifndef AUTH_H' và '#define AUTH_H'
 ...
 #endif
 ===================
