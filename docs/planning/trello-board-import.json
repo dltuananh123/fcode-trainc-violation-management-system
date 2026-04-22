@@ -1,0 +1,632 @@
+{
+  "format": "trello-board-seed/v1",
+  "generatedAt": "2026-04-21",
+  "project": "fcode trainc",
+  "source": "_bmad-output/planning-artifacts/trello-board-blueprint.md",
+  "notes": [
+    "This is a Trello board seed JSON derived from the project blueprint.",
+    "Trello does not support generic JSON import in the web UI to recreate a board.",
+    "Use this file as input for Trello API automation or a custom import script."
+  ],
+  "board": {
+    "name": "fcode trainc Delivery Board",
+    "description": "Delivery board for fcode trainc using Trello, GitHub Flow, and Scrum-lite.",
+    "workingRules": [
+      "Product Backlog: all unscheduled stories and bugs",
+      "Ready for Sprint: refined cards with acceptance criteria, estimate, and assignee candidate",
+      "Sprint Backlog: only cards committed in current sprint",
+      "In Progress: one primary active card per developer",
+      "In Review: card already has PR or is waiting for review/demo verification",
+      "Blocked: card cannot move without external help or design decision",
+      "Done: merged, verified, and accepted only"
+    ]
+  },
+  "sprints": [
+    {
+      "name": "Sprint 1",
+      "start": "2026-04-20",
+      "end": "2026-05-03"
+    },
+    {
+      "name": "Sprint 2",
+      "start": "2026-05-04",
+      "end": "2026-05-16"
+    },
+    {
+      "name": "Buffer / demo prep",
+      "start": "2026-05-17",
+      "end": "2026-05-17"
+    }
+  ],
+  "lists": [
+    { "name": "Product Backlog", "position": 1 },
+    { "name": "Ready for Sprint", "position": 2 },
+    { "name": "Sprint Backlog", "position": 3 },
+    { "name": "In Progress", "position": 4 },
+    { "name": "In Review", "position": 5 },
+    { "name": "Blocked", "position": 6 },
+    { "name": "Done", "position": 7 }
+  ],
+  "labels": [
+    { "name": "Epic 1" },
+    { "name": "Epic 2" },
+    { "name": "Epic 3" },
+    { "name": "Epic 4" },
+    { "name": "bug" },
+    { "name": "tech-debt" },
+    { "name": "blocked" },
+    { "name": "priority-high" },
+    { "name": "priority-medium" },
+    { "name": "priority-low" },
+    { "name": "backend-core" },
+    { "name": "persistence" },
+    { "name": "reporting" },
+    { "name": "auth" }
+  ],
+  "customFields": [
+    { "name": "Story ID", "type": "text" },
+    { "name": "Epic", "type": "text" },
+    { "name": "Sprint", "type": "text" },
+    { "name": "Estimate", "type": "number" },
+    { "name": "Owner", "type": "text" },
+    { "name": "Reviewer", "type": "text" },
+    { "name": "PR Link", "type": "text" }
+  ],
+  "checklistTemplate": [
+    "Understand story + acceptance criteria",
+    "Confirm touched modules/interfaces",
+    "Implement code",
+    "Verify build/manual run",
+    "Update/prepare test data if needed",
+    "Open PR",
+    "Address review comments",
+    "Merge"
+  ],
+  "automationRules": [
+    "When a card is moved to In Progress, set start date and add card member.",
+    "When a card is moved to In Review, add checklist item PR link attached.",
+    "When a card is moved to Blocked, add blocked label.",
+    "When due date is within 24 hours and card is not in Done, add priority-high label.",
+    "When a card is moved to Done, remove blocked label automatically."
+  ],
+  "cards": [
+    {
+      "id": "1.1",
+      "name": "[1.1] Scaffold project and Makefile",
+      "list": "Sprint Backlog",
+      "labels": ["Epic 1"],
+      "customFieldValues": {
+        "Story ID": "1.1",
+        "Epic": "Epic 1",
+        "Sprint": "Sprint 1",
+        "Estimate": 3,
+        "Owner": "Dev A",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Set up a complete project structure with Makefile and tooling configuration so the team can start implementing features immediately with consistent build and formatting.\n\nExpected outcome: make, make clean, and the base structure work.\n\nFiles/modules likely touched:\n- Makefile\n- src/main.c\n- include/\n- src/\n- build/\n- bin/\n\nDefinition of done:\n- Code implemented\n- Build passes\n- PR opened and linked\n- PR approved\n- Merged to main",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "1.2",
+      "name": "[1.2] Define shared data types and constants",
+      "list": "Sprint Backlog",
+      "labels": ["Epic 1"],
+      "customFieldValues": {
+        "Story ID": "1.2",
+        "Epic": "Epic 1",
+        "Sprint": "Sprint 1",
+        "Estimate": 2,
+        "Owner": "Dev C",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Centralize all struct definitions and constants in one header so all modules share consistent data types without circular dependencies.\n\nExpected outcome: all structs/constants compile and are reusable.\n\nFiles/modules likely touched:\n- include/types.h",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "1.3",
+      "name": "[1.3] Implement utility helpers",
+      "list": "Sprint Backlog",
+      "labels": ["Epic 1"],
+      "customFieldValues": {
+        "Story ID": "1.3",
+        "Epic": "Epic 1",
+        "Sprint": "Sprint 1",
+        "Estimate": 2,
+        "Owner": "Dev C",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Implement common validation and formatting helpers so all modules can reuse input validation, time formatting, and display name mapping.\n\nExpected outcome: validation, formatting, and naming helpers work.\n\nFiles/modules likely touched:\n- include/utils.h\n- src/utils.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "1.4",
+      "name": "[1.4] Build file I/O and first-run initialization",
+      "list": "Sprint Backlog",
+      "labels": ["Epic 1", "persistence"],
+      "customFieldValues": {
+        "Story ID": "1.4",
+        "Epic": "Epic 1",
+        "Sprint": "Sprint 1",
+        "Estimate": 5,
+        "Owner": "Dev D",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Implement persistence in a single fileio module so data is saved to .dat files on every mutation and loaded on startup.\n\nExpected outcome: app loads/saves .dat files and creates default admin.\n\nFiles/modules likely touched:\n- include/fileio.h\n- src/fileio.c\n- data/",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Update/prepare test data if needed",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "1.5",
+      "name": "[1.5] Implement login/logout/session",
+      "list": "Sprint Backlog",
+      "labels": ["Epic 1", "auth"],
+      "customFieldValues": {
+        "Story ID": "1.5",
+        "Epic": "Epic 1",
+        "Sprint": "Sprint 1",
+        "Estimate": 5,
+        "Owner": "Dev B",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Implement login with MSSV and password so users can access the role-appropriate menu and session management is enforced.\n\nExpected outcome: correct login route, lockout logic, and logout flow.\n\nFiles/modules likely touched:\n- include/auth.h\n- src/auth.c\n- src/main.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "1.6",
+      "name": "[1.6] Implement change and reset password",
+      "list": "Ready for Sprint",
+      "labels": ["Epic 1", "auth"],
+      "customFieldValues": {
+        "Story ID": "1.6",
+        "Epic": "Epic 1",
+        "Sprint": "Sprint 1",
+        "Estimate": 3,
+        "Owner": "Dev B",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Let members change their own passwords and BCN reset passwords for others.\n\nExpected outcome: member can change password, BCN can reset password.\n\nFiles/modules likely touched:\n- include/auth.h\n- src/auth.c\n- src/fileio.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "2.1",
+      "name": "[2.1] Add member creation flow",
+      "list": "Sprint Backlog",
+      "labels": ["Epic 2"],
+      "customFieldValues": {
+        "Story ID": "2.1",
+        "Epic": "Epic 2",
+        "Sprint": "Sprint 1",
+        "Estimate": 3,
+        "Owner": "Dev E",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Add new members with full information so the CLB member database is maintained.\n\nExpected outcome: add member, validate MSSV/email, create account.\n\nFiles/modules likely touched:\n- include/member.h\n- src/member.c\n- src/fileio.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Update/prepare test data if needed",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "2.2",
+      "name": "[2.2] Edit member and recalculate unpaid fines",
+      "list": "Ready for Sprint",
+      "labels": ["Epic 2"],
+      "customFieldValues": {
+        "Story ID": "2.2",
+        "Epic": "Epic 2",
+        "Sprint": "Sprint 1",
+        "Estimate": 5,
+        "Owner": "Dev E",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Edit member information and recalculate unpaid fines when the role changes.\n\nExpected outcome: update member info and recalc unpaid fine state.\n\nFiles/modules likely touched:\n- include/member.h\n- src/member.c\n- src/violation.c\n- src/fileio.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "2.3",
+      "name": "[2.3] Delete member and cascade related data",
+      "list": "Ready for Sprint",
+      "labels": ["Epic 2"],
+      "customFieldValues": {
+        "Story ID": "2.3",
+        "Epic": "Epic 2",
+        "Sprint": "Sprint 1",
+        "Estimate": 3,
+        "Owner": "Dev E",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Remove a member from the system and delete all related account and violation data safely.\n\nExpected outcome: member, account, and related violations are removed safely.\n\nFiles/modules likely touched:\n- src/member.c\n- src/fileio.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "2.4",
+      "name": "[2.4] View profile and member list",
+      "list": "Ready for Sprint",
+      "labels": ["Epic 2"],
+      "customFieldValues": {
+        "Story ID": "2.4",
+        "Epic": "Epic 2",
+        "Sprint": "Sprint 1",
+        "Estimate": 2,
+        "Owner": "Dev A",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Let members view their own profile and the CLB member list with proper data visibility rules.\n\nExpected outcome: member profile and club list display correctly by role.\n\nFiles/modules likely touched:\n- src/member.c\n- src/main.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "3.1",
+      "name": "[3.1] Record violation and auto-calculate penalty",
+      "list": "Product Backlog",
+      "labels": ["Epic 3"],
+      "customFieldValues": {
+        "Story ID": "3.1",
+        "Epic": "Epic 3",
+        "Sprint": "Sprint 2",
+        "Estimate": 5,
+        "Owner": "Dev A",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Record violations with correct timestamps, fines, and penalty logic.\n\nExpected outcome: violation recorded with correct reason, date, and penalty.\n\nFiles/modules likely touched:\n- include/violation.h\n- src/violation.c\n- src/member.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "3.2",
+      "name": "[3.2] Implement Out CLB warning and enforcement",
+      "list": "Product Backlog",
+      "labels": ["Epic 3"],
+      "customFieldValues": {
+        "Story ID": "3.2",
+        "Epic": "Epic 3",
+        "Sprint": "Sprint 2",
+        "Estimate": 3,
+        "Owner": "Dev A",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Automatically warn and enforce Out CLB thresholds based on consecutive absence and violence rules.\n\nExpected outcome: consecutive absence and violence rules trigger correctly.\n\nFiles/modules likely touched:\n- src/violation.c\n- src/member.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "3.3",
+      "name": "[3.3] Mark paid and show own violations/fines",
+      "list": "Product Backlog",
+      "labels": ["Epic 3"],
+      "customFieldValues": {
+        "Story ID": "3.3",
+        "Epic": "Epic 3",
+        "Sprint": "Sprint 2",
+        "Estimate": 5,
+        "Owner": "Dev B",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Allow members to see their own violations and fines and allow BCN to mark violations as paid.\n\nExpected outcome: payment state updates and member can see debt summary.\n\nFiles/modules likely touched:\n- src/violation.c\n- src/member.c\n- src/main.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "3.4",
+      "name": "[3.4] View all violations with filters",
+      "list": "Product Backlog",
+      "labels": ["Epic 3"],
+      "customFieldValues": {
+        "Story ID": "3.4",
+        "Epic": "Epic 3",
+        "Sprint": "Sprint 2",
+        "Estimate": 3,
+        "Owner": "Dev D",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Show all violations with filters by team, reason, and payment status.\n\nExpected outcome: filter by team, reason, and payment status.\n\nFiles/modules likely touched:\n- src/violation.c\n- src/report.c\n- src/main.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "4.1",
+      "name": "[4.1] Show statistics by team",
+      "list": "Product Backlog",
+      "labels": ["Epic 4", "reporting"],
+      "customFieldValues": {
+        "Story ID": "4.1",
+        "Epic": "Epic 4",
+        "Sprint": "Sprint 2",
+        "Estimate": 2,
+        "Owner": "Dev B",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Show collected and outstanding fines broken down by team.\n\nExpected outcome: terminal table of paid and unpaid totals by team.\n\nFiles/modules likely touched:\n- include/report.h\n- src/report.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "4.2",
+      "name": "[4.2] Sort members by violation count",
+      "list": "Product Backlog",
+      "labels": ["Epic 4", "reporting"],
+      "customFieldValues": {
+        "Story ID": "4.2",
+        "Epic": "Epic 4",
+        "Sprint": "Sprint 2",
+        "Estimate": 2,
+        "Owner": "Dev C",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Sort members by violation count without changing the original array order.\n\nExpected outcome: sorted view without changing original array order.\n\nFiles/modules likely touched:\n- src/report.c\n- src/member.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "4.3",
+      "name": "[4.3] Export violation report to txt",
+      "list": "Product Backlog",
+      "labels": ["Epic 4", "reporting"],
+      "customFieldValues": {
+        "Story ID": "4.3",
+        "Epic": "Epic 4",
+        "Sprint": "Sprint 2",
+        "Estimate": 3,
+        "Owner": "Dev D",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Export a violation report to .txt with timestamp, summary by team, and list of unpaid members.\n\nExpected outcome: report file with timestamp and unpaid summary is generated.\n\nFiles/modules likely touched:\n- src/report.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "4.4",
+      "name": "[4.4] Search violations by date range",
+      "list": "Product Backlog",
+      "labels": ["Epic 4", "reporting"],
+      "customFieldValues": {
+        "Story ID": "4.4",
+        "Epic": "Epic 4",
+        "Sprint": "Sprint 2",
+        "Estimate": 3,
+        "Owner": "Dev C",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Story: Search violations within a date range using time_t conversion from dd/mm/yyyy.\n\nExpected outcome: date filtering by time_t works correctly.\n\nFiles/modules likely touched:\n- src/report.c\n- src/utils.c",
+      "checklist": [
+        "Understand story + acceptance criteria",
+        "Confirm touched modules/interfaces",
+        "Implement code",
+        "Verify build/manual run",
+        "Open PR",
+        "Address review comments",
+        "Merge"
+      ]
+    },
+    {
+      "id": "OPS-1",
+      "name": "[OPS-1] Set up GitHub repository and protected main",
+      "list": "Sprint Backlog",
+      "labels": ["tech-debt"],
+      "customFieldValues": {
+        "Story ID": "OPS-1",
+        "Epic": "Operations",
+        "Sprint": "Sprint 1",
+        "Estimate": 2,
+        "Owner": "project lead",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Operational task: initialize GitHub repository workflow and protect main branch.",
+      "checklist": [
+        "Create repository",
+        "Push main branch",
+        "Enable branch protection",
+        "Require review before merge"
+      ]
+    },
+    {
+      "id": "OPS-2",
+      "name": "[OPS-2] Create PR template and review checklist",
+      "list": "Sprint Backlog",
+      "labels": ["tech-debt"],
+      "customFieldValues": {
+        "Story ID": "OPS-2",
+        "Epic": "Operations",
+        "Sprint": "Sprint 1",
+        "Estimate": 1,
+        "Owner": "Scrum Master or lead dev",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Operational task: standardize PR reviews with a shared template and review checklist.",
+      "checklist": [
+        "Draft PR template",
+        "Define review checklist",
+        "Share with team",
+        "Apply in first PR"
+      ]
+    },
+    {
+      "id": "OPS-3",
+      "name": "[OPS-3] Prepare demo dataset for review and final demo",
+      "list": "Product Backlog",
+      "labels": ["tech-debt"],
+      "customFieldValues": {
+        "Story ID": "OPS-3",
+        "Epic": "Operations",
+        "Sprint": "Sprint 2",
+        "Estimate": 2,
+        "Owner": "Dev D",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Operational task: prepare realistic demo data for review and the final demo.",
+      "checklist": [
+        "Design sample data",
+        "Create dataset files",
+        "Verify demo flows"
+      ]
+    },
+    {
+      "id": "OPS-4",
+      "name": "[OPS-4] Sprint retro action items",
+      "list": "Product Backlog",
+      "labels": ["tech-debt"],
+      "customFieldValues": {
+        "Story ID": "OPS-4",
+        "Epic": "Operations",
+        "Sprint": "Sprint 2",
+        "Estimate": 1,
+        "Owner": "rotating Scrum Master",
+        "Reviewer": "",
+        "PR Link": ""
+      },
+      "description": "Operational task: track and close sprint retrospective action items.",
+      "checklist": [
+        "Capture retro decisions",
+        "Assign owners",
+        "Track completion"
+      ]
+    }
+  ]
+}
