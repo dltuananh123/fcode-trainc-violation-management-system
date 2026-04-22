@@ -197,7 +197,7 @@ These are the best candidates to create first and move toward `Ready for Sprint`
    - Estimate: `3`
    - Suggested owner: Dev A
    - Modules: `Makefile`, `src/main.c`, `include/`, `src/`, `build/`, `bin/`
-   - Demo outcome: `make`, `make clean`, and base structure work
+   - Demo outcome: `mingw32-make`, `mingw32-make clean`, and base structure work
 
 2. `[1.2] Define shared data types and constants`
    - Label: `Epic 1`

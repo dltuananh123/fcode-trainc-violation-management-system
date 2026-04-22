@@ -104,7 +104,7 @@
         "Reviewer": "",
         "PR Link": ""
       },
-      "description": "Story: Set up a complete project structure with Makefile and tooling configuration so the team can start implementing features immediately with consistent build and formatting.\n\nExpected outcome: make, make clean, and the base structure work.\n\nFiles/modules likely touched:\n- Makefile\n- src/main.c\n- include/\n- src/\n- build/\n- bin/\n\nDefinition of done:\n- Code implemented\n- Build passes\n- PR opened and linked\n- PR approved\n- Merged to main",
+      "description": "Story: Set up a complete project structure with Makefile and tooling configuration so the team can start implementing features immediately with consistent build and formatting.\n\nExpected outcome: mingw32-make, mingw32-make clean, and the base structure work.\n\nFiles/modules likely touched:\n- Makefile\n- src/main.c\n- include/\n- src/\n- build/\n- bin/\n\nDefinition of done:\n- Code implemented\n- Build passes\n- PR opened and linked\n- PR approved\n- Merged to main",
       "checklist": [
         "Understand story + acceptance criteria",
         "Confirm touched modules/interfaces",
