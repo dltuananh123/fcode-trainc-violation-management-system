@@ -1,0 +1,31 @@
+# Build artifacts
+build/
+bin/
+*.o
+*.exe
+*.out
+
+# Data files (generated at runtime)
+data/*.dat
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# PDF tools cache
+pdf docs/
+
+# Claude Code / Cursor local config
+.claude/
+.cursor/
