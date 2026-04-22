@@ -200,10 +200,10 @@ all: $(TARGET)
 
 Target `all` phụ thuộc vào `$(TARGET)`.
 
-Khi bạn gõ:
+Khi bạn gõ trên repo này:
 
 ```bash
-make
+mingw32-make
 ```
 
 thì Make mặc định chạy target đầu tiên, ở đây là `all`.

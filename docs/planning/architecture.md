@@ -67,7 +67,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 ### Selected Approach
 
-**Build System:** Makefile — industry standard for C projects, compiles only changed files (`make`, `make clean`, `make run`).
+**Build System:** Makefile — industry standard for C projects, compiles only changed files (`mingw32-make`, `mingw32-make clean`, `mingw32-make run`).
 
 **File Format:** Binary (.dat) — compact, fast read/write using `fwrite`/`fread`, struct-level I/O. Each struct is written as a fixed-size record.
 
@@ -106,7 +106,7 @@ fcode-trainc/
 **Language & Compiler:**
 - C17 standard (`-std=c17 -m64`), compiled with gcc/MinGW (default, for evaluation compatibility)
 - 64-bit target ensures fixed `size_t` and `time_t` (8 bytes on all platforms)
-- Development: `make CC=clang` — better error messages, faster compilation
+- Development: `mingw32-make CC=clang` — better error messages, faster compilation
 - Warning flags: `-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wformat-nonliteral -Wformat-security -Wfloat-equal -Wundef -Wsign-conversion -Wcast-align -Wcast-qual -Wmissing-prototypes -Wmissing-declarations -Wunreachable-code -Wnull-dereference -Wimplicit-fallthrough -Wswitch-enum -Wpointer-arith`
 
 **Code Quality Toolchain (LLVM):**
@@ -128,12 +128,12 @@ fcode-trainc/
 - No struct padding issues: all string fields use fixed-size `char` arrays (e.g. `char fullName[MAX_NAME_LEN]`). Do NOT use `#pragma pack(1)` — it is non-standard and causes unaligned memory access on some platforms.
 
 **Development Experience:**
-- `make` — build all (default: gcc), output to `bin/fcode-trainc`
-- `make CC=clang` — build with clang for better diagnostics
-- `make clean` — remove build/ and bin/ directories
-- `make run` — build and run
-- `make format` — run clang-format on all source files
-- `make tidy` — run clang-tidy static analysis
+- `mingw32-make` — build all (default: gcc), output to `bin/fcode-trainc`
+- `mingw32-make CC=clang` — build with clang for better diagnostics
+- `mingw32-make clean` — remove build/ and bin/ directories
+- `mingw32-make run` — build and run
+- `mingw32-make format` — run clang-format on all source files
+- `mingw32-make tidy` — run clang-tidy static analysis
 
 **Makefile Structure (key variables):**
 ```makefile
@@ -479,7 +479,7 @@ Nhap lua chon: _
 - Include header guards in every `.h` file
 - Use Vietnamese for terminal output, English for code
 - Keep functions under 50 lines — split if longer
-- Run `make format` before every commit
+- Run `mingw32-make format` before every commit
 
 **Pattern Enforcement:**
 - Compile with full warning flags — zero warnings allowed
