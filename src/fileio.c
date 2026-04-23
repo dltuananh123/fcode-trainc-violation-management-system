@@ -31,7 +31,7 @@ static void cleanup_tmp_files() {
 */
 
 int fileio_save_members(AppDatabase *db){
-    FILE *fp = fopen(TMP_MEMBERS,"WB");
+    FILE *fp = fopen(TMP_MEMBERS,"wb");
     if(fp == NULL){
         printf("[LOI] Khong the tao file tam de luu members!\n");
         return -1;
@@ -65,10 +65,17 @@ int fileio_save_violations(AppDatabase *db){
     fwrite(&(db->violationCount),sizeof(int),1,fp);
 
     if (db->violationCount > 0){
-        fwrite(db->violationCount,sizeof(Violation),(size_t)db->violationCount,fp);
+        fwrite(db->violations,sizeof(Violation),(size_t)db->violationCount,fp);
 
     }
     fclose(fp);
+
+    remove(FILE_VIOLATIONS);
+    if (rename(TMP_VIOLATIONS,FILE_VIOLATIONS) != 0){
+        printf("[LOI] Khong the ghi de file violations.dat!\n");
+        return -1;
+    }
+    return 0;
 }
 
 int fileio_save_accounts(AppDatabase *db){
@@ -81,7 +88,7 @@ int fileio_save_accounts(AppDatabase *db){
     fwrite(&(db->accountCount),sizeof(int),1,fp);
 
     if (db->accountCount > 0){
-        fwrite(db->accountCount,sizeof(Account),(size_t)db->accountCount,fp);
+        fwrite(db->accounts,sizeof(Account),(size_t)db->accountCount,fp);
     }
 
     fclose(fp);
@@ -108,7 +115,7 @@ int fileio_load_all(AppDatabase *db){
 
     /* Load accounts */
     FILE *fpAcc = fopen(FILE_ACCOUNTS,"rb");
-    if (fpAcc == NULL){
+    if (fpAcc != NULL){
         fread(&(db->accountCount),sizeof(int),1,fpAcc);
         if (db->accountCount > 0){
             fread(db->accounts,sizeof(Account),(size_t)db->accountCount,fpAcc);
@@ -130,6 +137,35 @@ int fileio_load_all(AppDatabase *db){
 
     }
 
+    /* Load Member */
+
+    FILE *fpMen = fopen(FILE_MEMBERS,"rb");
+    if (fpMen != NULL){
+        fread(&(db->memberCount),sizeof(int),1,fpMen);
+        if (db->memberCount > 0){
+            fread(db->members,sizeof(Member),(size_t)db->memberCount,fpMen);
+        }
+        fclose(fpMen);
+    }
+    else{
+        /*First_run create file empty*/
+        fileio_save_members(db);
+    }
+
+    /*Load violations*/
+
+    FILE *fpVio = fopen(FILE_VIOLATIONS,"rb");
+    if (fpVio != NULL){
+        fread(&(db->violationCount),sizeof(int),1,fpVio);
+        if (db-> violationCount > 0){
+            fread(db->violations,sizeof(Violation),(size_t)db->violationCount,fpVio);
+        }
+        fclose(fpVio);
+    }
+    else{
+        fileio_save_violations(db);
+    }
+    return 0;
 }
 
 
