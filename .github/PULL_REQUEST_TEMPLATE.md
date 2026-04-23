@@ -1,7 +1,6 @@
 ## Description
 <!-- Provide a brief, concise summary of the changes introduced in this PR. Explain the 'why' alongside the 'what'. -->
 
-
 ## Related Issue / Story
 <!-- Link to the Trello card or Story ID this PR addresses. -->
 - **Story ID:**
@@ -24,18 +23,13 @@
 <!-- Verify that all specific requirements defined in the Story are fulfilled. -->
 - [ ] All acceptance criteria from the assigned story are fully met.
 - [ ] Role and permission boundaries are accurately enforced (BCN vs. Member).
-- [ ] Appropriate error handling and input validation messages (e.g., `[LOI]`, `[OK]`) are displayed.
+- [ ] Appropriate error handling and input validation messages are displayed.
 
 ## Testing & Verification
 <!-- Describe how you verified these changes. Include any manual CLI tests, compile logs, or edge-case testing. -->
 - [ ] Clean build completed successfully.
 - [ ] Manual end-to-end CLI flow tested.
 - [ ] Edge cases (e.g., missing data files, maximum capacity reached, invalid inputs) verified.
-
-**Test Notes:**
-```text
-(Add commands run, scenarios tested, or any known limitations here)
-```
 
 ## Reviewer Focus
 <!-- Call out the most critical parts of the code for the reviewer (e.g., complex business logic, struct alignment, or binary I/O). -->
