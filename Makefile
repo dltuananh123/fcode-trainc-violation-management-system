@@ -3,10 +3,6 @@ SHELL := cmd
 .SHELLFLAGS := /C
 
 # Compiler settings
-# -std=c17   = use C17
-# -Wall      = show common warnings
-# -Wextra    = show extra warnings
-# -Iinclude  = look for header files in include/
 CC := gcc
 CFLAGS := -std=c17 -m64 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wformat-nonliteral -Wformat-security -Wfloat-equal -Wundef -Wsign-conversion -Wcast-align -Wcast-qual -Wmissing-prototypes -Wmissing-declarations -Wunreachable-code -Wnull-dereference -Wimplicit-fallthrough -Wswitch-enum -Wpointer-arith -Wformat-nonliteral -Iinclude
 
@@ -41,19 +37,14 @@ all: $(TARGET)
 # Build final program from object files
 $(TARGET): $(TARGET_EXE)
 	copy /Y $(subst /,\,$(TARGET_EXE)) $(subst /,\,$(TARGET)) >NUL
-
 $(TARGET_EXE): $(OBJS) | $(BINDIR)
 	$(CC) $(OBJS) -o $@
 
 # Build each .o file from each .c file
-# $< = input file
-# $@ = output file
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-
 $(BUILDDIR):
 	@if not exist $(BUILDDIR) mkdir $(BUILDDIR)
-
 $(BINDIR):
 	@if not exist $(BINDIR) mkdir $(BINDIR)
 
@@ -63,7 +54,6 @@ clean:
 	@if exist $(BINDIR) rmdir /S /Q $(BINDIR)
 
 # Format all .c and .h files
-# sắp xếp / làm đẹp code
 format:
 ifeq ($(strip $(FORMAT_FILES)),)
 	@echo "No source or header files found to format."
@@ -72,7 +62,6 @@ else
 endif
 
 # Run clang-tidy on all .c files
-# clang-tidy = soi lỗi / cảnh báo code
 tidy:
 ifeq ($(strip $(SRCS)),)
 	@echo "No source files found to analyze."
