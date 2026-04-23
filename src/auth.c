@@ -132,3 +132,86 @@ Account *auth_get_session(void) {
     return &current_session;
 }
  
+/* ============================================================
+ * Public API — Story 1.6
+ * ============================================================ */
+ 
+int auth_change_password(AppDatabase *db) {
+    if (!session_active) {
+        printf("[LOI] Chua dang nhap.\n");
+        return -1;
+    }
+ 
+    int idx = find_account_index(db, current_session.studentId);
+    if (idx < 0) {
+        printf("[LOI] Khong tim thay tai khoan trong he thong.\n");
+        return -1;
+    }
+ 
+    Account *acc = &db->accounts[idx];
+    char old_pass[MAX_PASS_LEN];
+    char new_pass[MAX_PASS_LEN];
+ 
+    printf("\n=== DOI MAT KHAU ===\n");
+    read_input("Mat khau cu : ", old_pass, (int)sizeof(old_pass));
+ 
+    if (strcmp(acc->password, old_pass) != 0) {
+        printf("[LOI] Mat khau cu khong dung.\n");
+        return -1;
+    }
+ 
+    read_input("Mat khau moi: ", new_pass, (int)sizeof(new_pass));
+ 
+    if (new_pass[0] == '\0') {
+        printf("[LOI] Mat khau moi khong duoc de trong.\n");
+        return -1;
+    }
+ 
+    strncpy(acc->password, new_pass, MAX_PASS_LEN - 1);
+    acc->password[MAX_PASS_LEN - 1] = '\0';
+ 
+    /* Update in-memory session to reflect the new password. */
+    current_session = *acc;
+ 
+    fileio_save_accounts(db);
+    printf("[OK] Doi mat khau thanh cong.\n");
+    return 0;
+}
+ 
+int auth_reset_password(AppDatabase *db, const char *targetStudentId) {
+    if (!session_active) {
+        printf("[LOI] Chua dang nhap.\n");
+        return -1;
+    }
+ 
+    /* Only BCN is allowed to reset other members' passwords. */
+    if (current_session.role != ACCOUNT_ROLE_BCN) {
+        printf("[LOI] Chi BCN moi co quyen reset mat khau.\n");
+        return -1;
+    }
+ 
+    int idx = find_account_index(db, targetStudentId);
+    if (idx < 0) {
+        printf("[LOI] Khong tim thay tai khoan voi MSSV [%s].\n",
+               targetStudentId);
+        return -1;
+    }
+ 
+    Account *acc = &db->accounts[idx];
+ 
+    /* Reset password to MSSV (default password per architecture). */
+    strncpy(acc->password, acc->studentId, MAX_PASS_LEN - 1);
+    acc->password[MAX_PASS_LEN - 1] = '\0';
+ 
+    /* Implementation decision: also unlock the account and reset
+     * failCount, so BCN does not need a separate "unlock" action.
+     * This is not explicitly required by the spec but is the
+     * only practical way to recover a locked account. */
+    acc->isLocked  = 0;
+    acc->failCount = 0;
+ 
+    fileio_save_accounts(db);
+    printf("[OK] Da reset mat khau cua [%s] ve mac dinh (MSSV).\n",
+           targetStudentId);
+    return 0;
+}
