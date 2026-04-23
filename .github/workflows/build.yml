@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-clang-tools-extra
+
+    - name: Build
+      shell: msys2 {0}
+      run: make all
+
+    - name: Format
+      shell: msys2 {0}
+      run: |
+        make format
+        if ! git diff --quiet; then
+          echo "Code is not formatted. Please run 'make format'."
+          git diff
+          exit 1
+        fi
+
+    - name: Tidy
+      shell: msys2 {0}
+      run: make tidy
