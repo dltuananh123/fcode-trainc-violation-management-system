@@ -8,7 +8,7 @@ SHELL := cmd
 # -Wextra    = show extra warnings
 # -Iinclude  = look for header files in include/
 CC := gcc
-CFLAGS := -std=c17 -Wall -Wextra -Iinclude
+CFLAGS := -std=c17 -m64 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wformat-nonliteral -Wformat-security -Wfloat-equal -Wundef -Wsign-conversion -Wcast-align -Wcast-qual -Wmissing-prototypes -Wmissing-declarations -Wunreachable-code -Wnull-dereference -Wimplicit-fallthrough -Wswitch-enum -Wpointer-arith -Wformat-nonliteral -Iinclude
 
 # Folders
 SRCDIR := src
