@@ -13,17 +13,17 @@ so that the team can start implementing features immediately with consistent bui
 ## Acceptance Criteria
 
 1. **Given** the project repository is initialized  
-   **When** a developer runs `mingw32-make`  
+   **When** a developer runs `make`  
    **Then** the project compiles successfully with zero warnings using `gcc -std=c17 -Wall -Wextra`  
    **And** the executable is placed in `bin/fcode-trainc`
 2. **Given** the project structure exists  
-   **When** a developer runs `mingw32-make clean`  
+   **When** a developer runs `make clean`  
    **Then** the `build/` and `bin/` directories are removed
 3. **Given** the project structure exists  
-   **When** a developer runs `mingw32-make format`  
+   **When** a developer runs `make format`  
    **Then** `clang-format` is applied to all `src/*.c` and `include/*.h` files
 4. **Given** the project structure exists  
-   **When** a developer runs `mingw32-make tidy`  
+   **When** a developer runs `make tidy`  
    **Then** `clang-tidy` runs against project source files using the `C17` compile context
 
 ## Tasks / Subtasks
@@ -33,22 +33,22 @@ so that the team can start implementing features immediately with consistent bui
   - [x] Add a minimal `src/main.c` with `int main(void)` returning success
   - [x] Ensure `build/` and `bin/` are treated as generated output, not permanent source folders
 - [x] Create the initial Makefile (AC: 1, 2, 3)
-  - [x] Add `mingw32-make tidy`
+  - [x] Add `make tidy`
   - [x] Set target output to `bin/fcode-trainc`
   - [x] Compile all `src/*.c` into `build/*.o`
   - [x] Use `-std=c17` as the language standard
   - [x] Use `-Wall -Wextra` at minimum
-  - [x] Add `mingw32-make clean`
-  - [x] Add `mingw32-make format`
+  - [x] Add `make clean`
+  - [x] Add `make format`
 - [x] Align the scaffold with architecture rules (AC: 1)
   - [x] Keep `src/main.c` limited to entry-point scaffolding only
   - [x] Keep headers in `include/` and implementations in `src/`
   - [x] Do not introduce non-standard libraries or platform-specific code
 - [x] Verify the story outcome locally (AC: 1, 2, 3)
-  - [x] Run `mingw32-make tidy`
-  - [x] Run `mingw32-make`
-  - [x] Run `mingw32-make clean`
-  - [x] Run `mingw32-make format`
+  - [x] Run `make tidy`
+  - [x] Run `make`
+  - [x] Run `make clean`
+  - [x] Run `make format`
   - [x] Confirm the executable path and generated directory behavior
 
 ## Dev Notes
@@ -72,8 +72,9 @@ so that the team can start implementing features immediately with consistent bui
 - Minimum warnings required by story: `-Wall -Wextra`
 - Preferred target name: `bin/fcode-trainc`
 - Generated object files belong under `build/`
-- `mingw32-make format` should target `src/*.c` and `include/*.h`
-- `mingw32-make tidy` should run `clang-tidy src/*.c -- -std=c17 -Iinclude`
+- `make format` should target `src/*.c` and `include/*.h`
+- `make tidy` should run `clang-tidy src/*.c -- -std=c17 -Iinclude`
+- Repo-level tooling config must not conflict with the requirement-driven naming used by later shared data models: struct/type names stay `PascalCase`, shared struct fields stay `camelCase`
 
 ### Architecture Compliance
 
@@ -81,6 +82,7 @@ so that the team can start implementing features immediately with consistent bui
 - Do not create module files in the repo root.
 - Use `int main(void)`, not `void main()`. [Source: _bmad-output/planning-artifacts/architecture.md#Anti-Patterns]
 - This story should not create application features beyond the scaffold.
+- Tooling created in this story should support later requirement-aligned naming instead of enforcing conflicting field conventions.
 
 ### File Structure Requirements
 
@@ -102,10 +104,10 @@ so that the team can start implementing features immediately with consistent bui
 ### Testing Requirements
 
 - Manual verification is enough for this story:
-  - `mingw32-make` produces `bin/fcode-trainc`
-  - `mingw32-make clean` removes generated build output
-  - `mingw32-make format` runs against project source/header globs without failing
-  - `mingw32-make tidy` runs against current project source with C17 include settings
+  - `make` produces `bin/fcode-trainc`
+  - `make clean` removes generated build output
+  - `make format` runs against project source/header globs without failing
+  - `make tidy` runs against current project source with C17 include settings
 - Zero warnings is part of the AC, so keep the initial `main.c` minimal.
 
 ### Project Structure Notes

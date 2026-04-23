@@ -50,12 +50,12 @@ CheckOptions:
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
 
-  # Struct names should use CamelCase
+  # Struct names should use UpperCamelCase (PascalCase)
   # Example: Member, Violation, AppDatabase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
 
-  # Public members / struct fields should use lower_case
-  # Example: member_count, total_fine
+  # Shared struct fields should use lowerCamelCase
+  # Example: fullName, studentId, violationTime, isPaid, memberCount
   - key: readability-identifier-naming.PublicMemberCase
-    value: lower_case
+    value: camelBack
