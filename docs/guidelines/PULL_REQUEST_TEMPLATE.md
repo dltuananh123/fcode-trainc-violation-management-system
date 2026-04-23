@@ -53,3 +53,27 @@ Call out the parts that need the most attention.
 
 - [ ] PR link added to Trello card
 - [ ] Card moved to `In Review`
+
+---
+
+hoặc có thể ngắn gọn như này
+
+## Story / Card
+
+- Story ID:
+- Trello card:
+
+## Summary
+
+Mô tả ngắn thay đổi chính trong 2-4 dòng.
+
+## Verification
+
+- [ ] Build/compile check completed
+- [ ] Manual flow tested
+- [ ] Docs updated if needed
+
+Notes:
+
+```text
+Add commands run, scenarios tested, or known limitations.
