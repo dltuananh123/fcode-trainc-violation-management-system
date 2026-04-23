@@ -69,11 +69,13 @@ NFR-7: Language purity — 100% pure C, absolutely no C++, Python, Java or any m
 NFR-8: File persistence — Binary .dat files using fwrite/fread, load on startup, save on every mutation
 ```
 
+Naming convention note: use `PascalCase` for struct/type names, `camelCase` for shared struct fields defined by the requirement, `snake_case` for local variables, and `UPPER_SNAKE_CASE` for constants.
+
 ### Additional Requirements (from Architecture)
 
 ```
 AR-1: Directory structure — src/ for .c files, include/ for .h files, build/ for .o files, bin/ for executable
-AR-2: Build system — Makefile with targets invoked via mingw32-make: mingw32-make, mingw32-make clean, mingw32-make run, mingw32-make format, mingw32-make tidy
+AR-2: Build system — Makefile with targets: make, make clean, make run, make format, make tidy
 AR-3: AppDatabase struct — All arrays wrapped in single struct, functions receive AppDatabase* only
 AR-4: Session management — static Account in auth.c with getter function (no extern globals)
 AR-5: Two role systems — Account.role (menu access: Member=0, BCN=1) vs Member.role (fine calc: Member=0, Leader=1, BCN=2)
@@ -154,16 +156,16 @@ So that the team can start implementing features immediately with consistent bui
 **Acceptance Criteria:**
 
 **Given** the project repository is initialized
-**When** a developer runs `mingw32-make`
+**When** a developer runs `make`
 **Then** the project compiles successfully with zero warnings using gcc -std=c17 -Wall -Wextra
 **And** the executable is placed in `bin/fcode-trainc`
 
 **Given** the project structure exists
-**When** a developer runs `mingw32-make clean`
+**When** a developer runs `make clean`
 **Then** the `build/` and `bin/` directories are removed
 
 **Given** the project structure exists
-**When** a developer runs `mingw32-make format`
+**When** a developer runs `make format`
 **Then** clang-format is applied to all `src/*.c` and `include/*.h` files
 
 ### Story 1.2: Data Types & Constants
