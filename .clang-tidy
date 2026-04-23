@@ -1,12 +1,7 @@
 ---
-# Check all header files too
 HeaderFilterRegex: '.*'
-
-# Do not check system headers like stdio.h, stdlib.h
 SystemHeaders: false
 
-# Turn off all checks first with -*,
-# then turn on only the groups we want
 Checks: >
   -*,
   llvm-*,
@@ -17,45 +12,23 @@ Checks: >
   readability-*,
 
 CheckOptions:
-  # Constants should use UPPER_CASE
-  # Example: MAX_SIZE, DEFAULT_PORT
   - key: readability-identifier-naming.ConstantCase
     value: UPPER_CASE
-
-  # Macros should use UPPER_CASE
-  # Example: #define MAX_MEMBERS 1000
   - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE
 
-  # Normal variables should use lower_case
-  # Example: member_count, total_fine
   - key: readability-identifier-naming.VariableCase
-    value: lower_case
-
-  # Global variables should also use lower_case
+    value: camelBack
   - key: readability-identifier-naming.GlobalVariableCase
-    value: lower_case
-
-  # Function names should use lower_case
-  # Example: auth_login, member_add
+    value: camelBack
   - key: readability-identifier-naming.FunctionCase
-    value: lower_case
-
-  # Global/public function names should also use lower_case
+    value: camelBack
   - key: readability-identifier-naming.GlobalFunctionCase
-    value: lower_case
-
-  # Function parameters should use lower_case
-  # Example: student_id, member_index
+    value: camelBack
   - key: readability-identifier-naming.ParameterCase
-    value: lower_case
+    value: camelBack
 
-  # Struct names should use UpperCamelCase (PascalCase)
-  # Example: Member, Violation, AppDatabase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
-
-  # Shared struct fields should use lowerCamelCase
-  # Example: fullName, studentId, violationTime, isPaid, memberCount
   - key: readability-identifier-naming.PublicMemberCase
     value: camelBack
