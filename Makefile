@@ -17,7 +17,7 @@ BUILDDIR := build
 BINDIR := bin
 
 # Final program name
-TARGET := $(BINDIR)/fcode-trainc
+TARGET := $(BINDIR)/violation-management-system
 TARGET_EXE := $(TARGET).exe
 
 # Find all .c files in src/
