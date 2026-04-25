@@ -167,5 +167,3 @@ int fileio_load_all(AppDatabase *db){
     }
     return 0;
 }
-
-
