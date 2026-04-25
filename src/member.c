@@ -9,68 +9,141 @@
  * ============================================================ */
 
 int member_find_by_id(AppDatabase *db, const char *studentId) {
-  /* TODO: Find member index by studentId
-   * Linear scan through members[] array
-   *
-   * Return: index if found, -1 if not found or invalid input
-   */
   if (db == NULL || studentId == NULL) return -1;
 
   for (int i = 0; i < db->memberCount; i++) {
-    /* TODO: Implement comparison */
+    if (strcmp(db->members[i].studentId, studentId) == 0) {
+      return i;
+    }
   }
 
   return -1;
 }
 
 int member_validate_input(const Member *m, AppDatabase *db) {
-  /* TODO: Validate member input
-   * 1. Check studentId is not empty
-   * 2. Check studentId uniqueness (call member_find_by_id)
-   * 3. Check email format (call is_email_valid)
-   *
-   * Return: 0 if valid, -1 if invalid (print error message)
-   */
   if (m == NULL || db == NULL) return -1;
 
-  /* TODO: Implement validation */
+  /* Check studentId not empty */
+  if (strlen(m->studentId) == 0) {
+    printf("[LOI] MSSV khong duoc de trong\n");
+    return -1;
+  }
 
-  return -1;
+  /* Check uniqueness */
+  if (member_find_by_id(db, m->studentId) != -1) {
+    printf("[LOI] MSSV da ton tai\n");
+    return -1;
+  }
+
+  /* Check email format */
+  if (!is_email_valid(m->email)) {
+    printf("[LOI] Email khong hop le\n");
+    return -1;
+  }
+
+  return 0;
 }
 
 int member_add(AppDatabase *db) {
-  /* TODO: Add new member
-   * 1. Check MAX_MEMBERS limit
-   * 2. Display "=== THEM THANH VIEN MOI ==="
-   * 3. Prompt for:
-   *    - fullName, studentId, email, phone
-   *    - team (0-3), role (0-2)
-   * 4. Validate input (call member_validate_input)
-   * 5. Create Member record:
-   *    - violationCount = 0
-   *    - consecutiveAbsences = 0
-   *    - totalFine = 0
-   *    - isActive = STATUS_ACTIVE
-   * 6. Create Account record:
-   *    - password = studentId
-   *    - role = ACCOUNT_ROLE_MEMBER
-   *    - isLocked = 0, failCount = 0
-   * 7. Save to files (fileio_save_members, fileio_save_accounts)
-   * 8. Print success message with details
-   *
-   * Return: 0 on success, -1 on failure
-   */
   if (db == NULL) return -1;
 
-  /* TODO: Check capacity */
+  /* Check capacity */
   if (db->memberCount >= MAX_MEMBERS) {
     printf("[LOI] Da dat gioi han so luong thanh vien (%d)\n", MAX_MEMBERS);
     return -1;
   }
 
-  /* TODO: Implement member add logic */
+  printf("\nTHEM THANH VIEN MOI\n");
 
-  return -1;
+  Member new_member;
+  memset(&new_member, 0, sizeof(Member));
+
+  /* Input member details */
+  printf("Nhap MSSV: ");
+  read_string(new_member.studentId, MAX_MSSV_LEN);
+
+  printf("Nhap ho va ten: ");
+  read_string(new_member.fullName, MAX_NAME_LEN);
+
+  printf("Nhap email: ");
+  read_string(new_member.email, MAX_EMAIL_LEN);
+
+  printf("Nhap so dien thoai: ");
+  read_string(new_member.phone, MAX_PHONE_LEN);
+
+  /* Select team */
+  printf("Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong): ");
+  int team;
+  if (read_int(&team) != 1) {
+    printf("[LOI] Lua chon ban khong hop le\n");
+    return -1;
+  }
+  if (team < TEAM_ACADEMIC || team > TEAM_MEDIA) {
+    printf("[LOI] Ban khong hop le\n");
+    return -1;
+  }
+  new_member.team = team;
+
+  /* Select role */
+  printf("Chon chuc vu (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem): ");
+  int role;
+  if (read_int(&role) != 1) {
+    printf("[LOI] Lua chon chuc vu khong hop le\n");
+    return -1;
+  }
+  if (role < MEMBER_ROLE_MEMBER || role > MEMBER_ROLE_BCN) {
+    printf("[LOI] Chuc vu khong hop le\n");
+    return -1;
+  }
+  new_member.role = role;
+
+  /* Set default values */
+  new_member.violationCount = 0;
+  new_member.consecutiveAbsences = 0;
+  new_member.totalFine = 0.0;
+  new_member.isActive = STATUS_ACTIVE;
+
+  /* Validate input */
+  if (member_validate_input(&new_member, db) != 0) {
+    return -1;
+  }
+
+  /* Add member to database */
+  db->members[db->memberCount++] = new_member;
+
+  /* Create account with default password = MSSV */
+  Account new_account;
+  memset(&new_account, 0, sizeof(Account));
+  strncpy(new_account.studentId, new_member.studentId, MAX_MSSV_LEN - 1);
+  strncpy(new_account.password, new_member.studentId, MAX_PASS_LEN - 1);
+  new_account.role = ACCOUNT_ROLE_MEMBER;
+  new_account.isLocked = 0;
+  new_account.failCount = 0;
+  db->accounts[db->accountCount++] = new_account;
+
+  /* Save to files */
+  if (fileio_save_members(db) != 0) {
+    printf("[LOI] Khong the luu du lieu thanh vien\n");
+    db->memberCount--;
+    return -1;
+  }
+
+  if (fileio_save_accounts(db) != 0) {
+    printf("[LOI] Khong the luu du lieu tai khoan\n");
+    db->memberCount--;
+    db->accountCount--;
+    fileio_save_members(db);
+    return -1;
+  }
+
+  printf("[OK] Them thanh vien thanh cong\n");
+  printf("  MSSV: %s\n", new_member.studentId);
+  printf("  Ten: %s\n", new_member.fullName);
+  printf("  Ban: %s\n", team_name(new_member.team));
+  printf("  Chuc vu: %s\n", member_role_name(new_member.role));
+  printf("  Tai khoan da duoc tao voi mat khau mac dinh: %s\n", new_member.studentId);
+
+  return 0;
 }
 
 /* ============================================================
@@ -78,23 +151,8 @@ int member_add(AppDatabase *db) {
  * ============================================================ */
 
 int member_edit(AppDatabase *db) {
-  /* TODO: Edit existing member
-   * 1. Prompt for studentId to edit
-   * 2. Find member (call member_find_by_id)
-   * 3. Display current info
-   * 4. Prompt for new values (all EXCEPT studentId)
-   * 5. If role changed:
-   *    - Recalculate fines for unpaid violations
-   *    - Update member.totalFine
-   *    - Save violations file
-   * 6. Save members file
-   *
-   * Return: 0 on success, -1 on failure
-   */
-  if (db == NULL) return -1;
-
-  /* TODO: Implement edit logic */
-
+  (void)db;
+  printf("[CANH BAO] Chua cai dat chuc nang sua thanh vien\n");
   return -1;
 }
 
@@ -103,24 +161,8 @@ int member_edit(AppDatabase *db) {
  * ============================================================ */
 
 int member_delete(AppDatabase *db) {
-  /* TODO: Delete member with cascade
-   * 1. Prompt for studentId to delete
-   * 2. Find member (call member_find_by_id)
-   * 3. Display member info
-   * 4. Ask for confirmation ("Xac nhan xoa? (y/n): ")
-   * 5. If confirmed:
-   *    - Remove from members[] (shift array)
-   *    - Remove all matching violations[]
-   *    - Remove matching account from accounts[]
-   *    - Update counts
-   *    - Save all files
-   *
-   * Return: 0 on success, -1 on failure or cancelled
-   */
-  if (db == NULL) return -1;
-
-  /* TODO: Implement delete logic */
-
+  (void)db;
+  printf("[CANH BAO] Chua cai dat chuc nang xoa thanh vien\n");
   return -1;
 }
 
@@ -129,20 +171,27 @@ int member_delete(AppDatabase *db) {
  * ============================================================ */
 
 void member_list_all(AppDatabase *db) {
-  /* TODO: Display all members in table format
-   * Show only: fullName, studentId, team, role
-   * Hide: email, phone, violationCount, totalFine, isActive
-   *
-   * Format:
-   * +------+------------------+------------+-----------+
-   * | MSSV | Ho va ten        | Ban        | Chuc vu  |
-   * +------+------------------+------------+-----------+
-   * | ...  | ...              | ...        | ...       |
-   * +------+------------------+------------+-----------+
-   */
   if (db == NULL) return;
 
-  /* TODO: Implement display logic */
+  if (db->memberCount == 0) {
+    printf("[THONG BAO] Chua co thanh vien nao trong du lieu\n");
+    return;
+  }
 
-  printf("[CANH BAO] Chua cai dat chuc nang hien thi danh sach\n");
+  printf("\nDANH SACH THANH VIEN\n");
+  printf("+------+------------------+------------+-----------+\n");
+  printf("| MSSV | Ho va ten        | Ban        | Chuc vu  |\n");
+  printf("+------+------------------+------------+-----------+\n");
+
+  for (int i = 0; i < db->memberCount; i++) {
+    Member *m = &db->members[i];
+    printf("| %-4s | %-16s | %-10s | %-9s |\n",
+           m->studentId,
+           m->fullName,
+           team_name(m->team),
+           member_role_name(m->role));
+  }
+
+  printf("+------+------------------+------------+-----------+\n");
+  printf("Tong: %d thanh vien\n\n", db->memberCount);
 }

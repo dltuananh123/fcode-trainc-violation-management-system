@@ -16,17 +16,9 @@ static AppDatabase g_db;
 
 /* Member menu (for regular members and leaders) */
 void member_menu(void) {
-  /* TODO: Implement member menu
-   * Options:
-   * 1. Xem profile ca nhan
-   * 2. Xem lich su vi pham
-   * 3. Xem tong tien phat con no
-   * 4. Xem danh sach thanh vien
-   * 0. Dang xuat
-   */
   int choice;
   do {
-    printf("\n=== MENU THANH VIEN ===\n");
+    printf("\nMENU THANH VIEN\n");
     printf("1. Xem profile ca nhan\n");
     printf("2. Xem lich su vi pham\n");
     printf("3. Xem tong tien phat con no\n");
@@ -43,15 +35,12 @@ void member_menu(void) {
 
     switch (choice) {
       case 1:
-        /* TODO: Call view profile function */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 2:
-        /* TODO: Call view violations function */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 3:
-        /* TODO: Call view fines function */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 4:
@@ -68,24 +57,9 @@ void member_menu(void) {
 
 /* BCN menu (for admins) */
 void admin_menu(void) {
-  /* TODO: Implement admin menu
-   * Options:
-   * 1. Them thanh vien moi
-   * 2. Sua thong tin thanh vien
-   * 3. Xoa thanh vien
-   * 4. Ghi nhan vi pham
-   * 5. Danh dau da thu tien
-   * 6. Xem danh sach vi pham
-   * 7. Thong ke tien phat theo ban
-   * 8. Kiem tra nguong Out CLB
-   * 9. Sap xep theo so lan vi pham
-   * 10. Xuat bao cao
-   * 11. Tim kiem theo ngay
-   * 0. Dang xuat
-   */
   int choice;
   do {
-    printf("\n=== MENU BAN CHU NHIEM ===\n");
+    printf("\nMENU BAN CHU NHIEM\n");
     printf("1. Them thanh vien moi\n");
     printf("2. Sua thong tin thanh vien\n");
     printf("3. Xoa thanh vien\n");
@@ -118,35 +92,27 @@ void admin_menu(void) {
         member_delete(&g_db);
         break;
       case 4:
-        /* TODO: Call violation_record */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 5:
-        /* TODO: Call violation_mark_paid */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 6:
-        /* TODO: Call violation_list_all */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 7:
-        /* TODO: Call report_team_stats */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 8:
-        /* TODO: Call violation_check_out_clb */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 9:
-        /* TODO: Call report_sort_by_violations */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 10:
-        /* TODO: Call report_export_txt */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 11:
-        /* TODO: Call violation_search_by_date */
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 0:
@@ -163,10 +129,7 @@ void admin_menu(void) {
  * ============================================================ */
 
 int main(void) {
-  printf("====================================\n");
   printf("  F-CODE VIOLATION MANAGEMENT SYSTEM\n");
-  printf("====================================\n\n");
-
   /* Load data from files */
   if (fileio_load_all(&g_db) != 0) {
     printf("[LOI] Khong the tai du lieu. Vui long kiem tra thu muc data/\n");
