@@ -116,7 +116,11 @@ int member_add(AppDatabase *db) {
   memset(&new_account, 0, sizeof(Account));
   strncpy(new_account.studentId, new_member.studentId, MAX_MSSV_LEN - 1);
   strncpy(new_account.password, new_member.studentId, MAX_PASS_LEN - 1);
-  new_account.role = ACCOUNT_ROLE_MEMBER;
+  if (new_member.role == MEMBER_ROLE_BCN) {
+    new_account.role = ACCOUNT_ROLE_BCN;
+  } else {
+    new_account.role = ACCOUNT_ROLE_MEMBER;
+  }
   new_account.isLocked = 0;
   new_account.failCount = 0;
   db->accounts[db->accountCount++] = new_account;
