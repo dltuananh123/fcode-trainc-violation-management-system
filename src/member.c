@@ -281,9 +281,82 @@ int member_edit(AppDatabase *db) {
  * ============================================================ */
 
 int member_delete(AppDatabase *db) {
-  (void)db;
-  printf("[CANH BAO] Chua cai dat chuc nang xoa thanh vien\n");
-  return -1;
+  if (db == NULL)
+    return -1;
+
+  char studentId[MAX_MSSV_LEN];
+  printf("\nXOA THANH VIEN\n");
+  printf("Nhap MSSV can xoa: ");
+  read_string(studentId, MAX_MSSV_LEN);
+
+  int memberIndex = member_find_by_id(db, studentId);
+  if (memberIndex == -1) {
+    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", studentId);
+    return -1;
+  }
+
+  Member *m = &db->members[memberIndex];
+  printf("\nTHONG TIN THANH VIEN:\n");
+  printf("  Ho va ten: %s\n", m->fullName);
+  printf("  Ban: %s\n", team_name(m->team));
+  printf("  Chuc vu: %s\n", member_role_name(m->role));
+
+  printf("\nXac nhan xoa thanh vien nay va toan bo du lieu lien quan? (1: "
+         "Co, 0: Khong): ");
+  int confirm;
+  if (read_int(&confirm) != 1 || confirm != 1) {
+    printf("[THONG BAO] Da huy xoa thanh vien.\n");
+    return 0;
+  }
+
+  /* 1. Xoa thanh vien */
+  for (int i = memberIndex; i < db->memberCount - 1; i++) {
+    db->members[i] = db->members[i + 1];
+  }
+  db->memberCount--;
+
+  /* 2. Xoa vi pham lien quan */
+  int v_index = 0;
+  while (v_index < db->violationCount) {
+    if (strcmp(db->violations[v_index].studentId, studentId) == 0) {
+      for (int j = v_index; j < db->violationCount - 1; j++) {
+        db->violations[j] = db->violations[j + 1];
+      }
+      db->violationCount--;
+    } else {
+      v_index++;
+    }
+  }
+
+  /* 3. Xoa tai khoan lien quan */
+  int a_index = 0;
+  while (a_index < db->accountCount) {
+    if (strcmp(db->accounts[a_index].studentId, studentId) == 0) {
+      for (int j = a_index; j < db->accountCount - 1; j++) {
+        db->accounts[j] = db->accounts[j + 1];
+      }
+      db->accountCount--;
+    } else {
+      a_index++;
+    }
+  }
+
+  /* 4. Luu vao file */
+  if (fileio_save_members(db) != 0) {
+    printf("[LOI] Khong the luu du lieu thanh vien sau khi xoa\n");
+    return -1;
+  }
+  if (fileio_save_violations(db) != 0) {
+    printf("[LOI] Khong the luu du lieu vi pham sau khi xoa\n");
+    return -1;
+  }
+  if (fileio_save_accounts(db) != 0) {
+    printf("[LOI] Khong the luu du lieu tai khoan sau khi xoa\n");
+    return -1;
+  }
+
+  printf("[OK] Xoa thanh vien thanh cong.\n");
+  return 0;
 }
 
 /* ============================================================
