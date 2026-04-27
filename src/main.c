@@ -5,6 +5,7 @@
 #include "fileio.h"
 #include "auth.h"
 #include "member.h"
+#include "violation.h"
 #include "utils.h"
 
 /* Global database state */
@@ -92,7 +93,7 @@ void admin_menu(void) {
         member_delete(&g_db);
         break;
       case 4:
-        printf("[CANH BAO] Chua cai dat\n");
+        violation_record(&g_db);
         break;
       case 5:
         printf("[CANH BAO] Chua cai dat\n");
@@ -104,7 +105,7 @@ void admin_menu(void) {
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 8:
-        printf("[CANH BAO] Chua cai dat\n");
+        violation_check_all_out_clb(&g_db);
         break;
       case 9:
         printf("[CANH BAO] Chua cai dat\n");
