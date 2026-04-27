@@ -23,9 +23,9 @@ int member_find_by_id(AppDatabase *db, const char *studentId) {
 int member_validate_input(const Member *m, AppDatabase *db) {
   if (m == NULL || db == NULL) return -1;
 
-  /* Check studentId not empty */
-  if (strlen(m->studentId) == 0) {
-    printf("[LOI] MSSV khong duoc de trong\n");
+  /* Check studentId is valid and not empty */
+  if (!is_id_valid(m->studentId)) {
+    printf("[LOI] MSSV khong hop le\n");
     return -1;
   }
 
