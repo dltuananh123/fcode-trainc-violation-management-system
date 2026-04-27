@@ -149,11 +149,114 @@ int member_add(AppDatabase *db) {
 /* ============================================================
  * Story 2.2 — Edit Member
  * ============================================================ */
-
 int member_edit(AppDatabase *db) {
-  (void)db;
-  printf("[CANH BAO] Chua cai dat chuc nang sua thanh vien\n");
-  return -1;
+  if (db == NULL) return -1;
+
+  printf("\n--- SUA THONG TIN THANH VIEN ---\n");
+  
+  char targetId[MAX_MSSV_LEN];
+  printf("Nhap MSSV can sua: ");
+  read_string(targetId, MAX_MSSV_LEN);
+
+  int idx = member_find_by_id(db, targetId);
+  if (idx == -1) {
+    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", targetId);
+    return -1;
+  }
+
+  Member *m = &db->members[idx];
+  int oldRole = m->role; 
+
+  /* Hiển thị thông tin hiện tại */
+  printf("\nThong tin hien tai cua %s:\n", m->studentId);
+  printf("1. Ho va ten : %s\n", m->fullName);
+  printf("2. Email     : %s\n", m->email);
+  printf("3. SDT       : %s\n", m->phone);
+  printf("4. Ban       : %s\n", team_name(m->team));
+  printf("5. Chuc vu   : %s\n", member_role_name(m->role));
+  printf("\n*Luu y: Nhap lai toan bo thong tin moi. MSSV la co dinh (read-only).\n\n");
+
+  char buffer[MAX_EMAIL_LEN];
+
+  printf("Nhap ho va ten moi: ");
+  read_string(m->fullName, MAX_NAME_LEN);
+
+  printf("Nhap email moi: ");
+  read_string(buffer, MAX_EMAIL_LEN);
+  if (is_email_valid(buffer)) {
+    strcpy(m->email, buffer);
+  } else {
+    printf("[CANH BAO] Email khong hop le. Giu nguyen email cu: %s\n", m->email);
+  }
+
+  printf("Nhap so dien thoai moi: ");
+  read_string(m->phone, MAX_PHONE_LEN);
+
+  printf("Chon ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong): ");
+  int team;
+  if (read_int(&team) == 1 && team >= TEAM_ACADEMIC && team <= TEAM_MEDIA) {
+    m->team = team;
+  } else {
+    printf("[CANH BAO] Ban khong hop le. Giu nguyen ban cu.\n");
+  }
+
+  printf("Chon chuc vu moi (0-Thanh vien, 1-Truong/Pho nhom, 2-BCN): ");
+  int role;
+  if (read_int(&role) == 1 && role >= MEMBER_ROLE_MEMBER && role <= MEMBER_ROLE_BCN) {
+    m->role = role;
+  } else {
+    printf("[CANH BAO] Chuc vu khong hop le. Giu nguyen chuc vu cu.\n");
+  }
+  
+   /* BUSINESS LOGIC: */
+
+  int violations_changed = 0; 
+
+  if (m->role != oldRole) {
+    printf("\n[THONG BAO] Phat hien thay doi chuc vu (%s -> %s).\n", 
+           member_role_name(oldRole), member_role_name(m->role));
+    printf("[THONG BAO] Dang tinh toan lai cac khoan phat chua dong...\n");
+
+    double new_total_fine = 0.0;
+
+    for (int i = 0; i < db->violationCount; i++) {
+      Violation *v = &db->violations[i];
+      
+      /* Quét mảng: Đúng MSSV và chưa đóng phạt mới được tính lại */
+      if (strcmp(v->studentId, m->studentId) == 0 && v->isPaid == 0) {
+
+        if (v->reason != REASON_VIOLENCE) {
+          if (m->role == MEMBER_ROLE_MEMBER) {
+            v->fine = 20000.0;
+          } else {
+            v->fine = 50000.0; 
+          }
+          violations_changed = 1;
+        }
+
+        new_total_fine += v->fine; 
+      }
+    }
+    
+    m->totalFine = new_total_fine;
+    printf("[OK] Tinh toan hoan tat. Tong no moi: %.0f VND\n", m->totalFine);
+  }
+
+  /*Luu du lieu fileio*/
+  if (fileio_save_members(db) != 0) {
+    printf("[LOI] Khong the luu thong tin thanh vien vao file.\n");
+    return -1;
+  }
+
+  if (violations_changed) {
+    if (fileio_save_violations(db) != 0) {
+      printf("[LOI] Khong the luu thong tin vi pham sau khi cap nhat.\n");
+      return -1;
+    }
+  }
+
+  printf("\n[OK] Cap nhat thong tin thanh vien %s thanh cong.\n", m->studentId);
+  return 0;
 }
 
 /* ============================================================
