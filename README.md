@@ -1,4 +1,3 @@
-
 # F-Code TrainC Violation Management System
 
 A CLI-based violation tracking system for F-Code club members, developed in C to manage infractions, penalties, and member status transparently.
