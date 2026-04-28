@@ -161,8 +161,130 @@ int memberAdd(AppDatabase *db) {
 }
 
 /* ============================================================
- * Story 2.2 — Edit Member
+ * Story 2.2 — Edit Member (helpers)
  * ============================================================ */
+
+/* Edit member's full name. Skips if user presses Enter. */
+static void editName(Member *m) {
+  char buffer[MAX_NAME_LEN];
+  printf("Ho va ten moi: ");
+  readString(buffer, MAX_NAME_LEN);
+  if (strlen(buffer) > 0) {
+    strncpy(m->fullName, buffer, MAX_NAME_LEN - 1);
+    m->fullName[MAX_NAME_LEN - 1] = '\0';
+  }
+}
+
+/* Edit member's email with validation. Skips if user presses Enter. */
+static void editEmail(Member *m) {
+  char buffer[MAX_EMAIL_LEN];
+  printf("Email moi: ");
+  readString(buffer, MAX_EMAIL_LEN);
+  if (strlen(buffer) == 0) {
+    return;
+  }
+  if (!isEmailValid(buffer)) {
+    printf("[LOI] Email khong hop le, giu nguyen email cu\n");
+    return;
+  }
+  strncpy(m->email, buffer, MAX_EMAIL_LEN - 1);
+  m->email[MAX_EMAIL_LEN - 1] = '\0';
+}
+
+/* Edit member's phone number. Skips if user presses Enter. */
+static void editPhone(Member *m) {
+  char buffer[MAX_PHONE_LEN];
+  printf("So dien thoai moi: ");
+  readString(buffer, MAX_PHONE_LEN);
+  if (strlen(buffer) > 0) {
+    strncpy(m->phone, buffer, MAX_PHONE_LEN - 1);
+    m->phone[MAX_PHONE_LEN - 1] = '\0';
+  }
+}
+
+/* Edit member's team. Enter -1 to keep current value. */
+static void editTeam(Member *m) {
+  printf("Ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong) [-1 de "
+         "giu nguyen]: ");
+  int newTeam;
+  if (!readInt(&newTeam) || newTeam == -1) {
+    return;
+  }
+  if (newTeam >= TEAM_ACADEMIC && newTeam <= TEAM_MEDIA) {
+    m->team = newTeam;
+  } else {
+    printf("[LOI] Ban khong hop le, giu nguyen ban cu\n");
+  }
+}
+
+/* Edit member's role. Returns 1 if role changed, 0 otherwise. */
+static int editRole(Member *m) {
+  printf("Chuc vu moi (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem) "
+         "[-1 de giu nguyen]: ");
+  int newRole;
+  if (!readInt(&newRole) || newRole == -1) {
+    return 0;
+  }
+  if (newRole < MEMBER_ROLE_MEMBER || newRole > MEMBER_ROLE_BCN) {
+    printf("[LOI] Chuc vu khong hop le, giu nguyen chuc vu cu\n");
+    return 0;
+  }
+  if (m->role == newRole) {
+    return 0;
+  }
+  m->role = newRole;
+  return 1;
+}
+
+/* Edit member's active status. Enter -1 to keep current value. */
+static void editStatus(Member *m) {
+  printf("Trang thai (1-Hoat dong, 0-Da Out CLB) [-1 de giu nguyen]: ");
+  int newStatus;
+  if (!readInt(&newStatus) || newStatus == -1) {
+    return;
+  }
+  if (newStatus == STATUS_ACTIVE || newStatus == STATUS_OUT_CLB) {
+    m->isActive = newStatus;
+  } else {
+    printf("[LOI] Trang thai khong hop le, giu nguyen trang thai cu\n");
+  }
+}
+
+/* Recalculate fines for all unpaid violations after a role change. */
+static int recalcFines(AppDatabase *db, Member *m) {
+  double newFineRate = (m->role == MEMBER_ROLE_MEMBER) ? 20000.0 : 50000.0;
+  m->totalFine = 0.0;
+
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, m->studentId) != 0 || v->isPaid != 0) {
+      continue;
+    }
+    if (v->reason != REASON_VIOLENCE) {
+      v->fine = newFineRate;
+    }
+    m->totalFine += v->fine;
+  }
+
+  if (fileioSaveViolations(db) != 0) {
+    printf("[LOI] Khong the luu du lieu vi pham sau khi tinh lai tien phat\n");
+    return -1;
+  }
+  printf("[THONG BAO] Da tinh lai tien phat cho cac vi pham chua dong do "
+         "thay doi chuc vu\n");
+  return 0;
+}
+
+/* Display current member information. */
+static void displayMemberInfo(const Member *m) {
+  printf("\nTHONG TIN HIEN TAI:\n");
+  printf("  Ho va ten: %s\n", m->fullName);
+  printf("  Email: %s\n", m->email);
+  printf("  So dien thoai: %s\n", m->phone);
+  printf("  Ban: %s\n", teamName(m->team));
+  printf("  Chuc vu: %s\n", memberRoleName(m->role));
+  printf("  Trang thai: %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
+}
 
 int memberEdit(AppDatabase *db) {
   if (db == NULL) {
@@ -181,100 +303,20 @@ int memberEdit(AppDatabase *db) {
   }
 
   Member *m = &db->members[memberIndex];
-  char buffer[MAX_NAME_LEN];
 
-  printf("\nTHONG TIN HIEN TAI:\n");
-  printf("  Ho va ten: %s\n", m->fullName);
-  printf("  Email: %s\n", m->email);
-  printf("  So dien thoai: %s\n", m->phone);
-  printf("  Ban: %s\n", teamName(m->team));
-  printf("  Chuc vu: %s\n", memberRoleName(m->role));
-  printf("  Trang thai: %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
-
+  displayMemberInfo(m);
   printf("\nNHAP THONG TIN MOI (Nhan Enter de giu nguyen):\n");
 
-  printf("Ho va ten moi: ");
-  readString(buffer, MAX_NAME_LEN);
-  if (strlen(buffer) > 0) {
-    strncpy(m->fullName, buffer, MAX_NAME_LEN - 1);
-    m->fullName[MAX_NAME_LEN - 1] = '\0';
-  }
+  editName(m);
+  editEmail(m);
+  editPhone(m);
+  editTeam(m);
 
-  printf("Email moi: ");
-  readString(buffer, MAX_EMAIL_LEN);
-  if (strlen(buffer) > 0) {
-    if (!isEmailValid(buffer)) {
-      printf("[LOI] Email khong hop le, giu nguyen email cu\n");
-    } else {
-      strncpy(m->email, buffer, MAX_EMAIL_LEN - 1);
-      m->email[MAX_EMAIL_LEN - 1] = '\0';
-    }
-  }
+  int roleChanged = editRole(m);
+  editStatus(m);
 
-  printf("So dien thoai moi: ");
-  readString(buffer, MAX_PHONE_LEN);
-  if (strlen(buffer) > 0) {
-    strncpy(m->phone, buffer, MAX_PHONE_LEN - 1);
-    m->phone[MAX_PHONE_LEN - 1] = '\0';
-  }
-
-  printf("Ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong) [-1 de "
-         "giu nguyen]: ");
-  int newTeam;
-  if (readInt(&newTeam)) {
-    if (newTeam >= TEAM_ACADEMIC && newTeam <= TEAM_MEDIA) {
-      m->team = newTeam;
-    } else if (newTeam != -1) {
-      printf("[LOI] Ban khong hop le, giu nguyen ban cu\n");
-    }
-  }
-
-  printf("Chuc vu moi (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem) "
-         "[-1 de giu nguyen]: ");
-  int newRole;
-  int roleChanged = 0;
-  if (readInt(&newRole)) {
-    if (newRole >= MEMBER_ROLE_MEMBER && newRole <= MEMBER_ROLE_BCN) {
-      if (m->role != newRole) {
-        m->role = newRole;
-        roleChanged = 1;
-      }
-    } else if (newRole != -1) {
-      printf("[LOI] Chuc vu khong hop le, giu nguyen chuc vu cu\n");
-    }
-  }
-
-  printf("Trang thai (1-Hoat dong, 0-Da Out CLB) [-1 de giu nguyen]: ");
-  int newStatus;
-  if (readInt(&newStatus)) {
-    if (newStatus == STATUS_ACTIVE || newStatus == STATUS_OUT_CLB) {
-      m->isActive = newStatus;
-    } else if (newStatus != -1) {
-      printf("[LOI] Trang thai khong hop le, giu nguyen trang thai cu\n");
-    }
-  }
-
-  if (roleChanged) {
-    double newFineRate = (m->role == MEMBER_ROLE_MEMBER) ? 20000.0 : 50000.0;
-    m->totalFine = 0.0;
-
-    for (int i = 0; i < db->violationCount; i++) {
-      Violation *v = &db->violations[i];
-      if (strcmp(v->studentId, m->studentId) == 0 && v->isPaid == 0) {
-        if (v->reason != REASON_VIOLENCE) {
-          v->fine = newFineRate;
-        }
-        m->totalFine += v->fine;
-      }
-    }
-
-    if (fileioSaveViolations(db) != 0) {
-      printf(
-          "[LOI] Khong the luu du lieu vi pham sau khi tinh lai tien phat\n");
-      return -1;
-    }
-    printf("[THONG BAO] Da tinh lai tien phat cho cac vi pham chua dong do "
-           "thay doi chuc vu\n");
+  if (roleChanged && recalcFines(db, m) != 0) {
+    return -1;
   }
 
   if (fileioSaveMembers(db) != 0) {
