@@ -11,11 +11,27 @@
 #define TMP_VIOLATIONS "data/violations.dat.tmp"
 #define TMP_ACCOUNTS "data/accounts.dat.tmp"
 
-/* Crash residual cleanup */
-static void cleanupTmpFiles() {
-  remove(TMP_MEMBERS);
-  remove(TMP_VIOLATIONS);
-  remove(TMP_ACCOUNTS);
+/* Handle tmp files on startup to recover from crashes */
+static void recoverFromTmp(const char *tmpFile, const char *datFile) {
+  FILE *fTmp = fopen(tmpFile, "rb");
+  if (fTmp != NULL) {
+    fclose(fTmp);
+    FILE *fDat = fopen(datFile, "rb");
+    if (fDat == NULL) {
+      /* .dat is missing, but .tmp exists! Recover. */
+      rename(tmpFile, datFile);
+    } else {
+      /* Both exist. .dat is valid. Remove .tmp. */
+      fclose(fDat);
+      remove(tmpFile);
+    }
+  }
+}
+
+static void handleTmpFiles(void) {
+  recoverFromTmp(TMP_MEMBERS, FILE_MEMBERS);
+  recoverFromTmp(TMP_VIOLATIONS, FILE_VIOLATIONS);
+  recoverFromTmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
 }
 
 /* Save functions */
@@ -94,8 +110,8 @@ int fileioLoadAll(AppDatabase *db) {
   db->violationCount = 0;
   db->accountCount = 0;
 
-  /*Delete file crash .tmp before load*/
-  cleanupTmpFiles();
+  /* Handle crash-residue .tmp files before loading */
+  handleTmpFiles();
 
   /* Load accounts */
   FILE *fpAcc = fopen(FILE_ACCOUNTS, "rb");
