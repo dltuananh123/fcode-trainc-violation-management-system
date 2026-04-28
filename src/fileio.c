@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#define MKDIR(path) _mkdir(path)
+#else
+#include <sys/stat.h>
+#define MKDIR(path) mkdir(path, 0755)
+#endif
+
 #define FILE_MEMBERS "data/members.dat"
 #define FILE_VIOLATIONS "data/violations.dat"
 #define FILE_ACCOUNTS "data/accounts.dat"
@@ -114,6 +122,9 @@ int fileioLoadAll(AppDatabase *db) {
   db->memberCount = 0;
   db->violationCount = 0;
   db->accountCount = 0;
+
+  /* Ensure data directory exists (no-op if already present) */
+  MKDIR("data");
 
   /* Handle crash-residue .tmp files before loading */
   handleTmpFiles();
