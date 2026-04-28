@@ -53,11 +53,22 @@ int fileioSaveMembers(AppDatabase *db) {
     return -1;
   }
   /* Write member count header to temp file */
-  fwrite(&(db->memberCount), sizeof(int), 1, fp);
+  if (fwrite(&(db->memberCount), sizeof(int), 1, fp) != 1) {
+    printf("[LOI] Ghi header members that bai\n");
+    fclose(fp);
+    remove(TMP_MEMBERS);
+    return -1;
+  }
 
   /* Write member data */
   if (db->memberCount > 0) {
-    fwrite(db->members, sizeof(Member), (size_t)db->memberCount, fp);
+    if (fwrite(db->members, sizeof(Member), (size_t)db->memberCount, fp) !=
+        (size_t)db->memberCount) {
+      printf("[LOI] Ghi du lieu members that bai\n");
+      fclose(fp);
+      remove(TMP_MEMBERS);
+      return -1;
+    }
   }
   fclose(fp);
 
@@ -77,10 +88,21 @@ int fileioSaveViolations(AppDatabase *db) {
     return -1;
   }
 
-  fwrite(&(db->violationCount), sizeof(int), 1, fp);
+  if (fwrite(&(db->violationCount), sizeof(int), 1, fp) != 1) {
+    printf("[LOI] Ghi header violations that bai\n");
+    fclose(fp);
+    remove(TMP_VIOLATIONS);
+    return -1;
+  }
 
   if (db->violationCount > 0) {
-    fwrite(db->violations, sizeof(Violation), (size_t)db->violationCount, fp);
+    if (fwrite(db->violations, sizeof(Violation), (size_t)db->violationCount,
+               fp) != (size_t)db->violationCount) {
+      printf("[LOI] Ghi du lieu violations that bai\n");
+      fclose(fp);
+      remove(TMP_VIOLATIONS);
+      return -1;
+    }
   }
   fclose(fp);
 
@@ -99,10 +121,21 @@ int fileioSaveAccounts(AppDatabase *db) {
     return -1;
   }
 
-  fwrite(&(db->accountCount), sizeof(int), 1, fp);
+  if (fwrite(&(db->accountCount), sizeof(int), 1, fp) != 1) {
+    printf("[LOI] Ghi header accounts that bai\n");
+    fclose(fp);
+    remove(TMP_ACCOUNTS);
+    return -1;
+  }
 
   if (db->accountCount > 0) {
-    fwrite(db->accounts, sizeof(Account), (size_t)db->accountCount, fp);
+    if (fwrite(db->accounts, sizeof(Account), (size_t)db->accountCount, fp) !=
+        (size_t)db->accountCount) {
+      printf("[LOI] Ghi du lieu accounts that bai\n");
+      fclose(fp);
+      remove(TMP_ACCOUNTS);
+      return -1;
+    }
   }
 
   fclose(fp);
@@ -132,8 +165,11 @@ int fileioLoadAll(AppDatabase *db) {
   /* Load accounts */
   FILE *fpAcc = fopen(FILE_ACCOUNTS, "rb");
   if (fpAcc != NULL) {
-    fread(&(db->accountCount), sizeof(int), 1, fpAcc);
-    if (db->accountCount < 0 || db->accountCount > MAX_MEMBERS) {
+    if (fread(&(db->accountCount), sizeof(int), 1, fpAcc) != 1) {
+      printf("[LOI] Doc header accounts that bai. Reset ve 0.\n");
+      db->accountCount = 0;
+      fclose(fpAcc);
+    } else if (db->accountCount < 0 || db->accountCount > MAX_MEMBERS) {
       printf("[LOI] Du lieu accounts.dat bi hong (count=%d). "
              "Reset ve 0.\n",
              db->accountCount);
@@ -141,7 +177,12 @@ int fileioLoadAll(AppDatabase *db) {
       fclose(fpAcc);
     } else {
       if (db->accountCount > 0) {
-        fread(db->accounts, sizeof(Account), (size_t)db->accountCount, fpAcc);
+        if (fread(db->accounts, sizeof(Account), (size_t)db->accountCount,
+                  fpAcc) != (size_t)db->accountCount) {
+          printf("[LOI] Doc du lieu accounts that bai. "
+                 "Reset ve 0.\n");
+          db->accountCount = 0;
+        }
       }
       fclose(fpAcc);
     }
@@ -164,8 +205,11 @@ int fileioLoadAll(AppDatabase *db) {
   /* Load Member */
   FILE *fpMen = fopen(FILE_MEMBERS, "rb");
   if (fpMen != NULL) {
-    fread(&(db->memberCount), sizeof(int), 1, fpMen);
-    if (db->memberCount < 0 || db->memberCount > MAX_MEMBERS) {
+    if (fread(&(db->memberCount), sizeof(int), 1, fpMen) != 1) {
+      printf("[LOI] Doc header members that bai. Reset ve 0.\n");
+      db->memberCount = 0;
+      fclose(fpMen);
+    } else if (db->memberCount < 0 || db->memberCount > MAX_MEMBERS) {
       printf("[LOI] Du lieu members.dat bi hong (count=%d). "
              "Reset ve 0.\n",
              db->memberCount);
@@ -173,7 +217,12 @@ int fileioLoadAll(AppDatabase *db) {
       fclose(fpMen);
     } else {
       if (db->memberCount > 0) {
-        fread(db->members, sizeof(Member), (size_t)db->memberCount, fpMen);
+        if (fread(db->members, sizeof(Member), (size_t)db->memberCount,
+                  fpMen) != (size_t)db->memberCount) {
+          printf("[LOI] Doc du lieu members that bai. "
+                 "Reset ve 0.\n");
+          db->memberCount = 0;
+        }
       }
       fclose(fpMen);
     }
@@ -185,8 +234,12 @@ int fileioLoadAll(AppDatabase *db) {
   /* Load violations */
   FILE *fpVio = fopen(FILE_VIOLATIONS, "rb");
   if (fpVio != NULL) {
-    fread(&(db->violationCount), sizeof(int), 1, fpVio);
-    if (db->violationCount < 0 || db->violationCount > MAX_VIOLATIONS) {
+    if (fread(&(db->violationCount), sizeof(int), 1, fpVio) != 1) {
+      printf("[LOI] Doc header violations that bai. "
+             "Reset ve 0.\n");
+      db->violationCount = 0;
+      fclose(fpVio);
+    } else if (db->violationCount < 0 || db->violationCount > MAX_VIOLATIONS) {
       printf("[LOI] Du lieu violations.dat bi hong (count=%d). "
              "Reset ve 0.\n",
              db->violationCount);
@@ -194,8 +247,12 @@ int fileioLoadAll(AppDatabase *db) {
       fclose(fpVio);
     } else {
       if (db->violationCount > 0) {
-        fread(db->violations, sizeof(Violation), (size_t)db->violationCount,
-              fpVio);
+        if (fread(db->violations, sizeof(Violation), (size_t)db->violationCount,
+                  fpVio) != (size_t)db->violationCount) {
+          printf("[LOI] Doc du lieu violations that bai. "
+                 "Reset ve 0.\n");
+          db->violationCount = 0;
+        }
       }
       fclose(fpVio);
     }
