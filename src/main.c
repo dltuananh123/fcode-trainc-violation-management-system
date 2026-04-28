@@ -28,20 +28,18 @@ static void memberMenu(void) {
 
     if (scanf("%d", &choice) != 1) {
       printf("[LOI] Lua chon khong hop le\n");
-      while (getchar() != '\n')
-        ;
+      while (getchar() != '\n') {
+      }
       continue;
     }
-    while (getchar() != '\n')
-      ;
+    while (getchar() != '\n') {
+    }
 
     switch (choice) {
     case 1:
       memberViewProfile(&gDb);
       break;
     case 2:
-      printf("[CANH BAO] Chua cai dat\n");
-      break;
     case 3:
       printf("[CANH BAO] Chua cai dat\n");
       break;
@@ -80,12 +78,12 @@ static void adminMenu(void) {
 
     if (scanf("%d", &choice) != 1) {
       printf("[LOI] Lua chon khong hop le\n");
-      while (getchar() != '\n')
-        ;
+      while (getchar() != '\n') {
+      }
       continue;
     }
-    while (getchar() != '\n')
-      ;
+    while (getchar() != '\n') {
+    }
 
     switch (choice) {
     case 1:
@@ -101,11 +99,7 @@ static void adminMenu(void) {
       violationRecord(&gDb);
       break;
     case 5:
-      printf("[CANH BAO] Chua cai dat\n");
-      break;
     case 6:
-      printf("[CANH BAO] Chua cai dat\n");
-      break;
     case 7:
       printf("[CANH BAO] Chua cai dat\n");
       break;
@@ -113,11 +107,7 @@ static void adminMenu(void) {
       violationCheckAllOutClb(&gDb);
       break;
     case 9:
-      printf("[CANH BAO] Chua cai dat\n");
-      break;
     case 10:
-      printf("[CANH BAO] Chua cai dat\n");
-      break;
     case 11:
       printf("[CANH BAO] Chua cai dat\n");
       break;

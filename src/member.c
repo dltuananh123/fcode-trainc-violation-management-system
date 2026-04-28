@@ -10,8 +10,9 @@
  * ============================================================ */
 
 int memberFindById(AppDatabase *db, const char *studentId) {
-  if (db == NULL || studentId == NULL)
+  if (db == NULL || studentId == NULL) {
     return -1;
+  }
 
   for (int i = 0; i < db->memberCount; i++) {
     if (strcmp(db->members[i].studentId, studentId) == 0) {
@@ -23,8 +24,9 @@ int memberFindById(AppDatabase *db, const char *studentId) {
 }
 
 int memberValidateInput(const Member *m, AppDatabase *db) {
-  if (m == NULL || db == NULL)
+  if (m == NULL || db == NULL) {
     return -1;
+  }
 
   /* Check studentId is valid and not empty */
   if (!isIdValid(m->studentId)) {
@@ -48,8 +50,9 @@ int memberValidateInput(const Member *m, AppDatabase *db) {
 }
 
 int memberAdd(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return -1;
+  }
 
   /* Check capacity */
   if (db->memberCount >= MAX_MEMBERS) {
@@ -161,8 +164,9 @@ int memberAdd(AppDatabase *db) {
  * ============================================================ */
 
 int memberEdit(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return -1;
+  }
 
   char studentId[MAX_MSSV_LEN];
   printf("\nSUA THONG TIN THANH VIEN\n");
@@ -286,8 +290,9 @@ int memberEdit(AppDatabase *db) {
  * ============================================================ */
 
 int memberDelete(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return -1;
+  }
 
   char studentId[MAX_MSSV_LEN];
   printf("\nXOA THANH VIEN\n");
@@ -369,8 +374,9 @@ int memberDelete(AppDatabase *db) {
  * ============================================================ */
 
 void memberViewProfile(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return;
+  }
 
   Account *session = authGetSession();
   if (session == NULL) {
@@ -401,8 +407,9 @@ void memberViewProfile(AppDatabase *db) {
 }
 
 void memberListAll(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return;
+  }
 
   if (db->memberCount == 0) {
     printf("[THONG BAO] Chua co thanh vien nao trong du lieu\n");

@@ -125,8 +125,9 @@ static void handleAbsent(AppDatabase *db, Member *member, Violation *v) {
  * ============================================================ */
 
 int violationRecord(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return -1;
+  }
 
   /* Check violation capacity */
   if (db->violationCount >= MAX_VIOLATIONS) {
@@ -245,8 +246,9 @@ int violationRecord(AppDatabase *db) {
  * ============================================================ */
 
 int violationCheckOutThreshold(AppDatabase *db, Member *member) {
-  if (db == NULL || member == NULL)
+  if (db == NULL || member == NULL) {
     return -1;
+  }
 
   if (member->consecutiveAbsences == 3) {
     /* Warning at exactly 3 consecutive absences */
@@ -275,8 +277,9 @@ int violationCheckOutThreshold(AppDatabase *db, Member *member) {
 }
 
 void violationCheckAllOutClb(AppDatabase *db) {
-  if (db == NULL)
+  if (db == NULL) {
     return;
+  }
 
   printf("\nKIEM TRA NGUONG OUT CLB\n");
   printf("+------+------------------+---------+-----------+\n");
