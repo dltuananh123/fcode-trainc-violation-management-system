@@ -34,23 +34,25 @@ static void handleTmpFiles(void) {
   recoverFromTmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
 }
 
-/* Save functions */
+/* ============================================================
+ * Save functions
+ * ============================================================ */
 int fileioSaveMembers(AppDatabase *db) {
   FILE *fp = fopen(TMP_MEMBERS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu members!\n");
     return -1;
   }
-  /* Ghi so luong thanh vien vao file tam */
+  /* Write member count header to temp file */
   fwrite(&(db->memberCount), sizeof(int), 1, fp);
 
-  /* Ghi du lieu*/
+  /* Write member data */
   if (db->memberCount > 0) {
     fwrite(db->members, sizeof(Member), (size_t)db->memberCount, fp);
   }
   fclose(fp);
 
-  /* Xoa file cu, doi ten file tam */
+  /* Replace old file with temp file */
   remove(FILE_MEMBERS);
   if (rename(TMP_MEMBERS, FILE_MEMBERS) != 0) {
     printf("[LOI] Khong the ghi de file members.dat!\n");
@@ -104,7 +106,9 @@ int fileioSaveAccounts(AppDatabase *db) {
   return 0;
 }
 
-/* Load & init */
+/* ============================================================
+ * Load & init
+ * ============================================================ */
 int fileioLoadAll(AppDatabase *db) {
   db->memberCount = 0;
   db->violationCount = 0;
@@ -122,7 +126,7 @@ int fileioLoadAll(AppDatabase *db) {
     }
     fclose(fpAcc);
   }
-  /*First-run Init for account: Create account Admin if file is empty*/
+  /* First-run init: create default admin account if none exists */
   if (db->accountCount == 0) {
     printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan ADMIN "
            "mac dinh...\n");
@@ -146,11 +150,11 @@ int fileioLoadAll(AppDatabase *db) {
     }
     fclose(fpMen);
   } else {
-    /*First_run create file empty*/
+    /* First-run: create empty members file */
     fileioSaveMembers(db);
   }
 
-  /*Load violations*/
+  /* Load violations */
   FILE *fpVio = fopen(FILE_VIOLATIONS, "rb");
   if (fpVio != NULL) {
     fread(&(db->violationCount), sizeof(int), 1, fpVio);
