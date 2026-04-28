@@ -7,14 +7,14 @@
  * Module-private state
  * Rule: never access currentSession from outside this file.
  * ============================================================ */
-static Account current_session;
-static int session_active = 0;
+static Account currentSession;
+static int sessionActive = 0;
 
 /* ============================================================
  * Private helpers
  * ============================================================ */
 
-static void read_input(const char *prompt, char *buf, int size) {
+static void readInput(const char *prompt, char *buf, int size) {
   printf("%s", prompt);
   if (fgets(buf, size, stdin) != NULL) {
     buf[strcspn(buf, "\n")] = '\0';
@@ -23,7 +23,7 @@ static void read_input(const char *prompt, char *buf, int size) {
   }
 }
 
-static int find_account_index(const AppDatabase *db, const char *studentId) {
+static int findAccountIndex(const AppDatabase *db, const char *studentId) {
   for (int i = 0; i < db->accountCount; i++) {
     if (strcmp(db->accounts[i].studentId, studentId) == 0) {
       return i;
@@ -32,7 +32,7 @@ static int find_account_index(const AppDatabase *db, const char *studentId) {
   return -1;
 }
 
-static void print_login_banner(void) {
+static void printLoginBanner(void) {
   printf("\n");
   printf("  HE THONG QUAN LY VI PHAM - CLB F-CODE   \n");
   printf("  Vui long dang nhap de tiep tuc\n");
@@ -42,18 +42,19 @@ static void print_login_banner(void) {
  * Story 1.5 — Login / Logout / Session
  * ============================================================ */
 
-int auth_login(AppDatabase *db) {
-  if (db == NULL) return -1;
+int authLogin(AppDatabase *db) {
+  if (db == NULL)
+    return -1;
 
   char studentId[MAX_MSSV_LEN];
   char password[MAX_PASS_LEN];
 
-  print_login_banner();
+  printLoginBanner();
 
-  read_input("MSSV: ", studentId, MAX_MSSV_LEN);
-  read_input("Mat khau: ", password, MAX_PASS_LEN);
+  readInput("MSSV: ", studentId, MAX_MSSV_LEN);
+  readInput("Mat khau: ", password, MAX_PASS_LEN);
 
-  int idx = find_account_index(db, studentId);
+  int idx = findAccountIndex(db, studentId);
   if (idx == -1) {
     printf("[LOI] Tai khoan khong ton tai\n");
     return -1;
@@ -91,23 +92,23 @@ int auth_login(AppDatabase *db) {
 
   /* Login successful */
   acc->failCount = 0;
-  current_session = *acc;
-  session_active = 1;
+  currentSession = *acc;
+  sessionActive = 1;
 
   printf("[OK] Dang nhap thanh cong\n");
   return 0;
 }
 
-void auth_logout(AppDatabase *db) {
+void authLogout(AppDatabase *db) {
   (void)db; /* unused */
-  session_active = 0;
-  memset(&current_session, 0, sizeof(Account));
+  sessionActive = 0;
+  memset(&currentSession, 0, sizeof(Account));
   printf("[OK] Da dang xuat\n");
 }
 
-Account *auth_get_session(void) {
-  if (session_active) {
-    return &current_session;
+Account *authGetSession(void) {
+  if (sessionActive) {
+    return &currentSession;
   }
   return NULL;
 }
@@ -116,14 +117,14 @@ Account *auth_get_session(void) {
  * Story 1.6 — Change / Reset Password
  * ============================================================ */
 
-int auth_change_password(AppDatabase *db) {
+int authChangePassword(AppDatabase *db) {
   /* TODO: Implement in later commit */
   (void)db;
   printf("[CANH BAO] Chua cai dat chuc nang doi mat khau\n");
   return -1;
 }
 
-int auth_reset_password(AppDatabase *db, const char *targetStudentId) {
+int authResetPassword(AppDatabase *db, const char *targetStudentId) {
   /* TODO: Implement in later commit */
   (void)db;
   (void)targetStudentId;

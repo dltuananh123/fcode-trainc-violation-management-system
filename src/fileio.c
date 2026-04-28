@@ -12,30 +12,30 @@
 #define TMP_ACCOUNTS "data/accounts.dat.tmp"
 
 /* Handle tmp files on startup to recover from crashes */
-static void recover_from_tmp(const char *tmp_file, const char *dat_file) {
-  FILE *f_tmp = fopen(tmp_file, "rb");
-  if (f_tmp != NULL) {
-    fclose(f_tmp);
-    FILE *f_dat = fopen(dat_file, "rb");
-    if (f_dat == NULL) {
+static void recoverFromTmp(const char *tmpFile, const char *datFile) {
+  FILE *fTmp = fopen(tmpFile, "rb");
+  if (fTmp != NULL) {
+    fclose(fTmp);
+    FILE *fDat = fopen(datFile, "rb");
+    if (fDat == NULL) {
       /* .dat is missing, but .tmp exists! Recover. */
-      rename(tmp_file, dat_file);
+      rename(tmpFile, datFile);
     } else {
       /* Both exist. .dat is valid. Remove .tmp. */
-      fclose(f_dat);
-      remove(tmp_file);
+      fclose(fDat);
+      remove(tmpFile);
     }
   }
 }
 
-static void handle_tmp_files() {
-  recover_from_tmp(TMP_MEMBERS, FILE_MEMBERS);
-  recover_from_tmp(TMP_VIOLATIONS, FILE_VIOLATIONS);
-  recover_from_tmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
+static void handleTmpFiles(void) {
+  recoverFromTmp(TMP_MEMBERS, FILE_MEMBERS);
+  recoverFromTmp(TMP_VIOLATIONS, FILE_VIOLATIONS);
+  recoverFromTmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
 }
 
 /* Save functions */
-int fileio_save_members(AppDatabase *db) {
+int fileioSaveMembers(AppDatabase *db) {
   FILE *fp = fopen(TMP_MEMBERS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu members!\n");
@@ -59,7 +59,7 @@ int fileio_save_members(AppDatabase *db) {
   return 0;
 }
 
-int fileio_save_violations(AppDatabase *db) {
+int fileioSaveViolations(AppDatabase *db) {
   FILE *fp = fopen(TMP_VIOLATIONS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu violations!\n");
@@ -81,7 +81,7 @@ int fileio_save_violations(AppDatabase *db) {
   return 0;
 }
 
-int fileio_save_accounts(AppDatabase *db) {
+int fileioSaveAccounts(AppDatabase *db) {
   FILE *fp = fopen(TMP_ACCOUNTS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu accounts!\n");
@@ -105,13 +105,13 @@ int fileio_save_accounts(AppDatabase *db) {
 }
 
 /* Load & init */
-int fileio_load_all(AppDatabase *db) {
+int fileioLoadAll(AppDatabase *db) {
   db->memberCount = 0;
   db->violationCount = 0;
   db->accountCount = 0;
 
-  /* Handle file crash .tmp before load */
-  handle_tmp_files();
+  /* Handle crash-residue .tmp files before loading */
+  handleTmpFiles();
 
   /* Load accounts */
   FILE *fpAcc = fopen(FILE_ACCOUNTS, "rb");
@@ -134,7 +134,7 @@ int fileio_load_all(AppDatabase *db) {
     db->accounts[0].failCount = 0;
 
     db->accountCount = 1;
-    fileio_save_accounts(db);
+    fileioSaveAccounts(db);
   }
 
   /* Load Member */
@@ -147,7 +147,7 @@ int fileio_load_all(AppDatabase *db) {
     fclose(fpMen);
   } else {
     /*First_run create file empty*/
-    fileio_save_members(db);
+    fileioSaveMembers(db);
   }
 
   /*Load violations*/
@@ -160,7 +160,7 @@ int fileio_load_all(AppDatabase *db) {
     }
     fclose(fpVio);
   } else {
-    fileio_save_violations(db);
+    fileioSaveViolations(db);
   }
   return 0;
 }

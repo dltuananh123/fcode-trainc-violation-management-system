@@ -16,7 +16,7 @@
  * @param db Pointer to the AppDatabase
  * @return 0 on success, -1 on failure
  */
-int member_add(AppDatabase *db);
+int memberAdd(AppDatabase *db);
 
 /**
  * @brief Find a member by their student ID.
@@ -25,7 +25,7 @@ int member_add(AppDatabase *db);
  * @param studentId The student ID to search for
  * @return Index of member in array, or -1 if not found
  */
-int member_find_by_id(AppDatabase *db, const char *studentId);
+int memberFindById(AppDatabase *db, const char *studentId);
 
 /**
  * @brief Validate member input data.
@@ -36,7 +36,7 @@ int member_find_by_id(AppDatabase *db, const char *studentId);
  * @param db Pointer to the AppDatabase (for uniqueness check)
  * @return 0 if valid, -1 if invalid
  */
-int member_validate_input(const Member *m, AppDatabase *db);
+int memberValidateInput(const Member *m, AppDatabase *db);
 
 /* ============================================================
  * Story 2.2 — Edit Member
@@ -50,7 +50,7 @@ int member_validate_input(const Member *m, AppDatabase *db);
  * @param db Pointer to the AppDatabase
  * @return 0 on success, -1 on failure
  */
-int member_edit(AppDatabase *db);
+int memberEdit(AppDatabase *db);
 
 /* ============================================================
  * Story 2.3 — Delete Member
@@ -65,7 +65,7 @@ int member_edit(AppDatabase *db);
  * @param db Pointer to the AppDatabase
  * @return 0 on success, -1 on failure
  */
-int member_delete(AppDatabase *db);
+int memberDelete(AppDatabase *db);
 
 /* ============================================================
  * Story 2.4 — View Member List
@@ -79,7 +79,7 @@ int member_delete(AppDatabase *db);
  *
  * @param db Pointer to the AppDatabase
  */
-void member_view_profile(AppDatabase *db);
+void memberViewProfile(AppDatabase *db);
 
 /**
  * @brief Display list of all members.
@@ -90,6 +90,6 @@ void member_view_profile(AppDatabase *db);
  *
  * @param db Pointer to the AppDatabase
  */
-void member_list_all(AppDatabase *db);
+void memberListAll(AppDatabase *db);
 
 #endif /* MEMBER_H */
