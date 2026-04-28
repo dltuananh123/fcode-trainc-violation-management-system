@@ -11,6 +11,7 @@ Checks: >
   bugprone-*,
   readability-*,
   -readability-identifier-length,
+  -readability-magic-numbers,
 
 CheckOptions:
   - key: readability-identifier-naming.ConstantCase
