@@ -133,10 +133,18 @@ int fileioLoadAll(AppDatabase *db) {
   FILE *fpAcc = fopen(FILE_ACCOUNTS, "rb");
   if (fpAcc != NULL) {
     fread(&(db->accountCount), sizeof(int), 1, fpAcc);
-    if (db->accountCount > 0) {
-      fread(db->accounts, sizeof(Account), (size_t)db->accountCount, fpAcc);
+    if (db->accountCount < 0 || db->accountCount > MAX_MEMBERS) {
+      printf("[LOI] Du lieu accounts.dat bi hong (count=%d). "
+             "Reset ve 0.\n",
+             db->accountCount);
+      db->accountCount = 0;
+      fclose(fpAcc);
+    } else {
+      if (db->accountCount > 0) {
+        fread(db->accounts, sizeof(Account), (size_t)db->accountCount, fpAcc);
+      }
+      fclose(fpAcc);
     }
-    fclose(fpAcc);
   }
   /* First-run init: create default admin account if none exists */
   if (db->accountCount == 0) {
@@ -157,10 +165,18 @@ int fileioLoadAll(AppDatabase *db) {
   FILE *fpMen = fopen(FILE_MEMBERS, "rb");
   if (fpMen != NULL) {
     fread(&(db->memberCount), sizeof(int), 1, fpMen);
-    if (db->memberCount > 0) {
-      fread(db->members, sizeof(Member), (size_t)db->memberCount, fpMen);
+    if (db->memberCount < 0 || db->memberCount > MAX_MEMBERS) {
+      printf("[LOI] Du lieu members.dat bi hong (count=%d). "
+             "Reset ve 0.\n",
+             db->memberCount);
+      db->memberCount = 0;
+      fclose(fpMen);
+    } else {
+      if (db->memberCount > 0) {
+        fread(db->members, sizeof(Member), (size_t)db->memberCount, fpMen);
+      }
+      fclose(fpMen);
     }
-    fclose(fpMen);
   } else {
     /* First-run: create empty members file */
     fileioSaveMembers(db);
@@ -170,11 +186,19 @@ int fileioLoadAll(AppDatabase *db) {
   FILE *fpVio = fopen(FILE_VIOLATIONS, "rb");
   if (fpVio != NULL) {
     fread(&(db->violationCount), sizeof(int), 1, fpVio);
-    if (db->violationCount > 0) {
-      fread(db->violations, sizeof(Violation), (size_t)db->violationCount,
-            fpVio);
+    if (db->violationCount < 0 || db->violationCount > MAX_VIOLATIONS) {
+      printf("[LOI] Du lieu violations.dat bi hong (count=%d). "
+             "Reset ve 0.\n",
+             db->violationCount);
+      db->violationCount = 0;
+      fclose(fpVio);
+    } else {
+      if (db->violationCount > 0) {
+        fread(db->violations, sizeof(Violation), (size_t)db->violationCount,
+              fpVio);
+      }
+      fclose(fpVio);
     }
-    fclose(fpVio);
   } else {
     fileioSaveViolations(db);
   }
