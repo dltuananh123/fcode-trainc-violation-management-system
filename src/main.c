@@ -1,12 +1,12 @@
+#include "auth.h"
+#include "fileio.h"
+#include "member.h"
+#include "types.h"
+#include "utils.h"
+#include "violation.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "types.h"
-#include "fileio.h"
-#include "auth.h"
-#include "member.h"
-#include "violation.h"
-#include "utils.h"
 
 /* Global database state */
 static AppDatabase gDb;
@@ -29,29 +29,31 @@ static void memberMenu(void) {
 
     if (scanf("%d", &choice) != 1) {
       printf("[LOI] Lua chon khong hop le\n");
-      while (getchar() != '\n');
+      while (getchar() != '\n')
+        ;
       continue;
     }
-    while (getchar() != '\n');
+    while (getchar() != '\n')
+      ;
 
     switch (choice) {
-      case 1:
-        memberViewProfile(&gDb);
-        break;
-      case 2:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 3:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 4:
-        memberListAll(&gDb);
-        break;
-      case 0:
-        authLogout(&gDb);
-        break;
-      default:
-        printf("[LOI] Lua chon khong hop le\n");
+    case 1:
+      memberViewProfile(&gDb);
+      break;
+    case 2:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 3:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 4:
+      memberListAll(&gDb);
+      break;
+    case 0:
+      authLogout(&gDb);
+      break;
+    default:
+      printf("[LOI] Lua chon khong hop le\n");
     }
   } while (choice != 0);
 }
@@ -79,56 +81,58 @@ static void adminMenu(void) {
 
     if (scanf("%d", &choice) != 1) {
       printf("[LOI] Lua chon khong hop le\n");
-      while (getchar() != '\n');
+      while (getchar() != '\n')
+        ;
       continue;
     }
-    while (getchar() != '\n');
+    while (getchar() != '\n')
+      ;
 
     switch (choice) {
-      case 1:
-        memberAdd(&gDb);
-        break;
-      case 2:
-        memberEdit(&gDb);
-        break;
-      case 3:
-        memberDelete(&gDb);
-        break;
-      case 4:
-        violationRecord(&gDb);
-        break;
-      case 5:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 6:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 7:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 8:
-        violationCheckAllOutClb(&gDb);
-        break;
-      case 9:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 10:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 11:
-        printf("[CANH BAO] Chua cai dat\n");
-        break;
-      case 12:
-        memberViewProfile(&gDb);
-        break;
-      case 13:
-        memberListAll(&gDb);
-        break;
-      case 0:
-        authLogout(&gDb);
-        break;
-      default:
-        printf("[LOI] Lua chon khong hop le\n");
+    case 1:
+      memberAdd(&gDb);
+      break;
+    case 2:
+      memberEdit(&gDb);
+      break;
+    case 3:
+      memberDelete(&gDb);
+      break;
+    case 4:
+      violationRecord(&gDb);
+      break;
+    case 5:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 6:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 7:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 8:
+      violationCheckAllOutClb(&gDb);
+      break;
+    case 9:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 10:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 11:
+      printf("[CANH BAO] Chua cai dat\n");
+      break;
+    case 12:
+      memberViewProfile(&gDb);
+      break;
+    case 13:
+      memberListAll(&gDb);
+      break;
+    case 0:
+      authLogout(&gDb);
+      break;
+    default:
+      printf("[LOI] Lua chon khong hop le\n");
     }
   } while (choice != 0);
 }
