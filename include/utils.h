@@ -1,14 +1,22 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+/**
+ * @file utils.h
+ * @brief Utility module — Story 1.3.
+ *
+ * Provides shared helpers for input handling, validation,
+ * time/date formatting, and display name mapping.
+ */
+
 #include <stddef.h>
 #include <time.h>
 
 #include "types.h"
 
-/* =========================================
+/* ============================================================
  * INPUT HANDLING HELPERS
- * ========================================= */
+ * ============================================================ */
 
 /**
  * @brief Reads a string from stdin safely, stripping the trailing newline.
@@ -26,9 +34,9 @@ void readString(char *buffer, size_t size);
  */
 int readInt(int *value);
 
-/* =========================================
+/* ============================================================
  * VALIDATION HELPERS
- * ========================================= */
+ * ============================================================ */
 
 /**
  * @brief Checks if an email is valid (contains '@' and '.').
@@ -46,9 +54,9 @@ int isEmailValid(const char *email);
  */
 int isIdValid(const char *id);
 
-/* =========================================
+/* ============================================================
  * TIME & DATE HELPERS
- * ========================================= */
+ * ============================================================ */
 
 /**
  * @brief Formats a time_t value into a readable string (dd/mm/yyyy HH:MM).
@@ -69,9 +77,9 @@ void formatTime(time_t t, char *buffer, size_t bufSize);
  */
 int parseDate(const char *buffer, time_t *t, int isEndOfDay);
 
-/* =========================================
+/* ============================================================
  * DISPLAY NAME MAPPERS
- * ========================================= */
+ * ============================================================ */
 
 /**
  * @brief Returns the Vietnamese display string for a team ID.

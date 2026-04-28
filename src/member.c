@@ -314,13 +314,13 @@ int memberDelete(AppDatabase *db) {
     return 0;
   }
 
-  /* 1. Xoa thanh vien */
+  /* 1. Remove member from array */
   for (int i = memberIndex; i < db->memberCount - 1; i++) {
     db->members[i] = db->members[i + 1];
   }
   db->memberCount--;
 
-  /* 2. Xoa vi pham lien quan */
+  /* 2. Remove related violations */
   int vIndex = 0;
   while (vIndex < db->violationCount) {
     if (strcmp(db->violations[vIndex].studentId, studentId) == 0) {
@@ -333,7 +333,7 @@ int memberDelete(AppDatabase *db) {
     }
   }
 
-  /* 3. Xoa tai khoan lien quan */
+  /* 3. Remove related account */
   int aIndex = 0;
   while (aIndex < db->accountCount) {
     if (strcmp(db->accounts[aIndex].studentId, studentId) == 0) {
@@ -346,7 +346,7 @@ int memberDelete(AppDatabase *db) {
     }
   }
 
-  /* 4. Luu vao file */
+  /* 4. Persist to files */
   if (fileioSaveMembers(db) != 0) {
     printf("[LOI] Khong the luu du lieu thanh vien sau khi xoa\n");
     return -1;
