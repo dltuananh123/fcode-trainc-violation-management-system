@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 /**
  * @file types.h
  * @brief Central data structures and constants for the FCode TrainC Violation
@@ -8,9 +11,6 @@
  * is designed to be the single source of truth for data shapes to prevent
  * circular dependencies between modules.
  */
-
-#ifndef TYPES_H
-#define TYPES_H
 
 #include <time.h>
 
