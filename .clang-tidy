@@ -1,7 +1,12 @@
 ---
+# Check all header files too
 HeaderFilterRegex: '.*'
+
+# Do not check system headers like stdio.h, stdlib.h
 SystemHeaders: false
 
+# Turn off all checks first with -*,
+# then turn on only the groups we want
 Checks: >
   -*,
   llvm-*,
@@ -9,33 +14,48 @@ Checks: >
   misc-*,
   performance-*,
   bugprone-*,
-  readability-*,
-  -readability-identifier-length,
-  -readability-magic-numbers,
-  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  readability-*
 
 CheckOptions:
+  # Constants should use UPPER_CASE
+  # Example: MAX_SIZE, DEFAULT_PORT
   - key: readability-identifier-naming.ConstantCase
     value: UPPER_CASE
+
+  # Macros should use UPPER_CASE
+  # Example: #define MAX_MEMBERS 1000
   - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE
-  - key: readability-identifier-naming.EnumConstantCase
-    value: UPPER_CASE
 
+  # Normal variables should use camelBack (theo requirement)
+  # Example: memberCount, totalFine
   - key: readability-identifier-naming.VariableCase
     value: camelBack
+
+  # Global variables should also use camelBack
   - key: readability-identifier-naming.GlobalVariableCase
     value: camelBack
+
+  # Function names should use camelBack
+  # Example: authLogin, memberAdd
   - key: readability-identifier-naming.FunctionCase
     value: camelBack
+
+  # Global/public function names should also use camelBack
   - key: readability-identifier-naming.GlobalFunctionCase
     value: camelBack
+
+  # Function parameters should use camelBack
+  # Example: studentId, memberIndex
   - key: readability-identifier-naming.ParameterCase
     value: camelBack
 
+  # Struct names should use CamelCase (PascalCase)
+  # Example: Member, Violation, AppDatabase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
-  - key: readability-identifier-naming.TypedefCase
-    value: CamelCase
+
+  # Public members / struct fields should use camelBack (theo requirement)
+  # Example: memberCount, totalFine
   - key: readability-identifier-naming.PublicMemberCase
     value: camelBack

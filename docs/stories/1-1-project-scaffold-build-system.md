@@ -14,8 +14,8 @@ so that the team can start implementing features immediately with consistent bui
 
 1. **Given** the project repository is initialized  
    **When** a developer runs `make`  
-   **Then** the project compiles successfully with zero warnings using `gcc -std=c17 -Wall -Wextra`  
-   **And** the executable is placed in `bin/fcode-trainc`
+   **Then** the project compiles successfully with zero warnings using `gcc -std=c17 -Wall -Wextra`
+   **And** the executable is placed in `bin/violation-management-system`
 2. **Given** the project structure exists  
    **When** a developer runs `make clean`  
    **Then** the `build/` and `bin/` directories are removed
@@ -34,7 +34,7 @@ so that the team can start implementing features immediately with consistent bui
   - [x] Ensure `build/` and `bin/` are treated as generated output, not permanent source folders
 - [x] Create the initial Makefile (AC: 1, 2, 3)
   - [x] Add `make tidy`
-  - [x] Set target output to `bin/fcode-trainc`
+  - [x] Set target output to `bin/violation-management-system`
   - [x] Compile all `src/*.c` into `build/*.o`
   - [x] Use `-std=c17` as the language standard
   - [x] Use `-Wall -Wextra` at minimum
@@ -70,7 +70,7 @@ so that the team can start implementing features immediately with consistent bui
 - Compiler baseline: `gcc`
 - Language standard: `-std=c17`
 - Minimum warnings required by story: `-Wall -Wextra`
-- Preferred target name: `bin/fcode-trainc`
+- Preferred target name: `bin/violation-management-system`
 - Generated object files belong under `build/`
 - `make format` should target `src/*.c` and `include/*.h`
 - `make tidy` should run `clang-tidy src/*.c -- -std=c17 -Iinclude`
@@ -104,7 +104,7 @@ so that the team can start implementing features immediately with consistent bui
 ### Testing Requirements
 
 - Manual verification is enough for this story:
-  - `make` produces `bin/fcode-trainc`
+  - `make` produces `bin/violation-management-system`
   - `make clean` removes generated build output
   - `make format` runs against project source/header globs without failing
   - `make tidy` runs against current project source with C17 include settings
@@ -139,6 +139,7 @@ gpt-5
 ### Completion Notes List
 
 - Project scaffold completed with `Makefile`, `src/main.c`, `include/`, `data/`, generated `build/` and `bin/`
+- Target executable renamed to `violation-management-system` to match project domain
 - Verified equivalent Windows workflow with `mingw32-make`, `mingw32-make clean`, `mingw32-make format`, and `mingw32-make tidy`
 - `src/main.c` remains intentionally minimal so the scaffold builds cleanly and is ready for Story 1.2
 
