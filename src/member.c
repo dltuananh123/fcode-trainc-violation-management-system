@@ -1,6 +1,7 @@
 #include "member.h"
-#include "fileio.h"
 #include "auth.h"
+#include "fileio.h"
+#include "utils.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -368,7 +369,8 @@ int member_delete(AppDatabase *db) {
  * ============================================================ */
 
 void member_view_profile(AppDatabase *db) {
-  if (db == NULL) return;
+  if (db == NULL)
+    return;
 
   Account *session = auth_get_session();
   if (session == NULL) {
@@ -414,14 +416,12 @@ void member_list_all(AppDatabase *db) {
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    printf("| %-4s | %-16s | %-10s | %-9s |\n",
-           m->studentId,
-           m->fullName,
-           team_name(m->team),
-           member_role_name(m->role));
+    printf("| %-4s | %-16s | %-10s | %-9s |\n", m->studentId, m->fullName,
+           team_name(m->team), member_role_name(m->role));
 
     if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
-      printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de thoat]: ");
+      printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de "
+             "thoat]: ");
       char buf[10];
       read_string(buf, sizeof(buf));
       if (buf[0] == 'q' || buf[0] == 'Q') {
