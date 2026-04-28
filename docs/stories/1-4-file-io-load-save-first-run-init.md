@@ -1,6 +1,6 @@
 # Story 1.4: File I/O - Load/Save with First-Run Init
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -24,18 +24,18 @@ so that data is saved to binary `.dat` files on every mutation and loaded on sta
 
 ## Tasks / Subtasks
 
-- [ ] Create `include/fileio.h` and `src/fileio.c`
-- [ ] Implement startup load entrypoint (AC: 1, 2)
-  - [ ] create missing `.dat` files
-  - [ ] create first-run admin account if `accounts.dat` is empty
-  - [ ] clean up crash-residue `.tmp` files on startup
-  - [ ] load all data into `AppDatabase`
-- [ ] Implement save functions for each store (AC: 3)
-  - [ ] `members.dat`
-  - [ ] `violations.dat`
-  - [ ] `accounts.dat`
-- [ ] Apply atomic-write temp-file flow from architecture (AC: 3)
-- [ ] Handle corruption and startup edge cases
+- [x] Create `include/fileio.h` and `src/fileio.c`
+- [x] Implement startup load entrypoint (AC: 1, 2)
+  - [x] create missing `.dat` files
+  - [x] create first-run admin account if `accounts.dat` is empty
+  - [x] clean up crash-residue `.tmp` files on startup
+  - [x] load all data into `AppDatabase`
+- [x] Implement save functions for each store (AC: 3)
+  - [x] `members.dat`
+  - [x] `violations.dat`
+  - [x] `accounts.dat`
+- [x] Apply atomic-write temp-file flow from architecture (AC: 3)
+- [x] Handle corruption and startup edge cases
 
 ## Dev Notes
 
@@ -62,8 +62,13 @@ gpt-5
 
 ### Completion Notes List
 
-- Story prepared with persistence and startup guardrails
+- File persistence is centralized in `fileio` with dedicated save functions for members, violations, and accounts
+- Startup load handles missing `.dat` files, crash-residue `.tmp` recovery, and first-run `ADMIN/ADMIN` initialization
+- Load/save paths now fail clearly on invalid counts, short reads, or temp-file write/close failures
+- Account persistence is routed through `fileio` instead of ad-hoc writes in feature modules
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-4-file-io-load-save-first-run-init.md`
+- `include/fileio.h`
+- `src/fileio.c`

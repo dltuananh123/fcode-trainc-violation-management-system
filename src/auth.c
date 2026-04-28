@@ -1,4 +1,5 @@
 #include "auth.h"
+#include "fileio.h"
 #include "types.h"
 #include <stdio.h>
 #include <string.h>
@@ -75,15 +76,14 @@ int authLogin(AppDatabase *db) {
     if (acc->failCount >= 3) {
       acc->isLocked = 1;
       printf("[CANH BAO] Tai khoan da bi khoa sau 3 lan dang nhap sai\n");
-      /* Save to persist lock state */
-      FILE *fp = fopen("data/accounts.dat.tmp", "wb");
-      if (fp != NULL) {
-        fwrite(&db->accountCount, sizeof(int), 1, fp);
-        fwrite(db->accounts, sizeof(Account), (size_t)db->accountCount, fp);
-        fclose(fp);
-        remove("data/accounts.dat");
-        rename("data/accounts.dat.tmp", "data/accounts.dat");
+      if (fileioSaveAccounts(db) != 0) {
+        printf("[LOI] Khong the luu trang thai khoa tai khoan\n");
       }
+      return -1;
+    }
+
+    if (fileioSaveAccounts(db) != 0) {
+      printf("[LOI] Khong the luu so lan dang nhap sai\n");
       return -1;
     }
 
@@ -93,6 +93,10 @@ int authLogin(AppDatabase *db) {
 
   /* Login successful */
   acc->failCount = 0;
+  if (fileioSaveAccounts(db) != 0) {
+    printf("[LOI] Khong the cap nhat trang thai tai khoan sau dang nhap\n");
+    return -1;
+  }
   currentSession = *acc;
   sessionActive = 1;
 
