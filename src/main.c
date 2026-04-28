@@ -2,7 +2,6 @@
 #include "fileio.h"
 #include "member.h"
 #include "types.h"
-#include "utils.h"
 #include "violation.h"
 #include <stdio.h>
 #include <stdlib.h>
