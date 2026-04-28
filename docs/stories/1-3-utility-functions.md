@@ -1,6 +1,6 @@
 # Story 1.3: Utility Functions
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -13,10 +13,10 @@ so that all modules can reuse input validation, time formatting, and display nam
 1. **Given** `include/utils.h` and `src/utils.c` are created  
    **When** modules call `is_email_valid(email)`  
    **Then** it returns `1` if email contains `@` and `.`, otherwise `0`
-2. **Given** `format_time(time_t)` is called  
+2. **Given** `format_time(time_t, buffer, size)` is called  
    **When** a `time_t` value is passed  
-   **Then** it returns a formatted string `dd/mm/yyyy HH:MM`
-3. **Given** `parse_date(buffer, &time_t)` is called  
+   **Then** it writes a formatted string `dd/mm/yyyy HH:MM` into the caller buffer
+3. **Given** `parse_date(buffer, &time_t, is_end_of_day)` is called  
    **When** user inputs `15/04/2026`  
    **Then** it converts to `time_t` using `sscanf + struct tm + mktime` with proper day normalization
 4. **Given** display-name helpers are called  
@@ -25,19 +25,19 @@ so that all modules can reuse input validation, time formatting, and display nam
 
 ## Tasks / Subtasks
 
-- [ ] Create `include/utils.h` and `src/utils.c` (AC: 1, 2, 3, 4)
-- [ ] Implement input validation helpers (AC: 1)
-  - [ ] `is_email_valid`
-  - [ ] any safe input helper needed by later modules
-- [ ] Implement time/date helpers (AC: 2, 3)
-  - [ ] `format_time`
-  - [ ] `parse_date`
-- [ ] Implement display-name mapping helpers (AC: 4)
-  - [ ] `team_name`
-  - [ ] `member_role_name`
-  - [ ] `account_role_name`
-  - [ ] `reason_name`
-- [ ] Keep helpers reusable and free of business workflow side effects
+- [x] Create `include/utils.h` and `src/utils.c` (AC: 1, 2, 3, 4)
+- [x] Implement input validation helpers (AC: 1)
+  - [x] `is_email_valid`
+  - [x] safe input helpers needed by later modules
+- [x] Implement time/date helpers (AC: 2, 3)
+  - [x] `format_time`
+  - [x] `parse_date`
+- [x] Implement display-name mapping helpers (AC: 4)
+  - [x] `team_name`
+  - [x] `member_role_name`
+  - [x] `account_role_name`
+  - [x] `reason_name`
+- [x] Keep helpers reusable and free of business workflow side effects
 
 ## Dev Notes
 
@@ -63,9 +63,13 @@ gpt-5
 
 ### Completion Notes List
 
-- Story prepared for implementation with shared helper scope only
+- Utility helpers are implemented in `include/utils.h` and `src/utils.c`
+- Public utility function names follow snake_case to match architecture naming rules
+- Member and violation modules already reuse the shared helpers for input, validation, formatting, and display mapping
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-3-utility-functions.md`
+- `include/utils.h`
+- `src/utils.c`
 

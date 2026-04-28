@@ -36,14 +36,14 @@ CheckOptions:
   - key: readability-identifier-naming.GlobalVariableCase
     value: camelBack
 
-  # Function names should use camelBack
-  # Example: authLogin, memberAdd
+  # Function names should use snake_case
+  # Example: auth_login, member_add
   - key: readability-identifier-naming.FunctionCase
-    value: camelBack
+    value: lower_case
 
-  # Global/public function names should also use camelBack
+  # Global/public function names should also use snake_case
   - key: readability-identifier-naming.GlobalFunctionCase
-    value: camelBack
+    value: lower_case
 
   # Function parameters should use camelBack
   # Example: studentId, memberIndex
@@ -55,7 +55,11 @@ CheckOptions:
   - key: readability-identifier-naming.StructCase
     value: CamelCase
 
-  # Public members / struct fields should use camelBack (theo requirement)
+  # Struct fields should use camelBack (theo requirement)
   # Example: memberCount, totalFine
+  - key: readability-identifier-naming.StructMemberCase
+    value: camelBack
+
+  # Public members should also use camelBack
   - key: readability-identifier-naming.PublicMemberCase
     value: camelBack

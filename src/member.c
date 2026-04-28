@@ -30,7 +30,7 @@ int memberValidateInput(const Member *m, AppDatabase *db) {
   }
 
   /* Check studentId is valid and not empty */
-  if (!isIdValid(m->studentId)) {
+  if (!is_id_valid(m->studentId)) {
     printf("[LOI] MSSV khong hop le\n");
     return -1;
   }
@@ -42,7 +42,7 @@ int memberValidateInput(const Member *m, AppDatabase *db) {
   }
 
   /* Check email format */
-  if (!isEmailValid(m->email)) {
+  if (!is_email_valid(m->email)) {
     printf("[LOI] Email khong hop le\n");
     return -1;
   }
@@ -68,21 +68,21 @@ int memberAdd(AppDatabase *db) {
 
   /* Input member details */
   printf("Nhap MSSV: ");
-  readString(newMember.studentId, MAX_MSSV_LEN);
+  read_string(newMember.studentId, MAX_MSSV_LEN);
 
   printf("Nhap ho va ten: ");
-  readString(newMember.fullName, MAX_NAME_LEN);
+  read_string(newMember.fullName, MAX_NAME_LEN);
 
   printf("Nhap email: ");
-  readString(newMember.email, MAX_EMAIL_LEN);
+  read_string(newMember.email, MAX_EMAIL_LEN);
 
   printf("Nhap so dien thoai: ");
-  readString(newMember.phone, MAX_PHONE_LEN);
+  read_string(newMember.phone, MAX_PHONE_LEN);
 
   /* Select team */
   printf("Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong): ");
   int team;
-  if (readInt(&team) != 1) {
+  if (read_int(&team) != 1) {
     printf("[LOI] Lua chon ban khong hop le\n");
     return -1;
   }
@@ -96,7 +96,7 @@ int memberAdd(AppDatabase *db) {
   printf(
       "Chon chuc vu (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem): ");
   int role;
-  if (readInt(&role) != 1) {
+  if (read_int(&role) != 1) {
     printf("[LOI] Lua chon chuc vu khong hop le\n");
     return -1;
   }
@@ -152,8 +152,8 @@ int memberAdd(AppDatabase *db) {
   printf("[OK] Them thanh vien thanh cong\n");
   printf("  MSSV: %s\n", newMember.studentId);
   printf("  Ten: %s\n", newMember.fullName);
-  printf("  Ban: %s\n", teamName(newMember.team));
-  printf("  Chuc vu: %s\n", memberRoleName(newMember.role));
+  printf("  Ban: %s\n", team_name(newMember.team));
+  printf("  Chuc vu: %s\n", member_role_name(newMember.role));
   printf("  Tai khoan da duoc tao voi mat khau mac dinh: %s\n",
          newMember.studentId);
 
@@ -168,7 +168,7 @@ int memberAdd(AppDatabase *db) {
 static void editName(Member *m) {
   char buffer[MAX_NAME_LEN];
   printf("Ho va ten moi: ");
-  readString(buffer, MAX_NAME_LEN);
+  read_string(buffer, MAX_NAME_LEN);
   if (strlen(buffer) > 0) {
     strncpy(m->fullName, buffer, MAX_NAME_LEN - 1);
     m->fullName[MAX_NAME_LEN - 1] = '\0';
@@ -179,11 +179,11 @@ static void editName(Member *m) {
 static void editEmail(Member *m) {
   char buffer[MAX_EMAIL_LEN];
   printf("Email moi: ");
-  readString(buffer, MAX_EMAIL_LEN);
+  read_string(buffer, MAX_EMAIL_LEN);
   if (strlen(buffer) == 0) {
     return;
   }
-  if (!isEmailValid(buffer)) {
+  if (!is_email_valid(buffer)) {
     printf("[LOI] Email khong hop le, giu nguyen email cu\n");
     return;
   }
@@ -195,7 +195,7 @@ static void editEmail(Member *m) {
 static void editPhone(Member *m) {
   char buffer[MAX_PHONE_LEN];
   printf("So dien thoai moi: ");
-  readString(buffer, MAX_PHONE_LEN);
+  read_string(buffer, MAX_PHONE_LEN);
   if (strlen(buffer) > 0) {
     strncpy(m->phone, buffer, MAX_PHONE_LEN - 1);
     m->phone[MAX_PHONE_LEN - 1] = '\0';
@@ -207,7 +207,7 @@ static void editTeam(Member *m) {
   printf("Ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong) [-1 de "
          "giu nguyen]: ");
   int newTeam;
-  if (!readInt(&newTeam) || newTeam == -1) {
+  if (!read_int(&newTeam) || newTeam == -1) {
     return;
   }
   if (newTeam >= TEAM_ACADEMIC && newTeam <= TEAM_MEDIA) {
@@ -222,7 +222,7 @@ static int editRole(Member *m) {
   printf("Chuc vu moi (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem) "
          "[-1 de giu nguyen]: ");
   int newRole;
-  if (!readInt(&newRole) || newRole == -1) {
+  if (!read_int(&newRole) || newRole == -1) {
     return 0;
   }
   if (newRole < MEMBER_ROLE_MEMBER || newRole > MEMBER_ROLE_BCN) {
@@ -240,7 +240,7 @@ static int editRole(Member *m) {
 static void editStatus(Member *m) {
   printf("Trang thai (1-Hoat dong, 0-Da Out CLB) [-1 de giu nguyen]: ");
   int newStatus;
-  if (!readInt(&newStatus) || newStatus == -1) {
+  if (!read_int(&newStatus) || newStatus == -1) {
     return;
   }
   if (newStatus == STATUS_ACTIVE || newStatus == STATUS_OUT_CLB) {
@@ -281,8 +281,8 @@ static void displayMemberInfo(const Member *m) {
   printf("  Ho va ten: %s\n", m->fullName);
   printf("  Email: %s\n", m->email);
   printf("  So dien thoai: %s\n", m->phone);
-  printf("  Ban: %s\n", teamName(m->team));
-  printf("  Chuc vu: %s\n", memberRoleName(m->role));
+  printf("  Ban: %s\n", team_name(m->team));
+  printf("  Chuc vu: %s\n", member_role_name(m->role));
   printf("  Trang thai: %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
 }
 
@@ -294,7 +294,7 @@ int memberEdit(AppDatabase *db) {
   char studentId[MAX_MSSV_LEN];
   printf("\nSUA THONG TIN THANH VIEN\n");
   printf("Nhap MSSV can sua: ");
-  readString(studentId, MAX_MSSV_LEN);
+  read_string(studentId, MAX_MSSV_LEN);
 
   int memberIndex = memberFindById(db, studentId);
   if (memberIndex == -1) {
@@ -340,7 +340,7 @@ int memberDelete(AppDatabase *db) {
   char studentId[MAX_MSSV_LEN];
   printf("\nXOA THANH VIEN\n");
   printf("Nhap MSSV can xoa: ");
-  readString(studentId, MAX_MSSV_LEN);
+  read_string(studentId, MAX_MSSV_LEN);
 
   int memberIndex = memberFindById(db, studentId);
   if (memberIndex == -1) {
@@ -351,13 +351,13 @@ int memberDelete(AppDatabase *db) {
   Member *m = &db->members[memberIndex];
   printf("\nTHONG TIN THANH VIEN:\n");
   printf("  Ho va ten: %s\n", m->fullName);
-  printf("  Ban: %s\n", teamName(m->team));
-  printf("  Chuc vu: %s\n", memberRoleName(m->role));
+  printf("  Ban: %s\n", team_name(m->team));
+  printf("  Chuc vu: %s\n", member_role_name(m->role));
 
   printf("\nXac nhan xoa thanh vien nay va toan bo du lieu lien quan? (1: "
          "Co, 0: Khong): ");
   int confirm;
-  if (readInt(&confirm) != 1 || confirm != 1) {
+  if (read_int(&confirm) != 1 || confirm != 1) {
     printf("[THONG BAO] Da huy xoa thanh vien.\n");
     return 0;
   }
@@ -441,8 +441,8 @@ void memberViewProfile(AppDatabase *db) {
   printf("Ho va ten      : %s\n", m->fullName);
   printf("Email          : %s\n", m->email);
   printf("So dien thoai  : %s\n", m->phone);
-  printf("Ban            : %s\n", teamName(m->team));
-  printf("Chuc vu        : %s\n", memberRoleName(m->role));
+  printf("Ban            : %s\n", team_name(m->team));
+  printf("Chuc vu        : %s\n", member_role_name(m->role));
   printf("Trang thai     : %s\n", m->isActive ? "Active" : "Out CLB");
   printf("So lan vi pham : %d\n", m->violationCount);
   printf("Tong tien phat : %.0f VND\n", m->totalFine);
@@ -467,13 +467,13 @@ void memberListAll(AppDatabase *db) {
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
     printf("| %-4s | %-16s | %-10s | %-9s |\n", m->studentId, m->fullName,
-           teamName(m->team), memberRoleName(m->role));
+           team_name(m->team), member_role_name(m->role));
 
     if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
       printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de "
              "thoat]: ");
       char buf[10];
-      readString(buf, sizeof(buf));
+      read_string(buf, sizeof(buf));
       if (buf[0] == 'q' || buf[0] == 'Q') {
         break;
       }

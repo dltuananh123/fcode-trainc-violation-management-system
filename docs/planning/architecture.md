@@ -368,7 +368,7 @@ These are separate fields serving different purposes.
 ### Naming Patterns
 
 **Functions:**
-- Format: `moduleName_actionNoun` — lowercase + underscore
+- Format: `module_action_noun` — lowercase + underscore (snake_case)
 - Examples: `member_add()`, `member_find_by_id()`, `auth_login()`, `violation_record()`, `fileio_save_members()`
 - Boolean-returning functions: prefix `is_` or `has_` — `is_email_valid()`, `auth_is_locked()`
 
