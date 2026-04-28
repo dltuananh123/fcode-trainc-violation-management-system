@@ -150,6 +150,7 @@ docs(readme): add build instructions
 | Public API docs | Doxygen `/** @brief ... */` required for all functions in `.h` files |
 | File-level docs | Each `.h` must have `@file` and `@brief` describing the module |
 | Inline comments | Only where logic is complex or non-obvious |
+| Comment syntax | **Block comments only** (`/* */`). Do not use `//` — ensures strict C17 compatibility across all compilers. |
 
 ### Include Order
 
