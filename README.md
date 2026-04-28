@@ -30,7 +30,6 @@ Currently, the repository is in the initial scaffold phase: basic `Makefile`, di
 - Business Requirements: [`docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md`](docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md)
 - Architecture and Module Design: [`docs/planning/architecture.md`](docs/planning/architecture.md)
 - Story List: [`docs/stories/`](docs/stories/)
-- Additional Guidelines: [`docs/guidelines/`](docs/guidelines/)
 
 ## Architectural Overview
 
