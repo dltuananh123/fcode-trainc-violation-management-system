@@ -3,10 +3,10 @@
 
 #include <types.h>
 
-int fileio_load_all(AppDatabase *db);
+int fileioLoadAll(AppDatabase *db);
 
-int fileio_save_members(AppDatabase *db);
-int fileio_save_violations(AppDatabase *db);
-int fileio_save_accounts(AppDatabase *db);
+int fileioSaveMembers(AppDatabase *db);
+int fileioSaveViolations(AppDatabase *db);
+int fileioSaveAccounts(AppDatabase *db);
 
 #endif // FILEIO_H

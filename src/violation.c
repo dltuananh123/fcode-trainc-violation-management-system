@@ -16,8 +16,8 @@
  * Member (role 0) = 20,000 VND
  * Leader/Vice (role 1) or BCN (role 2) = 50,000 VND
  */
-static double calculate_fine(int member_role) {
-  if (member_role == MEMBER_ROLE_MEMBER) {
+static double calculateFine(int memberRole) {
+  if (memberRole == MEMBER_ROLE_MEMBER) {
     return 20000.0;
   }
   /* Leader/Vice or BCN */
@@ -30,7 +30,7 @@ static double calculate_fine(int member_role) {
  * @param reason Pointer to store the selected reason.
  * @return 0 on valid selection, -1 on invalid input.
  */
-static int select_violation_reason(int *reason) {
+static int selectViolationReason(int *reason) {
   printf("\nChon ly do vi pham:\n");
   printf("  0. Khong mac ao CLB\n");
   printf("  1. Vang hop\n");
@@ -38,7 +38,7 @@ static int select_violation_reason(int *reason) {
   printf("  3. Bao luc\n");
   printf("Nhap lua chon: ");
 
-  if (read_int(reason) != 1) {
+  if (readInt(reason) != 1) {
     printf("[LOI] Lua chon khong hop le\n");
     return -1;
   }
@@ -54,14 +54,14 @@ static int select_violation_reason(int *reason) {
 /**
  * @brief Ask BCN to confirm an Out CLB action.
  *
- * @param member_name The member's full name for display.
+ * @param memberName The member's full name for display.
  * @return 1 if confirmed, 0 if cancelled.
  */
-static int confirm_out_clb(const char *member_name) {
+static int confirmOutClb(const char *memberName) {
   char confirm[4];
   printf("[XAC NHAN] Ban co chac chan muon Out CLB thanh vien %s? (y/n): ",
-         member_name);
-  read_string(confirm, sizeof(confirm));
+         memberName);
+  readString(confirm, sizeof(confirm));
 
   if (confirm[0] == 'y' || confirm[0] == 'Y') {
     return 1;
@@ -80,8 +80,8 @@ static int confirm_out_clb(const char *member_name) {
  * @param member  Pointer to the offending Member
  * @param v       Pointer to the Violation being recorded
  */
-static void handle_violence(AppDatabase *db, Member *member, Violation *v) {
-  (void)db; /* save happens in violation_record() after return */
+static void handleViolence(AppDatabase *db, Member *member, Violation *v) {
+  (void)db; /* save happens in violationRecord() after return */
   v->fine = 0.0;
   v->penalty = PENALTY_OUT_CLB;
 
@@ -89,7 +89,7 @@ static void handle_violence(AppDatabase *db, Member *member, Violation *v) {
   printf("  Thanh vien: %s (%s)\n", member->fullName, member->studentId);
   printf("  Hinh thuc xu ly: OUT CLB (khong phat tien)\n");
 
-  if (confirm_out_clb(member->fullName)) {
+  if (confirmOutClb(member->fullName)) {
     member->isActive = STATUS_OUT_CLB;
     member->consecutiveAbsences = 0;
     printf("[OK] Thanh vien %s da bi Out CLB do bao luc\n", member->fullName);
@@ -107,8 +107,8 @@ static void handle_violence(AppDatabase *db, Member *member, Violation *v) {
  * @param member  Pointer to the absent Member
  * @param v       Pointer to the Violation being recorded
  */
-static void handle_absent(AppDatabase *db, Member *member, Violation *v) {
-  v->fine = calculate_fine(member->role);
+static void handleAbsent(AppDatabase *db, Member *member, Violation *v) {
+  v->fine = calculateFine(member->role);
   v->penalty = PENALTY_FINE;
 
   member->consecutiveAbsences++;
@@ -117,14 +117,14 @@ static void handle_absent(AppDatabase *db, Member *member, Violation *v) {
          member->consecutiveAbsences);
 
   /* Check Out CLB threshold (Story 3.2) */
-  violation_check_out_threshold(db, member);
+  violationCheckOutThreshold(db, member);
 }
 
 /* ============================================================
  * Story 3.1 — Record Violation
  * ============================================================ */
 
-int violation_record(AppDatabase *db) {
+int violationRecord(AppDatabase *db) {
   if (db == NULL) return -1;
 
   /* Check violation capacity */
@@ -136,17 +136,17 @@ int violation_record(AppDatabase *db) {
   printf("\nGHI NHAN VI PHAM\n");
 
   /* Step 1: Find member by MSSV */
-  char student_id[MAX_MSSV_LEN];
+  char studentId[MAX_MSSV_LEN];
   printf("Nhap MSSV thanh vien: ");
-  read_string(student_id, MAX_MSSV_LEN);
+  readString(studentId, MAX_MSSV_LEN);
 
-  int member_idx = member_find_by_id(db, student_id);
-  if (member_idx == -1) {
-    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", student_id);
+  int memberIdx = memberFindById(db, studentId);
+  if (memberIdx == -1) {
+    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", studentId);
     return -1;
   }
 
-  Member *member = &db->members[member_idx];
+  Member *member = &db->members[memberIdx];
 
   /* Check if member is still active */
   if (member->isActive != STATUS_ACTIVE) {
@@ -157,83 +157,83 @@ int violation_record(AppDatabase *db) {
 
   /* Display member info */
   printf("  Thanh vien: %s\n", member->fullName);
-  printf("  Ban: %s\n", team_name(member->team));
-  printf("  Chuc vu: %s\n", member_role_name(member->role));
+  printf("  Ban: %s\n", teamName(member->team));
+  printf("  Chuc vu: %s\n", memberRoleName(member->role));
 
   /* Step 2: Select violation reason */
   int reason;
-  if (select_violation_reason(&reason) != 0) {
+  if (selectViolationReason(&reason) != 0) {
     return -1;
   }
 
   /* Step 3: Create violation record */
-  Violation new_violation;
-  memset(&new_violation, 0, sizeof(Violation));
+  Violation newViolation;
+  memset(&newViolation, 0, sizeof(Violation));
 
-  strncpy(new_violation.studentId, student_id, MAX_MSSV_LEN - 1);
-  new_violation.reason = reason;
-  new_violation.violationTime = time(NULL);
-  new_violation.isPaid = 0;
+  strncpy(newViolation.studentId, studentId, MAX_MSSV_LEN - 1);
+  newViolation.reason = reason;
+  newViolation.violationTime = time(NULL);
+  newViolation.isPaid = 0;
 
   /* Step 4: Handle by reason type */
   switch (reason) {
     case REASON_VIOLENCE:
-      handle_violence(db, member, &new_violation);
+      handleViolence(db, member, &newViolation);
       break;
 
     case REASON_ABSENT:
-      handle_absent(db, member, &new_violation);
+      handleAbsent(db, member, &newViolation);
       break;
 
     case REASON_NO_JACKET:
     case REASON_NO_ACTIVITY:
     default:
       /* Non-absent, non-violence: calculate fine, reset absence streak */
-      new_violation.fine = calculate_fine(member->role);
-      new_violation.penalty = PENALTY_FINE;
+      newViolation.fine = calculateFine(member->role);
+      newViolation.penalty = PENALTY_FINE;
       member->consecutiveAbsences = 0;
       break;
   }
 
   /* Step 5: Optional note */
   printf("Ghi chu (Enter de bo qua): ");
-  read_string(new_violation.note, MAX_NOTE_LEN);
+  readString(newViolation.note, MAX_NOTE_LEN);
 
   /* Step 6: Add violation to database */
-  db->violations[db->violationCount++] = new_violation;
+  db->violations[db->violationCount++] = newViolation;
 
   /* Step 7: Update member stats */
   member->violationCount++;
-  member->totalFine += new_violation.fine;
+  member->totalFine += newViolation.fine;
 
   /* Step 8: Persist to files */
-  if (fileio_save_violations(db) != 0) {
+  if (fileioSaveViolations(db) != 0) {
     printf("[LOI] Khong the luu du lieu vi pham\n");
     /* Rollback in-memory changes */
     db->violationCount--;
     member->violationCount--;
-    member->totalFine -= new_violation.fine;
+    member->totalFine -= newViolation.fine;
     return -1;
   }
 
-  if (fileio_save_members(db) != 0) {
+  if (fileioSaveMembers(db) != 0) {
     printf("[LOI] Khong the luu du lieu thanh vien\n");
     return -1;
   }
 
   /* Step 9: Display confirmation */
-  char time_buf[20];
-  format_time(new_violation.violationTime, time_buf, sizeof(time_buf));
+  char timeBuf[20];
+  formatTime(newViolation.violationTime, timeBuf, sizeof(timeBuf));
 
   printf("\n[OK] Ghi nhan vi pham thanh cong\n");
   printf("  Thanh vien: %s (%s)\n", member->fullName, member->studentId);
-  printf("  Ly do: %s\n", reason_name(new_violation.reason));
-  printf("  Thoi gian: %s\n", time_buf);
+  printf("  Ly do: %s\n", reasonName(newViolation.reason));
+  printf("  Thoi gian: %s\n", timeBuf);
 
-  if (new_violation.penalty == PENALTY_OUT_CLB) {
+  if (newViolation.penalty == PENALTY_OUT_CLB) {
     printf("  Xu ly: OUT CLB\n");
   } else {
-    printf("  Tien phat: %.0f VND\n", new_violation.fine);
+    printf("  Tien phat: %.0f VND\n", newViolation.fine);
   }
 
   return 0;
@@ -243,7 +243,7 @@ int violation_record(AppDatabase *db) {
  * Story 3.2 — Out CLB Warning & Enforcement
  * ============================================================ */
 
-int violation_check_out_threshold(AppDatabase *db, Member *member) {
+int violationCheckOutThreshold(AppDatabase *db, Member *member) {
   if (db == NULL || member == NULL) return -1;
 
   if (member->consecutiveAbsences == 3) {
@@ -261,9 +261,9 @@ int violation_check_out_threshold(AppDatabase *db, Member *member) {
            member->fullName);
     printf("  So buoi vang lien tiep: %d\n", member->consecutiveAbsences);
 
-    if (confirm_out_clb(member->fullName)) {
+    if (confirmOutClb(member->fullName)) {
       member->isActive = STATUS_OUT_CLB;
-      fileio_save_members(db);
+      fileioSaveMembers(db);
       printf("[OK] Thanh vien %s da bi Out CLB\n", member->fullName);
       return 1;
     }
@@ -272,7 +272,7 @@ int violation_check_out_threshold(AppDatabase *db, Member *member) {
   return 0;
 }
 
-void violation_check_all_out_clb(AppDatabase *db) {
+void violationCheckAllOutClb(AppDatabase *db) {
   if (db == NULL) return;
 
   printf("\nKIEM TRA NGUONG OUT CLB\n");

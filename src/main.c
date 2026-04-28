@@ -9,14 +9,14 @@
 #include "utils.h"
 
 /* Global database state */
-static AppDatabase g_db;
+static AppDatabase gDb;
 
 /* ============================================================
  * MENU FUNCTIONS
  * ============================================================ */
 
 /* Member menu (for regular members and leaders) */
-static void member_menu(void) {
+static void memberMenu(void) {
   int choice;
   do {
     printf("\nMENU THANH VIEN\n");
@@ -36,7 +36,7 @@ static void member_menu(void) {
 
     switch (choice) {
       case 1:
-        member_view_profile(&g_db);
+        memberViewProfile(&gDb);
         break;
       case 2:
         printf("[CANH BAO] Chua cai dat\n");
@@ -45,10 +45,10 @@ static void member_menu(void) {
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 4:
-        member_list_all(&g_db);
+        memberListAll(&gDb);
         break;
       case 0:
-        auth_logout(&g_db);
+        authLogout(&gDb);
         break;
       default:
         printf("[LOI] Lua chon khong hop le\n");
@@ -57,7 +57,7 @@ static void member_menu(void) {
 }
 
 /* BCN menu (for admins) */
-static void admin_menu(void) {
+static void adminMenu(void) {
   int choice;
   do {
     printf("\nMENU BAN CHU NHIEM\n");
@@ -86,16 +86,16 @@ static void admin_menu(void) {
 
     switch (choice) {
       case 1:
-        member_add(&g_db);
+        memberAdd(&gDb);
         break;
       case 2:
-        member_edit(&g_db);
+        memberEdit(&gDb);
         break;
       case 3:
-        member_delete(&g_db);
+        memberDelete(&gDb);
         break;
       case 4:
-        violation_record(&g_db);
+        violationRecord(&gDb);
         break;
       case 5:
         printf("[CANH BAO] Chua cai dat\n");
@@ -107,7 +107,7 @@ static void admin_menu(void) {
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 8:
-        violation_check_all_out_clb(&g_db);
+        violationCheckAllOutClb(&gDb);
         break;
       case 9:
         printf("[CANH BAO] Chua cai dat\n");
@@ -119,13 +119,13 @@ static void admin_menu(void) {
         printf("[CANH BAO] Chua cai dat\n");
         break;
       case 12:
-        member_view_profile(&g_db);
+        memberViewProfile(&gDb);
         break;
       case 13:
-        member_list_all(&g_db);
+        memberListAll(&gDb);
         break;
       case 0:
-        auth_logout(&g_db);
+        authLogout(&gDb);
         break;
       default:
         printf("[LOI] Lua chon khong hop le\n");
@@ -140,31 +140,31 @@ static void admin_menu(void) {
 int main(void) {
   printf("  F-CODE VIOLATION MANAGEMENT SYSTEM\n");
   /* Load data from files */
-  if (fileio_load_all(&g_db) != 0) {
+  if (fileioLoadAll(&gDb) != 0) {
     printf("[LOI] Khong the tai du lieu. Vui long kiem tra thu muc data/\n");
     return 1;
   }
 
   printf("[OK] Tai du lieu thanh cong\n");
-  printf("  - Thanh vien: %d/%d\n", g_db.memberCount, MAX_MEMBERS);
-  printf("  - Vi pham: %d\n", g_db.violationCount);
-  printf("  - Tai khoan: %d\n", g_db.accountCount);
+  printf("  - Thanh vien: %d/%d\n", gDb.memberCount, MAX_MEMBERS);
+  printf("  - Vi pham: %d\n", gDb.violationCount);
+  printf("  - Tai khoan: %d\n", gDb.accountCount);
 
   /* Main application loop */
   while (1) {
     /* Login first */
-    if (auth_login(&g_db) != 0) {
+    if (authLogin(&gDb) != 0) {
       /* Account locked or exit requested */
       break;
     }
 
     /* Route to appropriate menu based on role */
-    Account *session = auth_get_session();
+    Account *session = authGetSession();
     if (session != NULL) {
       if (session->role == ACCOUNT_ROLE_BCN) {
-        admin_menu();
+        adminMenu();
       } else {
-        member_menu();
+        memberMenu();
       }
     }
   }

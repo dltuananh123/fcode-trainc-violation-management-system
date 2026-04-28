@@ -4,7 +4,7 @@
 /* violation.h — Story 3.1 & 3.2
  * Violation recording, Out CLB warning/enforcement.
  *
- * Depends on: types.h, member.h (for member_find_by_id) */
+ * Depends on: types.h, member.h (for memberFindById) */
 
 #include "types.h"
 
@@ -23,7 +23,7 @@
  * @param db Pointer to the AppDatabase
  * @return 0 on success, -1 on failure
  */
-int violation_record(AppDatabase *db);
+int violationRecord(AppDatabase *db);
 
 /* ============================================================
  * Story 3.2 — Out CLB Warning & Enforcement
@@ -43,7 +43,7 @@ int violation_record(AppDatabase *db);
  *         1 if member was set to Out CLB,
  *        -1 on error
  */
-int violation_check_out_threshold(AppDatabase *db, Member *member);
+int violationCheckOutThreshold(AppDatabase *db, Member *member);
 
 /**
  * @brief Scan all active members and display those at or above
@@ -54,6 +54,6 @@ int violation_check_out_threshold(AppDatabase *db, Member *member);
  *
  * @param db Pointer to the AppDatabase
  */
-void violation_check_all_out_clb(AppDatabase *db);
+void violationCheckAllOutClb(AppDatabase *db);
 
 #endif /* VIOLATION_H */
