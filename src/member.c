@@ -1,6 +1,7 @@
 #include "member.h"
 #include "auth.h"
 #include "fileio.h"
+#include "types.h"
 #include "utils.h"
 #include <stdio.h>
 #include <string.h>

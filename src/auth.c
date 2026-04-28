@@ -1,4 +1,5 @@
 #include "auth.h"
+#include "types.h"
 #include <stdio.h>
 #include <string.h>
 
