@@ -150,6 +150,7 @@ docs(readme): add build instructions
 | Public API docs | Doxygen `/** @brief ... */` required for all functions in `.h` files |
 | File-level docs | Each `.h` must have `@file` and `@brief` describing the module |
 | Inline comments | Only where logic is complex or non-obvious |
+| Comment syntax | **Block comments only** (`/* */`). Do not use `//` — ensures strict C17 compatibility across all compilers. |
 
 ### Include Order
 
@@ -227,15 +228,6 @@ If a PR changes any of the following, related docs must be updated in the same P
 - Business rule.
 - Build / run / format / tidy flow.
 - Naming convention, branch rule, or PR rule.
-
-### Support docs
-
-Developers are encouraged to add short docs to help the team understand their work:
-
-- Place support docs in `docs/support/`.
-- Support docs explain context; they do not replace `architecture.md`, `epics.md`, or `decision-log.md`.
-- If docs relate to a story, include the story ID.
-- Keep docs short, clear, and useful.
 
 ### Branch & commit for docs
 
