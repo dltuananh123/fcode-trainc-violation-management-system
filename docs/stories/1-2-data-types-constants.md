@@ -1,6 +1,6 @@
 # Story 1.2: Data Types & Constants
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,26 +24,26 @@ so that all modules share consistent data types without circular dependencies.
 
 ## Tasks / Subtasks
 
-- [ ] Create `include/types.h` as the central shared header (AC: 1, 2, 3)
-  - [ ] Add header guard
-  - [ ] Include only `<time.h>`
-  - [ ] Do not include any other project header
-- [ ] Define all shared constants from the architecture (AC: 2)
-  - [ ] Capacity limits: `MAX_MEMBERS`, `MAX_VIOLATIONS`
-  - [ ] Field size constants: name, MSSV, email, phone, note, password lengths
-  - [ ] Domain constants: team, violation reason, penalty, status, roles
-- [ ] Define all core structs (AC: 1)
-  - [ ] `Member`
-  - [ ] `Violation`
-  - [ ] `Account`
-  - [ ] `AppDatabase`
-- [ ] Validate architectural shape (AC: 1, 2, 3)
-  - [ ] Ensure `Violation` uses `time_t`
-  - [ ] Ensure `AppDatabase` wraps arrays and counters
-  - [ ] Ensure no circular include risk is introduced
-- [ ] Verify downstream readiness (AC: 1)
-  - [ ] Confirm later modules can include `types.h` first
-  - [ ] Confirm names match the architecture terminology
+- [x] Create `include/types.h` as the central shared header (AC: 1, 2, 3)
+  - [x] Add header guard
+  - [x] Include only `<time.h>`
+  - [x] Do not include any other project header
+- [x] Define all shared constants from the architecture (AC: 2)
+  - [x] Capacity limits: `MAX_MEMBERS`, `MAX_VIOLATIONS`
+  - [x] Field size constants: name, MSSV, email, phone, note, password lengths
+  - [x] Domain constants: team, violation reason, penalty, status, roles
+- [x] Define all core structs (AC: 1)
+  - [x] `Member`
+  - [x] `Violation`
+  - [x] `Account`
+  - [x] `AppDatabase`
+- [x] Validate architectural shape (AC: 1, 2, 3)
+  - [x] Ensure `Violation` uses `time_t`
+  - [x] Ensure `AppDatabase` wraps arrays and counters
+  - [x] Ensure no circular include risk is introduced
+- [x] Verify downstream readiness (AC: 1)
+  - [x] Confirm later modules can include `types.h` first
+  - [x] Confirm names match the architecture terminology
 
 ## Dev Notes
 
@@ -124,9 +124,11 @@ gpt-5
 
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created
-- Story scoped to declarations and constants only; implementation belongs to later module stories
+- Central shared header `include/types.h` is present and defines the required constants, structs, and `AppDatabase` contract
+- Header dependency rule is satisfied: `types.h` includes only `<time.h>` and no other project headers
+- Downstream modules compile against the shared data contract, confirming Story 1.2 is implemented in the current codebase
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-2-data-types-constants.md`
+- `include/types.h`
