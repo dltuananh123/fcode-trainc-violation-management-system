@@ -15,7 +15,7 @@ static AppDatabase g_db;
  * ============================================================ */
 
 /* Member menu (for regular members and leaders) */
-void member_menu(void) {
+static void member_menu(void) {
   int choice;
   do {
     printf("\nMENU THANH VIEN\n");
@@ -35,7 +35,7 @@ void member_menu(void) {
 
     switch (choice) {
       case 1:
-        printf("[CANH BAO] Chua cai dat\n");
+        member_view_profile(&g_db);
         break;
       case 2:
         printf("[CANH BAO] Chua cai dat\n");
@@ -56,7 +56,7 @@ void member_menu(void) {
 }
 
 /* BCN menu (for admins) */
-void admin_menu(void) {
+static void admin_menu(void) {
   int choice;
   do {
     printf("\nMENU BAN CHU NHIEM\n");
@@ -71,6 +71,8 @@ void admin_menu(void) {
     printf("9. Sap xep theo so lan vi pham\n");
     printf("10. Xuat bao cao\n");
     printf("11. Tim kiem theo ngay\n");
+    printf("12. Xem profile ca nhan\n");
+    printf("13. Xem danh sach thanh vien\n");
     printf("0. Dang xuat\n");
     printf("Nhap lua chon: ");
 
@@ -114,6 +116,12 @@ void admin_menu(void) {
         break;
       case 11:
         printf("[CANH BAO] Chua cai dat\n");
+        break;
+      case 12:
+        member_view_profile(&g_db);
+        break;
+      case 13:
+        member_list_all(&g_db);
         break;
       case 0:
         auth_logout(&g_db);

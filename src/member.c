@@ -1,6 +1,6 @@
 #include "member.h"
 #include "fileio.h"
-#include "utils.h"
+#include "auth.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -364,8 +364,39 @@ int member_delete(AppDatabase *db) {
 }
 
 /* ============================================================
- * Story 2.4 — View Member List
+ * Story 2.4 — View Member List & Profile
  * ============================================================ */
+
+void member_view_profile(AppDatabase *db) {
+  if (db == NULL) return;
+
+  Account *session = auth_get_session();
+  if (session == NULL) {
+    printf("[LOI] Ban phai dang nhap de xem profile\n");
+    return;
+  }
+
+  int idx = member_find_by_id(db, session->studentId);
+  if (idx == -1) {
+    printf("[LOI] Khong tim thay thong tin thanh vien\n");
+    return;
+  }
+
+  Member *m = &db->members[idx];
+
+  printf("\nTHONG TIN CA NHAN\n");
+  printf("----------------------------------------\n");
+  printf("MSSV           : %s\n", m->studentId);
+  printf("Ho va ten      : %s\n", m->fullName);
+  printf("Email          : %s\n", m->email);
+  printf("So dien thoai  : %s\n", m->phone);
+  printf("Ban            : %s\n", team_name(m->team));
+  printf("Chuc vu        : %s\n", member_role_name(m->role));
+  printf("Trang thai     : %s\n", m->isActive ? "Active" : "Out CLB");
+  printf("So lan vi pham : %d\n", m->violationCount);
+  printf("Tong tien phat : %.0f VND\n", m->totalFine);
+  printf("----------------------------------------\n\n");
+}
 
 void member_list_all(AppDatabase *db) {
   if (db == NULL)
@@ -383,8 +414,23 @@ void member_list_all(AppDatabase *db) {
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    printf("| %-4s | %-16s | %-10s | %-9s |\n", m->studentId, m->fullName,
-           team_name(m->team), member_role_name(m->role));
+    printf("| %-4s | %-16s | %-10s | %-9s |\n",
+           m->studentId,
+           m->fullName,
+           team_name(m->team),
+           member_role_name(m->role));
+
+    if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
+      printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de thoat]: ");
+      char buf[10];
+      read_string(buf, sizeof(buf));
+      if (buf[0] == 'q' || buf[0] == 'Q') {
+        break;
+      }
+      printf("\n+------+------------------+------------+-----------+\n");
+      printf("| MSSV | Ho va ten        | Ban        | Chuc vu  |\n");
+      printf("+------+------------------+------------+-----------+\n");
+    }
   }
 
   printf("+------+------------------+------------+-----------+\n");

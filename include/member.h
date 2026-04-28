@@ -72,10 +72,21 @@ int member_delete(AppDatabase *db);
  * ============================================================ */
 
 /**
+ * @brief View the profile of the currently logged-in member.
+ *
+ * Shows all personal information including fines and violation count.
+ * Requires an active session.
+ *
+ * @param db Pointer to the AppDatabase
+ */
+void member_view_profile(AppDatabase *db);
+
+/**
  * @brief Display list of all members.
  *
  * Shows: fullName, studentId, team, role only.
  * Hides: email, phone, violationCount, fines.
+ * Includes pagination (20 members per page).
  *
  * @param db Pointer to the AppDatabase
  */
