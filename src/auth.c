@@ -43,7 +43,8 @@ static void printLoginBanner(void) {
  * ============================================================ */
 
 int authLogin(AppDatabase *db) {
-  if (db == NULL) return -1;
+  if (db == NULL)
+    return -1;
 
   char studentId[MAX_MSSV_LEN];
   char password[MAX_PASS_LEN];

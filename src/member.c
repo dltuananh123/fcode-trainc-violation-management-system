@@ -369,7 +369,8 @@ int memberDelete(AppDatabase *db) {
  * ============================================================ */
 
 void memberViewProfile(AppDatabase *db) {
-  if (db == NULL) return;
+  if (db == NULL)
+    return;
 
   Account *session = authGetSession();
   if (session == NULL) {
@@ -415,14 +416,12 @@ void memberListAll(AppDatabase *db) {
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    printf("| %-4s | %-16s | %-10s | %-9s |\n",
-           m->studentId,
-           m->fullName,
-           teamName(m->team),
-           memberRoleName(m->role));
+    printf("| %-4s | %-16s | %-10s | %-9s |\n", m->studentId, m->fullName,
+           teamName(m->team), memberRoleName(m->role));
 
     if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
-      printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de thoat]: ");
+      printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de "
+             "thoat]: ");
       char buf[10];
       readString(buf, sizeof(buf));
       if (buf[0] == 'q' || buf[0] == 'Q') {

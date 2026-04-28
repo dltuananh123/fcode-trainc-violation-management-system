@@ -125,7 +125,8 @@ static void handleAbsent(AppDatabase *db, Member *member, Violation *v) {
  * ============================================================ */
 
 int violationRecord(AppDatabase *db) {
-  if (db == NULL) return -1;
+  if (db == NULL)
+    return -1;
 
   /* Check violation capacity */
   if (db->violationCount >= MAX_VIOLATIONS) {
@@ -177,22 +178,22 @@ int violationRecord(AppDatabase *db) {
 
   /* Step 4: Handle by reason type */
   switch (reason) {
-    case REASON_VIOLENCE:
-      handleViolence(db, member, &newViolation);
-      break;
+  case REASON_VIOLENCE:
+    handleViolence(db, member, &newViolation);
+    break;
 
-    case REASON_ABSENT:
-      handleAbsent(db, member, &newViolation);
-      break;
+  case REASON_ABSENT:
+    handleAbsent(db, member, &newViolation);
+    break;
 
-    case REASON_NO_JACKET:
-    case REASON_NO_ACTIVITY:
-    default:
-      /* Non-absent, non-violence: calculate fine, reset absence streak */
-      newViolation.fine = calculateFine(member->role);
-      newViolation.penalty = PENALTY_FINE;
-      member->consecutiveAbsences = 0;
-      break;
+  case REASON_NO_JACKET:
+  case REASON_NO_ACTIVITY:
+  default:
+    /* Non-absent, non-violence: calculate fine, reset absence streak */
+    newViolation.fine = calculateFine(member->role);
+    newViolation.penalty = PENALTY_FINE;
+    member->consecutiveAbsences = 0;
+    break;
   }
 
   /* Step 5: Optional note */
@@ -244,7 +245,8 @@ int violationRecord(AppDatabase *db) {
  * ============================================================ */
 
 int violationCheckOutThreshold(AppDatabase *db, Member *member) {
-  if (db == NULL || member == NULL) return -1;
+  if (db == NULL || member == NULL)
+    return -1;
 
   if (member->consecutiveAbsences == 3) {
     /* Warning at exactly 3 consecutive absences */
@@ -273,7 +275,8 @@ int violationCheckOutThreshold(AppDatabase *db, Member *member) {
 }
 
 void violationCheckAllOutClb(AppDatabase *db) {
-  if (db == NULL) return;
+  if (db == NULL)
+    return;
 
   printf("\nKIEM TRA NGUONG OUT CLB\n");
   printf("+------+------------------+---------+-----------+\n");
