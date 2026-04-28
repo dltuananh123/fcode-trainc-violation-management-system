@@ -1,6 +1,14 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+/**
+ * @file utils.h
+ * @brief Utility module — Story 1.3.
+ *
+ * Provides shared helpers for input handling, validation,
+ * time/date formatting, and display name mapping.
+ */
+
 #include <stddef.h>
 #include <time.h>
 

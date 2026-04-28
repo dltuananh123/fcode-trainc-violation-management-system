@@ -1,6 +1,14 @@
 #ifndef MEMBER_H
 #define MEMBER_H
 
+/**
+ * @file member.h
+ * @brief Member management module — Stories 2.1 to 2.4.
+ *
+ * Provides CRUD operations for CLB members, including
+ * cascade deletion of violations and accounts.
+ */
+
 #include "types.h"
 
 /* ============================================================
