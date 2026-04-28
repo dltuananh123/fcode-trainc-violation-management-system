@@ -27,10 +27,11 @@ static void recoverFromTmp(const char *tmpFile, const char *datFile) {
     fclose(fTmp);
     FILE *fDat = fopen(datFile, "rb");
     if (fDat == NULL) {
-      /* .dat is missing, but .tmp exists! Recover. */
+      /* .dat is missing, but .tmp exists — recover */
+      printf("[PHUC HOI] Phuc hoi du lieu tu %s\n", tmpFile);
       rename(tmpFile, datFile);
     } else {
-      /* Both exist. .dat is valid. Remove .tmp. */
+      /* Both exist. .dat is the last good version. Discard .tmp */
       fclose(fDat);
       remove(tmpFile);
     }
@@ -41,6 +42,23 @@ static void handleTmpFiles(void) {
   recoverFromTmp(TMP_MEMBERS, FILE_MEMBERS);
   recoverFromTmp(TMP_VIOLATIONS, FILE_VIOLATIONS);
   recoverFromTmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
+}
+
+/* Replace .dat with .tmp atomically (best-effort on Windows) */
+static int atomicReplace(const char *tmpFile, const char *datFile) {
+  if (rename(tmpFile, datFile) == 0) {
+    return 0; /* .dat did not exist or OS allows overwrite */
+  }
+  /* Target exists — remove then rename */
+  if (remove(datFile) != 0) {
+    printf("[LOI] Khong the xoa file cu %s\n", datFile);
+    return -1;
+  }
+  if (rename(tmpFile, datFile) != 0) {
+    printf("[LOI] Khong the doi ten file tam %s\n", tmpFile);
+    return -1;
+  }
+  return 0;
 }
 
 /* ============================================================
@@ -73,9 +91,7 @@ int fileioSaveMembers(AppDatabase *db) {
   fclose(fp);
 
   /* Replace old file with temp file */
-  remove(FILE_MEMBERS);
-  if (rename(TMP_MEMBERS, FILE_MEMBERS) != 0) {
-    printf("[LOI] Khong the ghi de file members.dat!\n");
+  if (atomicReplace(TMP_MEMBERS, FILE_MEMBERS) != 0) {
     return -1;
   }
   return 0;
@@ -106,9 +122,7 @@ int fileioSaveViolations(AppDatabase *db) {
   }
   fclose(fp);
 
-  remove(FILE_VIOLATIONS);
-  if (rename(TMP_VIOLATIONS, FILE_VIOLATIONS) != 0) {
-    printf("[LOI] Khong the ghi de file violations.dat!\n");
+  if (atomicReplace(TMP_VIOLATIONS, FILE_VIOLATIONS) != 0) {
     return -1;
   }
   return 0;
@@ -140,9 +154,7 @@ int fileioSaveAccounts(AppDatabase *db) {
 
   fclose(fp);
 
-  remove(FILE_ACCOUNTS);
-  if (rename(TMP_ACCOUNTS, FILE_ACCOUNTS) != 0) {
-    printf("[LOI] Khong the ghi de file accounts.dat!\n");
+  if (atomicReplace(TMP_ACCOUNTS, FILE_ACCOUNTS) != 0) {
     return -1;
   }
   return 0;
