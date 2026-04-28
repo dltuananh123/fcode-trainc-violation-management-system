@@ -11,11 +11,15 @@ Checks: >
   bugprone-*,
   readability-*,
   -readability-identifier-length,
+  -readability-magic-numbers,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
 
 CheckOptions:
   - key: readability-identifier-naming.ConstantCase
     value: UPPER_CASE
   - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.EnumConstantCase
     value: UPPER_CASE
 
   - key: readability-identifier-naming.VariableCase
@@ -30,6 +34,8 @@ CheckOptions:
     value: camelBack
 
   - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypedefCase
     value: CamelCase
   - key: readability-identifier-naming.PublicMemberCase
     value: camelBack

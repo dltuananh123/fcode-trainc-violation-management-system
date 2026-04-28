@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 /**
  * @file types.h
  * @brief Central data structures and constants for the FCode TrainC Violation
@@ -9,14 +12,11 @@
  * circular dependencies between modules.
  */
 
-#ifndef TYPES_H
-#define TYPES_H
-
 #include <time.h>
 
-/* =========================================
+/* ============================================================
  * CAPACITY LIMITS
- * ========================================= */
+ * ============================================================ */
 
 #define MAX_MEMBERS 1000
 #define MAX_VIOLATIONS 10000
@@ -28,9 +28,9 @@
 #define MAX_NOTE_LEN 100
 #define MAX_PASS_LEN 20
 
-/* =========================================
+/* ============================================================
  * DOMAIN CONSTANTS
- * ========================================= */
+ * ============================================================ */
 
 #define STATUS_ACTIVE 1
 #define STATUS_OUT_CLB 0
@@ -55,9 +55,9 @@
 #define MEMBER_ROLE_LEADER 1
 #define MEMBER_ROLE_BCN 2
 
-/* =========================================
+/* ============================================================
  * STRUCT DEFINITIONS
- * ========================================= */
+ * ============================================================ */
 
 /**
  * @struct Account
@@ -115,4 +115,4 @@ typedef struct {
   int accountCount;
 } AppDatabase;
 
-#endif // TYPES_H
+#endif /* TYPES_H */

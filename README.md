@@ -1,5 +1,4 @@
-
-# fcode-trainc-violation-management-system
+# F-Code TrainC Violation Management System
 
 Hệ thống quản lý vi phạm thành viên của CLB F-Code, được phát triển bằng ngôn ngữ C và chạy trên môi trường terminal/CLI.
 
@@ -27,6 +26,10 @@ Hiện tại, repo đang ở giai đoạn scaffold ban đầu: đã có `Makefil
 - Không sử dụng cơ sở dữ liệu, GUI hoặc thư viện ngoài C standard library
 
 
+- Team Workflow: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- Business Requirements: [`docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md`](docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md)
+- Architecture and Module Design: [`docs/planning/architecture.md`](docs/planning/architecture.md)
+- Story List: [`docs/stories/`](docs/stories/)
 
 
 ## Yêu cầu môi trường
