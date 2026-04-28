@@ -35,82 +35,186 @@ static void handleTmpFiles(void) {
   recoverFromTmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
 }
 
+static int readCountChecked(FILE *fp, int *count, int maxCount,
+                            const char *label) {
+  if (fread(count, sizeof(int), 1, fp) != 1) {
+    printf("[LOI] Khong the doc so luong %s tu file!\n", label);
+    return -1;
+  }
+
+  if (*count < 0 || *count > maxCount) {
+    printf("[LOI] File %s bi loi: so luong %d nam ngoai gioi han [0, %d].\n",
+           label, *count, maxCount);
+    return -1;
+  }
+
+  return 0;
+}
+
+static int readItemsChecked(FILE *fp, void *buffer, size_t itemSize, int count,
+                            const char *label) {
+  if (count == 0) {
+    return 0;
+  }
+
+  if (fread(buffer, itemSize, (size_t)count, fp) != (size_t)count) {
+    printf("[LOI] Khong the doc day du du lieu %s tu file!\n", label);
+    return -1;
+  }
+
+  return 0;
+}
+
+static int writeCountChecked(FILE *fp, int count, const char *label) {
+  if (fwrite(&count, sizeof(int), 1, fp) != 1) {
+    printf("[LOI] Khong the ghi so luong %s vao file tam!\n", label);
+    return -1;
+  }
+
+  return 0;
+}
+
+static int writeItemsChecked(FILE *fp, const void *buffer, size_t itemSize,
+                             int count, const char *label) {
+  if (count == 0) {
+    return 0;
+  }
+
+  if (fwrite(buffer, itemSize, (size_t)count, fp) != (size_t)count) {
+    printf("[LOI] Khong the ghi day du du lieu %s vao file tam!\n", label);
+    return -1;
+  }
+
+  return 0;
+}
+
+static int closeFileChecked(FILE *fp, const char *label) {
+  if (fclose(fp) != 0) {
+    printf("[LOI] Khong the dong file tam %s!\n", label);
+    return -1;
+  }
+
+  return 0;
+}
+
+static int replaceStoreFile(const char *tmpFile, const char *dataFile,
+                            const char *label) {
+  remove(dataFile);
+  if (rename(tmpFile, dataFile) != 0) {
+    printf("[LOI] Khong the ghi de file %s!\n", label);
+    return -1;
+  }
+
+  return 0;
+}
+
 /* ============================================================
  * Save functions
  * ============================================================ */
 int fileioSaveMembers(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
   FILE *fp = fopen(TMP_MEMBERS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu members!\n");
     return -1;
   }
-  /* Write member count header to temp file */
-  fwrite(&(db->memberCount), sizeof(int), 1, fp);
 
-  /* Write member data */
-  if (db->memberCount > 0) {
-    fwrite(db->members, sizeof(Member), (size_t)db->memberCount, fp);
-  }
-  fclose(fp);
-
-  /* Replace old file with temp file */
-  remove(FILE_MEMBERS);
-  if (rename(TMP_MEMBERS, FILE_MEMBERS) != 0) {
-    printf("[LOI] Khong the ghi de file members.dat!\n");
+  if (writeCountChecked(fp, db->memberCount, "members") != 0) {
+    fclose(fp);
+    remove(TMP_MEMBERS);
     return -1;
   }
-  return 0;
+
+  if (writeItemsChecked(fp, db->members, sizeof(Member), db->memberCount,
+                        "members") != 0) {
+    fclose(fp);
+    remove(TMP_MEMBERS);
+    return -1;
+  }
+
+  if (closeFileChecked(fp, "members") != 0) {
+    remove(TMP_MEMBERS);
+    return -1;
+  }
+
+  return replaceStoreFile(TMP_MEMBERS, FILE_MEMBERS, "members.dat");
 }
 
 int fileioSaveViolations(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
   FILE *fp = fopen(TMP_VIOLATIONS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu violations!\n");
     return -1;
   }
 
-  fwrite(&(db->violationCount), sizeof(int), 1, fp);
-
-  if (db->violationCount > 0) {
-    fwrite(db->violations, sizeof(Violation), (size_t)db->violationCount, fp);
-  }
-  fclose(fp);
-
-  remove(FILE_VIOLATIONS);
-  if (rename(TMP_VIOLATIONS, FILE_VIOLATIONS) != 0) {
-    printf("[LOI] Khong the ghi de file violations.dat!\n");
+  if (writeCountChecked(fp, db->violationCount, "violations") != 0) {
+    fclose(fp);
+    remove(TMP_VIOLATIONS);
     return -1;
   }
-  return 0;
+
+  if (writeItemsChecked(fp, db->violations, sizeof(Violation),
+                        db->violationCount, "violations") != 0) {
+    fclose(fp);
+    remove(TMP_VIOLATIONS);
+    return -1;
+  }
+
+  if (closeFileChecked(fp, "violations") != 0) {
+    remove(TMP_VIOLATIONS);
+    return -1;
+  }
+
+  return replaceStoreFile(TMP_VIOLATIONS, FILE_VIOLATIONS, "violations.dat");
 }
 
 int fileioSaveAccounts(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
   FILE *fp = fopen(TMP_ACCOUNTS, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu accounts!\n");
     return -1;
   }
 
-  fwrite(&(db->accountCount), sizeof(int), 1, fp);
-
-  if (db->accountCount > 0) {
-    fwrite(db->accounts, sizeof(Account), (size_t)db->accountCount, fp);
-  }
-
-  fclose(fp);
-
-  remove(FILE_ACCOUNTS);
-  if (rename(TMP_ACCOUNTS, FILE_ACCOUNTS) != 0) {
-    printf("[LOI] Khong the ghi de file accounts.dat!\n");
+  if (writeCountChecked(fp, db->accountCount, "accounts") != 0) {
+    fclose(fp);
+    remove(TMP_ACCOUNTS);
     return -1;
   }
-  return 0;
+
+  if (writeItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount,
+                        "accounts") != 0) {
+    fclose(fp);
+    remove(TMP_ACCOUNTS);
+    return -1;
+  }
+
+  if (closeFileChecked(fp, "accounts") != 0) {
+    remove(TMP_ACCOUNTS);
+    return -1;
+  }
+
+  return replaceStoreFile(TMP_ACCOUNTS, FILE_ACCOUNTS, "accounts.dat");
 }
 
 /* ============================================================
  * Load & init
  * ============================================================ */
 int fileioLoadAll(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
   db->memberCount = 0;
   db->violationCount = 0;
   db->accountCount = 0;
@@ -121,9 +225,15 @@ int fileioLoadAll(AppDatabase *db) {
   /* Load accounts */
   FILE *fpAcc = fopen(FILE_ACCOUNTS, "rb");
   if (fpAcc != NULL) {
-    fread(&(db->accountCount), sizeof(int), 1, fpAcc);
-    if (db->accountCount > 0) {
-      fread(db->accounts, sizeof(Account), (size_t)db->accountCount, fpAcc);
+    if (readCountChecked(fpAcc, &(db->accountCount), MAX_MEMBERS,
+                         "accounts") != 0) {
+      fclose(fpAcc);
+      return -1;
+    }
+    if (readItemsChecked(fpAcc, db->accounts, sizeof(Account), db->accountCount,
+                         "accounts") != 0) {
+      fclose(fpAcc);
+      return -1;
     }
     fclose(fpAcc);
   }
@@ -139,33 +249,50 @@ int fileioLoadAll(AppDatabase *db) {
     db->accounts[0].failCount = 0;
 
     db->accountCount = 1;
-    fileioSaveAccounts(db);
+    if (fileioSaveAccounts(db) != 0) {
+      return -1;
+    }
   }
 
   /* Load Member */
   FILE *fpMen = fopen(FILE_MEMBERS, "rb");
   if (fpMen != NULL) {
-    fread(&(db->memberCount), sizeof(int), 1, fpMen);
-    if (db->memberCount > 0) {
-      fread(db->members, sizeof(Member), (size_t)db->memberCount, fpMen);
+    if (readCountChecked(fpMen, &(db->memberCount), MAX_MEMBERS,
+                         "members") != 0) {
+      fclose(fpMen);
+      return -1;
+    }
+    if (readItemsChecked(fpMen, db->members, sizeof(Member), db->memberCount,
+                         "members") != 0) {
+      fclose(fpMen);
+      return -1;
     }
     fclose(fpMen);
   } else {
     /* First-run: create empty members file */
-    fileioSaveMembers(db);
+    if (fileioSaveMembers(db) != 0) {
+      return -1;
+    }
   }
 
   /* Load violations */
   FILE *fpVio = fopen(FILE_VIOLATIONS, "rb");
   if (fpVio != NULL) {
-    fread(&(db->violationCount), sizeof(int), 1, fpVio);
-    if (db->violationCount > 0) {
-      fread(db->violations, sizeof(Violation), (size_t)db->violationCount,
-            fpVio);
+    if (readCountChecked(fpVio, &(db->violationCount), MAX_VIOLATIONS,
+                         "violations") != 0) {
+      fclose(fpVio);
+      return -1;
+    }
+    if (readItemsChecked(fpVio, db->violations, sizeof(Violation),
+                         db->violationCount, "violations") != 0) {
+      fclose(fpVio);
+      return -1;
     }
     fclose(fpVio);
   } else {
-    fileioSaveViolations(db);
+    if (fileioSaveViolations(db) != 0) {
+      return -1;
+    }
   }
   return 0;
 }
