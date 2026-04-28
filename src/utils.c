@@ -13,7 +13,16 @@ void read_string(char *buffer, size_t size) {
   }
 
   if (fgets(buffer, (int)size, stdin) != NULL) {
-    buffer[strcspn(buffer, "\n")] = '\0';
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+      buffer[len - 1] = '\0';
+    } else {
+      /* Buffer is full and no newline was read. Flush stdin. */
+      int c;
+      while ((c = getchar()) != '\n' && c != EOF) {
+        /* discard characters */
+      }
+    }
   } else {
     buffer[0] = '\0';
   }
