@@ -1,25 +1,31 @@
-*
+# Build artifacts
+build/
+bin/
+*.o
+*.exe
+*.out
 
-!.github/
-!.github/*.md
-!.github/workflows/
-!.github/workflows/*.yml
+# Data files (generated at runtime)
+data/*.dat
 
-!docs/
-!docs/*.md
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-!include/
-!include/*.h
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
 
-!src/
-!src/*.c
+# Logs
+*.log
 
-!.clang-format
-!.clang-tidy
-!.editorconfig
-!.gitattributes
-!.gitignore
-!CONTRIBUTING.md
-!LICENSE
-!Makefile
-!README.md
+# PDF tools cache
+pdf docs/
+
+# Claude Code / Cursor local config
+.claude/
+.cursor/
