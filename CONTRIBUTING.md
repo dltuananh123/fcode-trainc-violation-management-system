@@ -228,15 +228,6 @@ If a PR changes any of the following, related docs must be updated in the same P
 - Build / run / format / tidy flow.
 - Naming convention, branch rule, or PR rule.
 
-### Support docs
-
-Developers are encouraged to add short docs to help the team understand their work:
-
-- Place support docs in `docs/support/`.
-- Support docs explain context; they do not replace `architecture.md`, `epics.md`, or `decision-log.md`.
-- If docs relate to a story, include the story ID.
-- Keep docs short, clear, and useful.
-
 ### Branch & commit for docs
 
 If only updating docs:
