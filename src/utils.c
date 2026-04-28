@@ -9,7 +9,7 @@
  * INPUT HANDLING HELPERS
  * ============================================================ */
 
-void readString(char *buffer, size_t size) {
+void read_string(char *buffer, size_t size) {
   if (buffer == NULL || size == 0) {
     return;
   }
@@ -30,7 +30,7 @@ void readString(char *buffer, size_t size) {
   }
 }
 
-int readInt(int *value) {
+int read_int(int *value) {
   int result = scanf("%d", value);
   int c;
   while ((c = getchar()) != '\n' && c != EOF) {
@@ -43,7 +43,7 @@ int readInt(int *value) {
  * VALIDATION HELPERS
  * ============================================================ */
 
-int isEmailValid(const char *email) {
+int is_email_valid(const char *email) {
   if (email == NULL) {
     return 0;
   }
@@ -58,7 +58,7 @@ int isEmailValid(const char *email) {
   return 0;
 }
 
-int isIdValid(const char *id) {
+int is_id_valid(const char *id) {
   if (id == NULL || strlen(id) == 0) {
     return 0;
   }
@@ -81,20 +81,20 @@ int isIdValid(const char *id) {
  * TIME & DATE HELPERS
  * ============================================================ */
 
-void formatTime(time_t t, char *buffer, size_t bufSize) {
-  if (buffer == NULL || bufSize == 0) {
+void format_time(time_t t, char *buffer, size_t buf_size) {
+  if (buffer == NULL || buf_size == 0) {
     return;
   }
 
   struct tm *timeinfo = localtime(&t);
   if (timeinfo != NULL) {
-    strftime(buffer, bufSize, "%d/%m/%Y %H:%M", timeinfo);
+    strftime(buffer, buf_size, "%d/%m/%Y %H:%M", timeinfo);
   } else {
     buffer[0] = '\0';
   }
 }
 
-int parseDate(const char *buffer, time_t *t, int isEndOfDay) {
+int parse_date(const char *buffer, time_t *t, int is_end_of_day) {
   if (buffer == NULL || t == NULL) {
     return 0;
   }
@@ -114,7 +114,7 @@ int parseDate(const char *buffer, time_t *t, int isEndOfDay) {
   timeinfo.tm_year = y - 1900;
   timeinfo.tm_isdst = -1; /* let system determine DST */
 
-  if (isEndOfDay) {
+  if (is_end_of_day) {
     timeinfo.tm_hour = 23;
     timeinfo.tm_min = 59;
     timeinfo.tm_sec = 59;
@@ -137,8 +137,8 @@ int parseDate(const char *buffer, time_t *t, int isEndOfDay) {
  * DISPLAY NAME MAPPERS
  * ============================================================ */
 
-const char *teamName(int teamId) {
-  switch (teamId) {
+const char *team_name(int team_id) {
+  switch (team_id) {
   case TEAM_ACADEMIC:
     return "Hoc thuat";
   case TEAM_PLANNING:
@@ -152,8 +152,8 @@ const char *teamName(int teamId) {
   }
 }
 
-const char *memberRoleName(int roleId) {
-  switch (roleId) {
+const char *member_role_name(int role_id) {
+  switch (role_id) {
   case MEMBER_ROLE_MEMBER:
     return "Thanh vien";
   case MEMBER_ROLE_LEADER:
@@ -165,8 +165,8 @@ const char *memberRoleName(int roleId) {
   }
 }
 
-const char *accountRoleName(int roleId) {
-  switch (roleId) {
+const char *account_role_name(int role_id) {
+  switch (role_id) {
   case ACCOUNT_ROLE_MEMBER:
     return "Thanh vien";
   case ACCOUNT_ROLE_BCN:
@@ -176,8 +176,8 @@ const char *accountRoleName(int roleId) {
   }
 }
 
-const char *reasonName(int reasonId) {
-  switch (reasonId) {
+const char *reason_name(int reason_id) {
+  switch (reason_id) {
   case REASON_NO_JACKET:
     return "Khong mac ao CLB";
   case REASON_ABSENT:
