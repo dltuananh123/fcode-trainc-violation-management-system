@@ -174,6 +174,7 @@ int violationRecord(AppDatabase *db) {
   memset(&newViolation, 0, sizeof(Violation));
 
   strncpy(newViolation.studentId, studentId, MAX_MSSV_LEN - 1);
+  newViolation.studentId[MAX_MSSV_LEN - 1] = '\0';
   newViolation.reason = reason;
   newViolation.violationTime = time(NULL);
   newViolation.isPaid = 0;
@@ -221,6 +222,9 @@ int violationRecord(AppDatabase *db) {
 
   if (fileioSaveMembers(db) != 0) {
     printf("[LOI] Khong the luu du lieu thanh vien\n");
+    /* Rollback member stats */
+    member->violationCount--;
+    member->totalFine -= newViolation.fine;
     return -1;
   }
 
@@ -268,7 +272,6 @@ int violationCheckOutThreshold(AppDatabase *db, Member *member) {
 
     if (confirmOutClb(member->fullName)) {
       member->isActive = STATUS_OUT_CLB;
-      fileioSaveMembers(db);
       printf("[OK] Thanh vien %s da bi Out CLB\n", member->fullName);
       return 1;
     }
@@ -283,9 +286,9 @@ void violationCheckAllOutClb(AppDatabase *db) {
   }
 
   printf("\nKIEM TRA NGUONG OUT CLB\n");
-  printf("+------+------------------+---------+-----------+\n");
-  printf("| MSSV | Ho va ten        | Vang LT | Trang thai|\n");
-  printf("+------+------------------+---------+-----------+\n");
+  printf("+------------+----------------------+-----------+------------+\n");
+  printf("| MSSV       | Ho va ten            | Vang LT   | Trang thai |\n");
+  printf("+------------+----------------------+-----------+------------+\n");
 
   int found = 0;
 
@@ -305,13 +308,14 @@ void violationCheckAllOutClb(AppDatabase *db) {
         status = "Theo doi";
       }
 
-      printf("| %-4s | %-16s | %-7d | %-9s |\n", m->studentId, m->fullName,
+      printf("| %-10.10s | %-20.20s | %-9d | %-10.10s |\n",
+             m->studentId, m->fullName,
              m->consecutiveAbsences, status);
       found++;
     }
   }
 
-  printf("+------+------------------+---------+-----------+\n");
+  printf("+------------+----------------------+-----------+------------+\n");
 
   if (found == 0) {
     printf("[THONG BAO] Khong co thanh vien nao gan nguong Out CLB\n");
