@@ -499,7 +499,7 @@ void memberViewProfile(AppDatabase *db) {
   printf("So dien thoai  : %s\n", m->phone);
   printf("Ban            : %s\n", team_name(m->team));
   printf("Chuc vu        : %s\n", member_role_name(m->role));
-  printf("Trang thai     : %s\n", m->isActive ? "Active" : "Out CLB");
+  printf("Trang thai     : %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
   printf("So lan vi pham : %d\n", m->violationCount);
   printf("Tong tien phat : %.0f VND\n", m->totalFine);
   printf("----------------------------------------\n\n");
@@ -516,13 +516,14 @@ void memberListAll(AppDatabase *db) {
   }
 
   printf("\nDANH SACH THANH VIEN\n");
-  printf("+------+------------------+------------+-----------+\n");
-  printf("| MSSV | Ho va ten        | Ban        | Chuc vu  |\n");
-  printf("+------+------------------+------------+-----------+\n");
+  printf("+------------+----------------------+--------------+----------------------+\n");
+  printf("| MSSV       | Ho va ten            | Ban          | Chuc vu              |\n");
+  printf("+------------+----------------------+--------------+----------------------+\n");
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    printf("| %-4s | %-16s | %-10s | %-9s |\n", m->studentId, m->fullName,
+    printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s |\n",
+           m->studentId, m->fullName,
            team_name(m->team), member_role_name(m->role));
 
     if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
@@ -533,12 +534,12 @@ void memberListAll(AppDatabase *db) {
       if (buf[0] == 'q' || buf[0] == 'Q') {
         break;
       }
-      printf("\n+------+------------------+------------+-----------+\n");
-      printf("| MSSV | Ho va ten        | Ban        | Chuc vu  |\n");
-      printf("+------+------------------+------------+-----------+\n");
+      printf("\n+------------+----------------------+--------------+----------------------+\n");
+      printf("| MSSV       | Ho va ten            | Ban          | Chuc vu              |\n");
+      printf("+------------+----------------------+--------------+----------------------+\n");
     }
   }
 
-  printf("+------+------------------+------------+-----------+\n");
+  printf("+------------+----------------------+--------------+----------------------+\n");
   printf("Tong: %d thanh vien\n\n", db->memberCount);
 }

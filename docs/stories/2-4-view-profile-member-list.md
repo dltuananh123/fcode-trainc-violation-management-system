@@ -1,6 +1,6 @@
 # Story 2.4: View Profile & Member List
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -23,11 +23,11 @@ so that I can see my information and know who else is in the club.
 
 ## Tasks / Subtasks
 
-- [ ] Implement view-profile flow using current session MSSV
-- [ ] Display full profile with member status
-- [ ] Implement member-list display with restricted columns
-- [ ] Add pagination for member list
-- [ ] Keep output suitable for terminal demo/review
+- [x] Implement view-profile flow using current session MSSV
+- [x] Display full profile with member status
+- [x] Implement member-list display with restricted columns
+- [x] Add pagination for member list
+- [x] Keep output suitable for terminal demo/review
 
 ## Dev Notes
 
@@ -50,6 +50,16 @@ gpt-5
 ### Completion Notes List
 
 - Story prepared with profile visibility and member-list privacy boundaries
+
+### Post-Implementation Fixes
+
+#### Fix #1: Table formatting bị hỏng với data thực
+- **Problem:** Cột quá hẹp — MSSV 4 chars (thực tế 8+), Chuc vu 9 chars (`"Truong nhom/Pho nhom"` = 20). `%-4s` chỉ set min width, không truncate → table bị lệch hoàn toàn.
+- **Fix:** Mở rộng cột (MSSV=10, Name=20, Ban=12, Chuc vu=20) + dùng precision specifier `%-10.10s` để vừa pad vừa truncate nếu quá dài.
+
+#### Fix #2: Status text "Active" vs "Hoat dong" inconsistency
+- **Problem:** `memberViewProfile` dùng `"Active"` / `"Out CLB"` (English), trong khi `displayMemberInfo` (edit) và `memberDelete` dùng `"Hoat dong"` / `"Da Out CLB"` (Vietnamese).
+- **Fix:** Đổi thành `"Hoat dong"` / `"Da Out CLB"` cho nhất quán với toàn bộ UI.
 
 ### File List
 
