@@ -1,6 +1,6 @@
 # Story 2.3: Delete Member
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,12 +20,12 @@ so that departed members no longer appear in the database.
 
 ## Tasks / Subtasks
 
-- [ ] Implement delete-member lookup and confirmation
-- [ ] Remove member record by shifting array
-- [ ] Remove all related violations by shifting array
-- [ ] Remove related account by shifting array
-- [ ] Persist all three stores
-- [ ] Keep cancel path side-effect free
+- [x] Implement delete-member lookup and confirmation
+- [x] Remove member record by shifting array
+- [x] Remove all related violations by shifting array
+- [x] Remove related account by shifting array
+- [x] Persist all three stores
+- [x] Keep cancel path side-effect free
 
 ## Dev Notes
 
@@ -47,6 +47,20 @@ gpt-5
 ### Completion Notes List
 
 - Story prepared with cascade-delete requirement explicit
+
+### Post-Implementation Fixes
+
+#### Fix #1: Save order — accounts trước, members sau
+- **Problem:** Save theo thứ tự members → violations → accounts. Nếu accounts save fail → member đã xóa khỏi file nhưng account vẫn còn → user đã bị xóa vẫn đăng nhập được.
+- **Fix:** Đổi thứ tự: accounts → violations → members. Revoke access trước, xóa data sau. Nếu fail giữa chừng, worst case member record vẫn tồn tại nhưng user không login được → an toàn hơn.
+
+#### Fix #2: Hiện đầy đủ thông tin trước khi confirm xóa
+- **Problem:** Chỉ hiện tên, ban, chức vụ. BCN cần thấy đủ thông tin để quyết định xóa.
+- **Fix:** Hiện thêm email, phone, trạng thái, số violation, totalFine trước confirmation prompt.
+
+#### Fix #3: Ngăn BCN tự xóa account của chính mình
+- **Problem:** BCN nhập MSSV của mình → xóa chính mình → logout → không còn account nào để quản lý hệ thống.
+- **Fix:** Check session studentId vs target studentId, reject nếu trùng với thông báo yêu cầu BCN khác thực hiện.
 
 ### File List
 
