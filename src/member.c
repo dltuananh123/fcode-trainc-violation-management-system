@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "types.h"
 #include "utils.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -177,12 +178,22 @@ int memberAdd(AppDatabase *db) {
  * Story 2.2 — Edit Member (helpers)
  * ============================================================ */
 
+static int isBlankString(const char *s) {
+  while (*s) {
+    if (!isspace((unsigned char)*s)) {
+      return 0;
+    }
+    s++;
+  }
+  return 1;
+}
+
 /* Edit member's full name. Skips if user presses Enter. */
 static void editName(Member *m) {
   char buffer[MAX_NAME_LEN];
   printf("Ho va ten moi: ");
   read_string(buffer, MAX_NAME_LEN);
-  if (strlen(buffer) > 0) {
+  if (strlen(buffer) > 0 && !isBlankString(buffer)) {
     strncpy(m->fullName, buffer, MAX_NAME_LEN - 1);
     m->fullName[MAX_NAME_LEN - 1] = '\0';
   }
@@ -209,7 +220,7 @@ static void editPhone(Member *m) {
   char buffer[MAX_PHONE_LEN];
   printf("So dien thoai moi: ");
   read_string(buffer, MAX_PHONE_LEN);
-  if (strlen(buffer) > 0) {
+  if (strlen(buffer) > 0 && !isBlankString(buffer)) {
     strncpy(m->phone, buffer, MAX_PHONE_LEN - 1);
     m->phone[MAX_PHONE_LEN - 1] = '\0';
   }
@@ -263,8 +274,9 @@ static void editStatus(Member *m) {
   }
 }
 
-/* Recalculate fines for all unpaid violations after a role change. */
-static int recalcFines(AppDatabase *db, Member *m) {
+/* Recalculate fines for all unpaid violations after a role change.
+ * Only updates memory — caller is responsible for persisting. */
+static void recalcFines(AppDatabase *db, Member *m) {
   double newFineRate = (m->role == MEMBER_ROLE_MEMBER) ? 20000.0 : 50000.0;
   m->totalFine = 0.0;
 
@@ -279,13 +291,8 @@ static int recalcFines(AppDatabase *db, Member *m) {
     m->totalFine += v->fine;
   }
 
-  if (fileioSaveViolations(db) != 0) {
-    printf("[LOI] Khong the luu du lieu vi pham sau khi tinh lai tien phat\n");
-    return -1;
-  }
   printf("[THONG BAO] Da tinh lai tien phat cho cac vi pham chua dong do "
          "thay doi chuc vu\n");
-  return 0;
 }
 
 /* Display current member information. */
@@ -328,13 +335,35 @@ int memberEdit(AppDatabase *db) {
   int roleChanged = editRole(m);
   editStatus(m);
 
-  if (roleChanged && recalcFines(db, m) != 0) {
-    return -1;
+  if (roleChanged) {
+    /* Update corresponding Account.role to match new Member.role */
+    for (int i = 0; i < db->accountCount; i++) {
+      if (strcmp(db->accounts[i].studentId, m->studentId) == 0) {
+        db->accounts[i].role =
+            (m->role == MEMBER_ROLE_BCN) ? ACCOUNT_ROLE_BCN : ACCOUNT_ROLE_MEMBER;
+        break;
+      }
+    }
+
+    /* Recalculate unpaid violation fines in memory */
+    recalcFines(db, m);
   }
 
+  /* Save members first (has updated totalFine), then violations, then accounts */
   if (fileioSaveMembers(db) != 0) {
     printf("[LOI] Khong the luu du lieu thanh vien\n");
     return -1;
+  }
+
+  if (roleChanged) {
+    if (fileioSaveViolations(db) != 0) {
+      printf("[LOI] Khong the luu du lieu vi pham\n");
+      return -1;
+    }
+    if (fileioSaveAccounts(db) != 0) {
+      printf("[LOI] Khong the cap nhat quyen tai khoan\n");
+      return -1;
+    }
   }
 
   printf("[OK] Sua thong tin thanh vien thanh cong\n");
