@@ -391,10 +391,24 @@ int memberDelete(AppDatabase *db) {
   }
 
   Member *m = &db->members[memberIndex];
+
+  /* Prevent BCN from deleting their own account */
+  Account *session = authGetSession();
+  if (session != NULL && strcmp(session->studentId, studentId) == 0) {
+    printf("[LOI] Khong the xoa tai khoan cua chinh ban. Vui long yeu cau BCN khac thuc hien.\n");
+    return -1;
+  }
+
+  /* Show full member info before confirmation */
   printf("\nTHONG TIN THANH VIEN:\n");
-  printf("  Ho va ten: %s\n", m->fullName);
-  printf("  Ban: %s\n", team_name(m->team));
-  printf("  Chuc vu: %s\n", member_role_name(m->role));
+  printf("  Ho va ten     : %s\n", m->fullName);
+  printf("  Email         : %s\n", m->email);
+  printf("  So dien thoai : %s\n", m->phone);
+  printf("  Ban           : %s\n", team_name(m->team));
+  printf("  Chuc vu       : %s\n", member_role_name(m->role));
+  printf("  Trang thai    : %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
+  printf("  So lan vi pham: %d\n", m->violationCount);
+  printf("  Tong tien phat: %.0f VND\n", m->totalFine);
 
   printf("\nXac nhan xoa thanh vien nay va toan bo du lieu lien quan? (1: "
          "Co, 0: Khong): ");
@@ -404,11 +418,18 @@ int memberDelete(AppDatabase *db) {
     return 0;
   }
 
-  /* 1. Remove member from array */
-  for (int i = memberIndex; i < db->memberCount - 1; i++) {
-    db->members[i] = db->members[i + 1];
+  /* 1. Remove related account first (revoke access) */
+  int aIndex = 0;
+  while (aIndex < db->accountCount) {
+    if (strcmp(db->accounts[aIndex].studentId, studentId) == 0) {
+      for (int j = aIndex; j < db->accountCount - 1; j++) {
+        db->accounts[j] = db->accounts[j + 1];
+      }
+      db->accountCount--;
+    } else {
+      aIndex++;
+    }
   }
-  db->memberCount--;
 
   /* 2. Remove related violations */
   int vIndex = 0;
@@ -423,30 +444,23 @@ int memberDelete(AppDatabase *db) {
     }
   }
 
-  /* 3. Remove related account */
-  int aIndex = 0;
-  while (aIndex < db->accountCount) {
-    if (strcmp(db->accounts[aIndex].studentId, studentId) == 0) {
-      for (int j = aIndex; j < db->accountCount - 1; j++) {
-        db->accounts[j] = db->accounts[j + 1];
-      }
-      db->accountCount--;
-    } else {
-      aIndex++;
-    }
+  /* 3. Remove member from array */
+  for (int i = memberIndex; i < db->memberCount - 1; i++) {
+    db->members[i] = db->members[i + 1];
   }
+  db->memberCount--;
 
-  /* 4. Persist to files */
-  if (fileioSaveMembers(db) != 0) {
-    printf("[LOI] Khong the luu du lieu thanh vien sau khi xoa\n");
+  /* 4. Persist to files: accounts → violations → members */
+  if (fileioSaveAccounts(db) != 0) {
+    printf("[LOI] Khong the luu du lieu tai khoan sau khi xoa\n");
     return -1;
   }
   if (fileioSaveViolations(db) != 0) {
     printf("[LOI] Khong the luu du lieu vi pham sau khi xoa\n");
     return -1;
   }
-  if (fileioSaveAccounts(db) != 0) {
-    printf("[LOI] Khong the luu du lieu tai khoan sau khi xoa\n");
+  if (fileioSaveMembers(db) != 0) {
+    printf("[LOI] Khong the luu du lieu thanh vien sau khi xoa\n");
     return -1;
   }
 
