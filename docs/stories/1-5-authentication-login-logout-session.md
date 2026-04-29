@@ -1,6 +1,6 @@
 # Story 1.5: Authentication - Login, Logout, Session
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -26,20 +26,20 @@ so that I can access the system with my assigned role.
 
 ## Tasks / Subtasks
 
-- [ ] Create `include/auth.h` and `src/auth.c`
-- [ ] Implement login flow (AC: 1, 2, 4)
-  - [ ] find account by `studentId`
-  - [ ] reject locked accounts
-  - [ ] compare password
-  - [ ] increment and persist `failCount`
-  - [ ] reset `failCount` on successful login and persist the account state
-  - [ ] lock account on third failure
-- [ ] Implement session handling (AC: 1, 3)
-  - [ ] static current session in `auth.c`
-  - [ ] `auth_get_session()`
-  - [ ] clear session on logout
-- [ ] Implement menu-routing contract with `main.c`
-- [ ] Persist auth-side account updates through `fileio`
+- [x] Create `include/auth.h` and `src/auth.c`
+- [x] Implement login flow (AC: 1, 2, 4)
+  - [x] find account by `studentId`
+  - [x] reject locked accounts
+  - [x] compare password
+  - [x] increment and persist `failCount`
+  - [x] reset `failCount` on successful login and persist the account state
+  - [x] lock account on third failure
+- [x] Implement session handling (AC: 1, 3)
+  - [x] static current session in `auth.c`
+  - [x] `auth_get_session()`
+  - [x] clear session on logout
+- [x] Implement menu-routing contract with `main.c`
+- [x] Persist auth-side account updates through `fileio`
 
 ## Dev Notes
 
@@ -66,6 +66,13 @@ gpt-5
 ### Completion Notes List
 
 - Story prepared with lockout and session guardrails
+
+### Post-Implementation Fixes
+
+#### Fix: Login fail thoát chương trình ngay lập tức (Critical bug)
+- **Problem:** `authLogin()` return `-1` cho mọi trường hợp fail (sai mật khẩu, tài khoản không tồn tại, tài khoản bị khóa). `main.c` gọi `break` khi `authLogin` return `-1` → chương trình thoát ngay sau 1 lần nhập sai.
+- **Expected behavior:** Sai mật khẩu (< 3 lần) hoặc tài khoản không tồn tại → cho retry. Account bị khóa do đủ 3 lần sai liên tiếp → mới thoát chương trình.
+- **Fix:** Thêm `while(1)` loop bên trong `authLogin()`. Các lỗi không nghiêm trọng dùng `continue` để retry. Chỉ `return -1` khi account bị khóa do đủ 3 lần sai (lockout), hoặc khi `fileioSaveAccounts` fail (không thể persist trạng thái).
 
 ### File List
 

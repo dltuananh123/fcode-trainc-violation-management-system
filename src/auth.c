@@ -51,57 +51,60 @@ int authLogin(AppDatabase *db) {
   char studentId[MAX_MSSV_LEN];
   char password[MAX_PASS_LEN];
 
-  printLoginBanner();
+  /* Loop until success or account lockout */
+  while (1) {
+    printLoginBanner();
 
-  readInput("MSSV: ", studentId, MAX_MSSV_LEN);
-  readInput("Mat khau: ", password, MAX_PASS_LEN);
+    readInput("MSSV: ", studentId, MAX_MSSV_LEN);
+    readInput("Mat khau: ", password, MAX_PASS_LEN);
 
-  int idx = findAccountIndex(db, studentId);
-  if (idx == -1) {
-    printf("[LOI] Tai khoan khong ton tai\n");
-    return -1;
-  }
+    int idx = findAccountIndex(db, studentId);
+    if (idx == -1) {
+      printf("[LOI] Tai khoan khong ton tai\n");
+      continue;
+    }
 
-  Account *acc = &db->accounts[idx];
+    Account *acc = &db->accounts[idx];
 
-  if (acc->isLocked) {
-    printf("[LOI] Tai khoan da bi khoa. Vui long lien he BCN\n");
-    return -1;
-  }
+    if (acc->isLocked) {
+      printf("[LOI] Tai khoan da bi khoa. Vui long lien he BCN\n");
+      continue;
+    }
 
-  if (strcmp(acc->password, password) != 0) {
-    acc->failCount++;
-    printf("[LOI] Mat khau sai\n");
+    if (strcmp(acc->password, password) != 0) {
+      acc->failCount++;
+      printf("[LOI] Mat khau sai\n");
 
-    if (acc->failCount >= 3) {
-      acc->isLocked = 1;
-      printf("[CANH BAO] Tai khoan da bi khoa sau 3 lan dang nhap sai\n");
-      if (fileioSaveAccounts(db) != 0) {
-        printf("[LOI] Khong the luu trang thai khoa tai khoan\n");
+      if (acc->failCount >= 3) {
+        acc->isLocked = 1;
+        printf("[CANH BAO] Tai khoan da bi khoa sau 3 lan dang nhap sai\n");
+        if (fileioSaveAccounts(db) != 0) {
+          printf("[LOI] Khong the luu trang thai khoa tai khoan\n");
+        }
+        return -1;
       }
-      return -1;
+
+      if (fileioSaveAccounts(db) != 0) {
+        printf("[LOI] Khong the luu so lan dang nhap sai\n");
+        return -1;
+      }
+
+      printf("[THONG BAO] Con lai %d lan thu\n", 3 - acc->failCount);
+      continue;
     }
 
+    /* Login successful */
+    acc->failCount = 0;
     if (fileioSaveAccounts(db) != 0) {
-      printf("[LOI] Khong the luu so lan dang nhap sai\n");
+      printf("[LOI] Khong the cap nhat trang thai tai khoan sau dang nhap\n");
       return -1;
     }
+    currentSession = *acc;
+    sessionActive = 1;
 
-    printf("[THONG BAO] Con lai %d lan thu\n", 3 - acc->failCount);
-    return -1;
+    printf("[OK] Dang nhap thanh cong\n");
+    return 0;
   }
-
-  /* Login successful */
-  acc->failCount = 0;
-  if (fileioSaveAccounts(db) != 0) {
-    printf("[LOI] Khong the cap nhat trang thai tai khoan sau dang nhap\n");
-    return -1;
-  }
-  currentSession = *acc;
-  sessionActive = 1;
-
-  printf("[OK] Dang nhap thanh cong\n");
-  return 0;
 }
 
 void authLogout(AppDatabase *db) {
