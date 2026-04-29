@@ -2,6 +2,7 @@
 #include "fileio.h"
 #include "member.h"
 #include "types.h"
+#include "utils.h"
 #include "violation.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@ static void memberMenu(void) {
     printf("2. Xem lich su vi pham\n");
     printf("3. Xem tong tien phat con no\n");
     printf("4. Xem danh sach thanh vien\n");
+    printf("5. Doi mat khau\n");
     printf("0. Dang xuat\n");
     printf("Nhap lua chon: ");
 
@@ -45,6 +47,9 @@ static void memberMenu(void) {
       break;
     case 4:
       memberListAll(&gDb);
+      break;
+    case 5:
+      authChangePassword(&gDb);
       break;
     case 0:
       authLogout(&gDb);
@@ -73,6 +78,8 @@ static void adminMenu(void) {
     printf("11. Tim kiem theo ngay\n");
     printf("12. Xem profile ca nhan\n");
     printf("13. Xem danh sach thanh vien\n");
+    printf("14. Doi mat khau\n");
+    printf("15. Reset mat khau thanh vien\n");
     printf("0. Dang xuat\n");
     printf("Nhap lua chon: ");
 
@@ -117,6 +124,16 @@ static void adminMenu(void) {
     case 13:
       memberListAll(&gDb);
       break;
+    case 14:
+      authChangePassword(&gDb);
+      break;
+    case 15: {
+      printf("Nhap MSSV can reset mat khau: ");
+      char targetId[MAX_MSSV_LEN];
+      read_string(targetId, MAX_MSSV_LEN);
+      authResetPassword(&gDb, targetId);
+      break;
+    }
     case 0:
       authLogout(&gDb);
       break;
