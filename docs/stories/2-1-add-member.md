@@ -1,6 +1,6 @@
 # Story 2.1: Add Member
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -26,15 +26,15 @@ so that the CLB member database is maintained.
 
 ## Tasks / Subtasks
 
-- [ ] Create `include/member.h` and `src/member.c`
-- [ ] Implement add-member workflow
-  - [ ] collect profile fields
-  - [ ] validate MSSV uniqueness
-  - [ ] validate email
-  - [ ] enforce capacity limit
-- [ ] Create matching account record with password = MSSV
-- [ ] Map access role and member role correctly when creating the account/member pair
-- [ ] Persist `members` and `accounts` immediately
+- [x] Create `include/member.h` and `src/member.c`
+- [x] Implement add-member workflow
+  - [x] collect profile fields
+  - [x] validate MSSV uniqueness
+  - [x] validate email
+  - [x] enforce capacity limit
+- [x] Create matching account record with password = MSSV
+- [x] Map access role and member role correctly when creating the account/member pair
+- [x] Persist `members` and `accounts` immediately
 
 ## Dev Notes
 
@@ -59,6 +59,32 @@ gpt-5
 ### Completion Notes List
 
 - Story prepared with validation, account-creation, and persistence guardrails
+
+### Post-Implementation Fixes
+
+#### Fix #1: `strncpy` thêm explicit null-terminate
+- **Problem:** `strncpy` không guarantee null-terminate nếu source dài >= n. Code chạy đúng nhờ `memset` trước đó, nhưng newbie copy pattern này mà quên `memset` → bug âm thầm.
+- **Fix:** Thêm `buf[MAX_LEN - 1] = '\0'` sau mỗi `strncpy`.
+
+#### Fix #2: Rollback double-fail handling
+- **Problem:** Khi `fileioSaveAccounts` fail, code rollback cả member + account rồi gọi `fileioSaveMembers` để re-save. Nhưng nếu re-save cũng fail → memory state inconsistent.
+- **Fix:** Thêm check kết quả của re-save và print thêm error message nếu thất bại.
+
+#### Fix #3: `is_email_valid` chặt hơn
+- **Problem:** Validation cũ chỉ check có `@` và `.` ở bất kỳ đâu → `"@."` pass validation.
+- **Fix:** Check `@` không ở đầu, phải có `.` sau `@` với ít nhất 1 ký tự giữa chúng, không kết thúc bằng `.`.
+
+#### Fix #4: Validate `fullName` và `phone` không rỗng
+- **Problem:** Tên rỗng và số điện thoại rỗng được chấp nhận.
+- **Fix:** Thêm check `strlen == 0` trong `memberValidateInput` cho cả `fullName` và `phone`.
+
+#### Fix #5: Early MSSV validation
+- **Problem:** User nhập hết MSSV, tên, email, phone, team, role rồi mới validate. Nếu MSSV trùng → mất công nhập lại tất cả.
+- **Fix:** Validate MSSV (format + unique) ngay sau khi nhập, trước khi nhập các trường khác. `memberValidateInput` giờ chỉ validate name, email, phone.
+
+#### Fix #6: Thêm `const` cho header signatures
+- **Problem:** `memberFindById` và `memberValidateInput` nhận `AppDatabase *db` non-const, nhưng implementation chỉ đọc.
+- **Fix:** Đổi thành `const AppDatabase *db` ở cả header lẫn implementation.
 
 ### File List
 

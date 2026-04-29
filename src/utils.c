@@ -44,18 +44,28 @@ int read_int(int *value) {
  * ============================================================ */
 
 int is_email_valid(const char *email) {
-  if (email == NULL) {
+  if (email == NULL || email[0] == '\0') {
     return 0;
   }
 
-  /* Very simple validation as per AC 1: contains '@' and '.' */
   const char *atSign = strchr(email, '@');
-  const char *dotSign = strchr(email, '.');
-
-  if (atSign != NULL && dotSign != NULL) {
-    return 1;
+  /* Must have '@' and it cannot be the first character */
+  if (atSign == NULL || atSign == email) {
+    return 0;
   }
-  return 0;
+
+  /* Must have '.' after '@', with at least one character between them */
+  const char *dotSign = strchr(atSign, '.');
+  if (dotSign == NULL || dotSign == atSign + 1) {
+    return 0;
+  }
+
+  /* Cannot end with '.' */
+  if (dotSign[1] == '\0') {
+    return 0;
+  }
+
+  return 1;
 }
 
 int is_id_valid(const char *id) {
