@@ -1,6 +1,6 @@
 # Story 3.1: Record Violation
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -26,12 +26,12 @@ so that violations are tracked with correct fines and timestamps.
 
 ## Tasks / Subtasks
 
-- [ ] Add the BCN record-violation flow in `src/violation.c`
-- [ ] Reuse member lookup by MSSV/name so BCN can target the correct member
-- [ ] Create violation records with current timestamp, reason, penalty, paid flag, and computed fine
-- [ ] Handle the violence branch separately with confirmation-driven Out CLB update
-- [ ] Persist `violations.dat` and `members.dat` after successful mutation
-- [ ] Keep terminal prompts and validation messages consistent with the existing CLI style
+- [x] Add the BCN record-violation flow in `src/violation.c`
+- [x] Reuse member lookup by MSSV/name so BCN can target the correct member
+- [x] Create violation records with current timestamp, reason, penalty, paid flag, and computed fine
+- [x] Handle the violence branch separately with confirmation-driven Out CLB update
+- [x] Persist `violations.dat` and `members.dat` after successful mutation
+- [x] Keep terminal prompts and validation messages consistent with the existing CLI style
 
 ## Dev Notes
 
@@ -56,6 +56,24 @@ gpt-5
 ### Completion Notes List
 
 - Story prepared with the base violation-recording path, role-based fines, and violence-specific Out CLB confirmation
+
+### Post-Implementation Fixes
+
+#### Fix #1: `strncpy` thiếu null-terminate
+- **Problem:** `strncpy(newViolation.studentId, studentId, MAX_MSSV_LEN - 1)` không guarantee null-terminate. Chạy đúng nhờ `memset` trước, nhưng pattern fragil cho newbie.
+- **Fix:** Thêm `newViolation.studentId[MAX_MSSV_LEN - 1] = '\0'` sau `strncpy`.
+
+#### Fix #2: `violationCheckOutThreshold` save file giữa chừng
+- **Problem:** Khi absent >= 4 và BCN confirm Out CLB, hàm gọi `fileioSaveMembers(db)` ngay. Sau đó `violationRecord` thêm violation + update stats rồi save lại. Nếu save thứ 2 fail → rollback stats nhưng Out CLB status đã persist → inconsistent.
+- **Fix:** Bỏ `fileioSaveMembers` khỏi `violationCheckOutThreshold`. Chỉ update memory, để caller (`violationRecord`) handle persistence.
+
+#### Fix #3: Rollback thiếu khi `fileioSaveMembers` fail
+- **Problem:** `fileioSaveViolations` OK, `fileioSaveMembers` fail → return -1 nhưng không rollback member stats (violationCount, totalFine). violations.dat đã save nhưng members.dat thiếu update → inconsistent.
+- **Fix:** Thêm rollback `member->violationCount--` và `member->totalFine -= newViolation.fine` khi members save fail.
+
+#### Fix #4: Table format trong `violationCheckAllOutClb` bị hỏng
+- **Problem:** Cột quá hẹp — MSSV 4 chars (thực 8+), status 9 chars (`"QUA NGUONG"` = 10). `%-4s` không truncate → table lệch.
+- **Fix:** Mở rộng cột (MSSV=10, Name=20, Vang=9, Status=10) + dùng precision specifier `%-10.10s` để truncate.
 
 ### File List
 
