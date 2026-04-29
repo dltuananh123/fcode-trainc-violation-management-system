@@ -126,16 +126,100 @@ Account *authGetSession(void) {
  * ============================================================ */
 
 int authChangePassword(AppDatabase *db) {
-  /* TODO: Implement in later commit */
-  (void)db;
-  printf("[CANH BAO] Chua cai dat chuc nang doi mat khau\n");
-  return -1;
+  if (db == NULL) {
+    return -1;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf("[LOI] Ban phai dang nhap de doi mat khau\n");
+    return -1;
+  }
+
+  /* Find account in database */
+  int idx = findAccountIndex(db, session->studentId);
+  if (idx == -1) {
+    printf("[LOI] Khong tim thay tai khoan\n");
+    return -1;
+  }
+
+  /* Verify old password */
+  char oldPass[MAX_PASS_LEN];
+  readInput("Nhap mat khau cu: ", oldPass, MAX_PASS_LEN);
+  if (strcmp(db->accounts[idx].password, oldPass) != 0) {
+    printf("[LOI] Mat khau cu khong dung\n");
+    return -1;
+  }
+
+  /* Enter new password */
+  char newPass[MAX_PASS_LEN];
+  readInput("Nhap mat khau moi: ", newPass, MAX_PASS_LEN);
+  if (strlen(newPass) == 0) {
+    printf("[LOI] Mat khau moi khong duoc de trong\n");
+    return -1;
+  }
+
+  /* Confirm new password */
+  char confirmPass[MAX_PASS_LEN];
+  readInput("Xac nhan mat khau moi: ", confirmPass, MAX_PASS_LEN);
+  if (strcmp(newPass, confirmPass) != 0) {
+    printf("[LOI] Mat khau xac nhan khong khop\n");
+    return -1;
+  }
+
+  /* Update password in database */
+  strncpy(db->accounts[idx].password, newPass, MAX_PASS_LEN - 1);
+  db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
+
+  /* Update session copy */
+  strncpy(session->password, newPass, MAX_PASS_LEN - 1);
+  session->password[MAX_PASS_LEN - 1] = '\0';
+
+  /* Save */
+  if (fileioSaveAccounts(db) != 0) {
+    printf("[LOI] Khong the luu mat khau moi\n");
+    return -1;
+  }
+
+  printf("[OK] Doi mat khau thanh cong\n");
+  return 0;
 }
 
 int authResetPassword(AppDatabase *db, const char *targetStudentId) {
-  /* TODO: Implement in later commit */
-  (void)db;
-  (void)targetStudentId;
-  printf("[CANH BAO] Chua cai dat chuc nang reset mat khau\n");
-  return -1;
+  if (db == NULL || targetStudentId == NULL) {
+    return -1;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf("[LOI] Ban phai dang nhap de thuc hien\n");
+    return -1;
+  }
+
+  if (session->role != ACCOUNT_ROLE_BCN) {
+    printf("[LOI] Chi BCN moi co quyen reset mat khau\n");
+    return -1;
+  }
+
+  /* Find target account */
+  int idx = findAccountIndex(db, targetStudentId);
+  if (idx == -1) {
+    printf("[LOI] Khong tim thay tai khoan voi MSSV: %s\n", targetStudentId);
+    return -1;
+  }
+
+  /* Reset password to MSSV, unlock account */
+  strncpy(db->accounts[idx].password, targetStudentId, MAX_PASS_LEN - 1);
+  db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
+  db->accounts[idx].failCount = 0;
+  db->accounts[idx].isLocked = 0;
+
+  /* Save */
+  if (fileioSaveAccounts(db) != 0) {
+    printf("[LOI] Khong the luu mat khau moi\n");
+    return -1;
+  }
+
+  printf("[OK] Da reset mat khau cua %s ve MSSV\n", targetStudentId);
+  return 0;
 }
