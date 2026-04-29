@@ -1,6 +1,6 @@
 # Story 3.2: Out CLB Warning & Enforcement
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -24,12 +24,12 @@ so that I can take action before or at the threshold.
 
 ## Tasks / Subtasks
 
-- [ ] Add a reusable Out CLB threshold checker in `src/violation.c`
-- [ ] Show the 3-absence warning without forcing status change
-- [ ] Prompt for BCN confirmation at the 4-absence threshold and update active status when accepted
-- [ ] Reset absence streak on non-absent violation reasons
-- [ ] Save member data immediately after confirmed Out CLB changes
-- [ ] Ensure behavior integrates cleanly with Story 3.1 instead of splitting duplicate logic
+- [x] Add a reusable Out CLB threshold checker in `src/violation.c`
+- [x] Show the 3-absence warning without forcing status change
+- [x] Prompt for BCN confirmation at the 4-absence threshold and update active status when accepted
+- [x] Reset absence streak on non-absent violation reasons
+- [x] Save member data immediately after confirmed Out CLB changes
+- [x] Ensure behavior integrates cleanly with Story 3.1 instead of splitting duplicate logic
 
 ## Dev Notes
 
