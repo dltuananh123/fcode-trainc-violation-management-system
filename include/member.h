@@ -33,7 +33,7 @@ int memberAdd(AppDatabase *db);
  * @param studentId The student ID to search for
  * @return Index of member in array, or -1 if not found
  */
-int memberFindById(AppDatabase *db, const char *studentId);
+int memberFindById(const AppDatabase *db, const char *studentId);
 
 /**
  * @brief Validate member input data.
@@ -44,7 +44,7 @@ int memberFindById(AppDatabase *db, const char *studentId);
  * @param db Pointer to the AppDatabase (for uniqueness check)
  * @return 0 if valid, -1 if invalid
  */
-int memberValidateInput(const Member *m, AppDatabase *db);
+int memberValidateInput(const Member *m, const AppDatabase *db);
 
 /* ============================================================
  * Story 2.2 — Edit Member

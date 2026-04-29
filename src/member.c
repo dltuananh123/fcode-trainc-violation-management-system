@@ -10,7 +10,7 @@
  * Story 2.1 — Add Member
  * ============================================================ */
 
-int memberFindById(AppDatabase *db, const char *studentId) {
+int memberFindById(const AppDatabase *db, const char *studentId) {
   if (db == NULL || studentId == NULL) {
     return -1;
   }
@@ -24,26 +24,26 @@ int memberFindById(AppDatabase *db, const char *studentId) {
   return -1;
 }
 
-int memberValidateInput(const Member *m, AppDatabase *db) {
+int memberValidateInput(const Member *m, const AppDatabase *db) {
   if (m == NULL || db == NULL) {
     return -1;
   }
 
-  /* Check studentId is valid and not empty */
-  if (!is_id_valid(m->studentId)) {
-    printf("[LOI] MSSV khong hop le\n");
-    return -1;
-  }
-
-  /* Check uniqueness */
-  if (memberFindById(db, m->studentId) != -1) {
-    printf("[LOI] MSSV da ton tai\n");
+  /* Check name is not empty */
+  if (strlen(m->fullName) == 0) {
+    printf("[LOI] Ho va ten khong duoc de trong\n");
     return -1;
   }
 
   /* Check email format */
   if (!is_email_valid(m->email)) {
     printf("[LOI] Email khong hop le\n");
+    return -1;
+  }
+
+  /* Check phone is not empty */
+  if (strlen(m->phone) == 0) {
+    printf("[LOI] So dien thoai khong duoc de trong\n");
     return -1;
   }
 
@@ -66,10 +66,19 @@ int memberAdd(AppDatabase *db) {
   Member newMember;
   memset(&newMember, 0, sizeof(Member));
 
-  /* Input member details */
+  /* Input MSSV and validate immediately (Fix #5) */
   printf("Nhap MSSV: ");
   read_string(newMember.studentId, MAX_MSSV_LEN);
+  if (!is_id_valid(newMember.studentId)) {
+    printf("[LOI] MSSV khong hop le\n");
+    return -1;
+  }
+  if (memberFindById(db, newMember.studentId) != -1) {
+    printf("[LOI] MSSV da ton tai\n");
+    return -1;
+  }
 
+  /* Input rest of member details */
   printf("Nhap ho va ten: ");
   read_string(newMember.fullName, MAX_NAME_LEN);
 
@@ -112,7 +121,7 @@ int memberAdd(AppDatabase *db) {
   newMember.totalFine = 0.0;
   newMember.isActive = STATUS_ACTIVE;
 
-  /* Validate input */
+  /* Validate remaining input (name, email, phone) */
   if (memberValidateInput(&newMember, db) != 0) {
     return -1;
   }
@@ -124,7 +133,9 @@ int memberAdd(AppDatabase *db) {
   Account newAccount;
   memset(&newAccount, 0, sizeof(Account));
   strncpy(newAccount.studentId, newMember.studentId, MAX_MSSV_LEN - 1);
+  newAccount.studentId[MAX_MSSV_LEN - 1] = '\0';
   strncpy(newAccount.password, newMember.studentId, MAX_PASS_LEN - 1);
+  newAccount.password[MAX_PASS_LEN - 1] = '\0';
   if (newMember.role == MEMBER_ROLE_BCN) {
     newAccount.role = ACCOUNT_ROLE_BCN;
   } else {
@@ -145,7 +156,9 @@ int memberAdd(AppDatabase *db) {
     printf("[LOI] Khong the luu du lieu tai khoan\n");
     db->memberCount--;
     db->accountCount--;
-    fileioSaveMembers(db);
+    if (fileioSaveMembers(db) != 0) {
+      printf("[LOI] Khong the hoan tac du lieu thanh vien\n");
+    }
     return -1;
   }
 
