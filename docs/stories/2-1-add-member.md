@@ -78,6 +78,10 @@ gpt-5
 - **Problem:** Tên rỗng và số điện thoại rỗng được chấp nhận.
 - **Fix:** Thêm check `strlen == 0` trong `memberValidateInput` cho cả `fullName` và `phone`.
 
+#### Fix #4b: Validate `fullName` không chỉ rỗng mà còn whitespace-only; `phone` validate format
+- **Problem:** Tên chỉ toàn khoảng trắng vẫn pass validation. Số điện thoại chỉ check rỗng mà không validate format (chứa chữ, ký tự đặc biệt).
+- **Fix:** `fullName` — loop kiểm tra toàn whitespace → reject. `phone` — gọi `is_phone_valid()` thay vì chỉ check `strlen == 0`.
+
 #### Fix #5: Early MSSV validation
 - **Problem:** User nhập hết MSSV, tên, email, phone, team, role rồi mới validate. Nếu MSSV trùng → mất công nhập lại tất cả.
 - **Fix:** Validate MSSV (format + unique) ngay sau khi nhập, trước khi nhập các trường khác. `memberValidateInput` giờ chỉ validate name, email, phone.
