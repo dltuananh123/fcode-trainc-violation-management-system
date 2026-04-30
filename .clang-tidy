@@ -14,7 +14,10 @@ Checks: >
   misc-*,
   performance-*,
   bugprone-*,
-  readability-*
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
 
 CheckOptions:
   # Constants should use UPPER_CASE
