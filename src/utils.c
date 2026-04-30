@@ -7,6 +7,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 /* ============================================================
@@ -220,8 +222,18 @@ void getExeDir(char *buffer, size_t size) {
     *lastSlash = '\0';
   }
 #else
-  /* Basic fallback for POSIX */
-  strncpy(buffer, ".", size);
-  buffer[size - 1] = '\0';
+  /* POSIX implementation using /proc/self/exe */
+  ssize_t len = readlink("/proc/self/exe", buffer, size - 1);
+  if (len != -1) {
+    buffer[len] = '\0';
+    char *lastSlash = strrchr(buffer, '/');
+    if (lastSlash != NULL) {
+      *lastSlash = '\0';
+    }
+  } else {
+    /* Fallback to current directory */
+    strncpy(buffer, ".", size);
+    buffer[size - 1] = '\0';
+  }
 #endif
 }
