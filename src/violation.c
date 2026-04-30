@@ -39,7 +39,7 @@ static int selectViolationReason(int *reason) {
   printf("  3. Bao luc\n");
   printf("Nhap lua chon: ");
 
-  if (read_int(reason) != 1) {
+  if (readInt(reason) != 1) {
     printf("[LOI] Lua chon khong hop le\n");
     return -1;
   }
@@ -62,7 +62,7 @@ static int confirmOutClb(const char *memberName) {
   char confirm[4];
   printf("[XAC NHAN] Ban co chac chan muon Out CLB thanh vien %s? (y/n): ",
          memberName);
-  read_string(confirm, sizeof(confirm));
+  readString(confirm, sizeof(confirm));
 
   if (confirm[0] == 'y' || confirm[0] == 'Y') {
     return 1;
@@ -141,7 +141,7 @@ int violationRecord(AppDatabase *db) {
   /* Step 1: Find member by MSSV */
   char studentId[MAX_MSSV_LEN];
   printf("Nhap MSSV thanh vien: ");
-  read_string(studentId, MAX_MSSV_LEN);
+  readString(studentId, MAX_MSSV_LEN);
 
   int memberIdx = memberFindById(db, studentId);
   if (memberIdx == -1) {
@@ -160,8 +160,8 @@ int violationRecord(AppDatabase *db) {
 
   /* Display member info */
   printf("  Thanh vien: %s\n", member->fullName);
-  printf("  Ban: %s\n", team_name(member->team));
-  printf("  Chuc vu: %s\n", member_role_name(member->role));
+  printf("  Ban: %s\n", teamName(member->team));
+  printf("  Chuc vu: %s\n", memberRoleName(member->role));
 
   /* Step 2: Select violation reason */
   int reason;
@@ -201,7 +201,7 @@ int violationRecord(AppDatabase *db) {
 
   /* Step 5: Optional note */
   printf("Ghi chu (Enter de bo qua): ");
-  read_string(newViolation.note, MAX_NOTE_LEN);
+  readString(newViolation.note, MAX_NOTE_LEN);
 
   /* Step 6: Add violation to database */
   db->violations[db->violationCount++] = newViolation;
@@ -230,11 +230,11 @@ int violationRecord(AppDatabase *db) {
 
   /* Step 9: Display confirmation */
   char timeBuf[20];
-  format_time(newViolation.violationTime, timeBuf, sizeof(timeBuf));
+  formatTime(newViolation.violationTime, timeBuf, sizeof(timeBuf));
 
   printf("\n[OK] Ghi nhan vi pham thanh cong\n");
   printf("  Thanh vien: %s (%s)\n", member->fullName, member->studentId);
-  printf("  Ly do: %s\n", reason_name(newViolation.reason));
+  printf("  Ly do: %s\n", reasonName(newViolation.reason));
   printf("  Thoi gian: %s\n", timeBuf);
 
   if (newViolation.penalty == PENALTY_OUT_CLB) {

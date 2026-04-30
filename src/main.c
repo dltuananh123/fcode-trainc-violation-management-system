@@ -130,7 +130,7 @@ static void adminMenu(void) {
     case 15: {
       printf("Nhap MSSV can reset mat khau: ");
       char targetId[MAX_MSSV_LEN];
-      read_string(targetId, MAX_MSSV_LEN);
+      readString(targetId, MAX_MSSV_LEN);
       authResetPassword(&gDb, targetId);
       break;
     }
