@@ -39,11 +39,11 @@ CheckOptions:
   # Function names should use snake_case
   # Example: auth_login, member_add
   - key: readability-identifier-naming.FunctionCase
-    value: lower_case
+    value: camelBack
 
   # Global/public function names should also use snake_case
   - key: readability-identifier-naming.GlobalFunctionCase
-    value: lower_case
+    value: camelBack
 
   # Function parameters should use camelBack
   # Example: studentId, memberIndex
