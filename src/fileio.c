@@ -4,17 +4,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILE_MEMBERS    "data/members.dat"
+#define FILE_MEMBERS "data/members.dat"
 #define FILE_VIOLATIONS "data/violations.dat"
-#define FILE_ACCOUNTS   "data/accounts.dat"
+#define FILE_ACCOUNTS "data/accounts.dat"
 
-#define TMP_MEMBERS     "data/members.dat.tmp"
-#define TMP_VIOLATIONS  "data/violations.dat.tmp"
-#define TMP_ACCOUNTS    "data/accounts.dat.tmp"
+#define TMP_MEMBERS "data/members.dat.tmp"
+#define TMP_VIOLATIONS "data/violations.dat.tmp"
+#define TMP_ACCOUNTS "data/accounts.dat.tmp"
 
-#define BAK_MEMBERS     "data/members.dat.bak"
-#define BAK_VIOLATIONS  "data/violations.dat.bak"
-#define BAK_ACCOUNTS    "data/accounts.dat.bak"
+#define BAK_MEMBERS "data/members.dat.bak"
+#define BAK_VIOLATIONS "data/violations.dat.bak"
+#define BAK_ACCOUNTS "data/accounts.dat.bak"
 
 /* --- Crash recovery --- */
 
@@ -132,8 +132,8 @@ static int replaceStoreFile(const char *tmpFile, const char *dataFile,
 /* --- Generic save (Fix #2) --- */
 
 static int saveStore(const char *tmpFile, const char *dataFile,
-                     const char *bakFile, const void *buffer,
-                     size_t itemSize, int count, const char *label) {
+                     const char *bakFile, const void *buffer, size_t itemSize,
+                     int count, const char *label) {
   FILE *fp = fopen(tmpFile, "wb");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file tam de luu %s!\n", label);
@@ -166,8 +166,8 @@ int fileioSaveMembers(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
-  return saveStore(TMP_MEMBERS, FILE_MEMBERS, BAK_MEMBERS,
-                   db->members, sizeof(Member), db->memberCount, "members");
+  return saveStore(TMP_MEMBERS, FILE_MEMBERS, BAK_MEMBERS, db->members,
+                   sizeof(Member), db->memberCount, "members");
 }
 
 int fileioSaveViolations(AppDatabase *db) {
@@ -183,9 +183,8 @@ int fileioSaveAccounts(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
-  return saveStore(TMP_ACCOUNTS, FILE_ACCOUNTS, BAK_ACCOUNTS,
-                   db->accounts, sizeof(Account), db->accountCount,
-                   "accounts");
+  return saveStore(TMP_ACCOUNTS, FILE_ACCOUNTS, BAK_ACCOUNTS, db->accounts,
+                   sizeof(Account), db->accountCount, "accounts");
 }
 
 /* --- Load helpers (Fix #3) --- */
@@ -193,13 +192,13 @@ int fileioSaveAccounts(AppDatabase *db) {
 static int loadAccounts(AppDatabase *db) {
   FILE *fp = fopen(FILE_ACCOUNTS, "rb");
   if (fp != NULL) {
-    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS,
-                         "accounts") != 0) {
+    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") !=
+        0) {
       fclose(fp);
       return -1;
     }
-    if (readItemsChecked(fp, db->accounts, sizeof(Account),
-                         db->accountCount, "accounts") != 0) {
+    if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount,
+                         "accounts") != 0) {
       fclose(fp);
       return -1;
     }
@@ -226,8 +225,7 @@ static int loadAccounts(AppDatabase *db) {
 static int loadMembers(AppDatabase *db) {
   FILE *fp = fopen(FILE_MEMBERS, "rb");
   if (fp != NULL) {
-    if (readCountChecked(fp, &(db->memberCount), MAX_MEMBERS,
-                         "members") != 0) {
+    if (readCountChecked(fp, &(db->memberCount), MAX_MEMBERS, "members") != 0) {
       fclose(fp);
       return -1;
     }

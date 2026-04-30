@@ -339,8 +339,9 @@ int memberEdit(AppDatabase *db) {
     /* Update corresponding Account.role to match new Member.role */
     for (int i = 0; i < db->accountCount; i++) {
       if (strcmp(db->accounts[i].studentId, m->studentId) == 0) {
-        db->accounts[i].role =
-            (m->role == MEMBER_ROLE_BCN) ? ACCOUNT_ROLE_BCN : ACCOUNT_ROLE_MEMBER;
+        db->accounts[i].role = (m->role == MEMBER_ROLE_BCN)
+                                   ? ACCOUNT_ROLE_BCN
+                                   : ACCOUNT_ROLE_MEMBER;
         break;
       }
     }
@@ -349,7 +350,8 @@ int memberEdit(AppDatabase *db) {
     recalcFines(db, m);
   }
 
-  /* Save members first (has updated totalFine), then violations, then accounts */
+  /* Save members first (has updated totalFine), then violations, then accounts
+   */
   if (fileioSaveMembers(db) != 0) {
     printf("[LOI] Khong the luu du lieu thanh vien\n");
     return -1;
@@ -395,7 +397,8 @@ int memberDelete(AppDatabase *db) {
   /* Prevent BCN from deleting their own account */
   Account *session = authGetSession();
   if (session != NULL && strcmp(session->studentId, studentId) == 0) {
-    printf("[LOI] Khong the xoa tai khoan cua chinh ban. Vui long yeu cau BCN khac thuc hien.\n");
+    printf("[LOI] Khong the xoa tai khoan cua chinh ban. Vui long yeu cau BCN "
+           "khac thuc hien.\n");
     return -1;
   }
 
@@ -516,15 +519,17 @@ void memberListAll(AppDatabase *db) {
   }
 
   printf("\nDANH SACH THANH VIEN\n");
-  printf("+------------+----------------------+--------------+----------------------+\n");
-  printf("| MSSV       | Ho va ten            | Ban          | Chuc vu              |\n");
-  printf("+------------+----------------------+--------------+----------------------+\n");
+  printf("+------------+----------------------+--------------+-----------------"
+         "-----+\n");
+  printf("| MSSV       | Ho va ten            | Ban          | Chuc vu         "
+         "     |\n");
+  printf("+------------+----------------------+--------------+-----------------"
+         "-----+\n");
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s |\n",
-           m->studentId, m->fullName,
-           team_name(m->team), member_role_name(m->role));
+    printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s |\n", m->studentId,
+           m->fullName, team_name(m->team), member_role_name(m->role));
 
     if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
       printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de "
@@ -534,12 +539,16 @@ void memberListAll(AppDatabase *db) {
       if (buf[0] == 'q' || buf[0] == 'Q') {
         break;
       }
-      printf("\n+------------+----------------------+--------------+----------------------+\n");
-      printf("| MSSV       | Ho va ten            | Ban          | Chuc vu              |\n");
-      printf("+------------+----------------------+--------------+----------------------+\n");
+      printf("\n+------------+----------------------+--------------+-----------"
+             "-----------+\n");
+      printf("| MSSV       | Ho va ten            | Ban          | Chuc vu     "
+             "         |\n");
+      printf("+------------+----------------------+--------------+-------------"
+             "---------+\n");
     }
   }
 
-  printf("+------------+----------------------+--------------+----------------------+\n");
+  printf("+------------+----------------------+--------------+-----------------"
+         "-----+\n");
   printf("Tong: %d thanh vien\n\n", db->memberCount);
 }

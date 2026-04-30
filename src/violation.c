@@ -308,9 +308,8 @@ void violationCheckAllOutClb(AppDatabase *db) {
         status = "Theo doi";
       }
 
-      printf("| %-10.10s | %-20.20s | %-9d | %-10.10s |\n",
-             m->studentId, m->fullName,
-             m->consecutiveAbsences, status);
+      printf("| %-10.10s | %-20.20s | %-9d | %-10.10s |\n", m->studentId,
+             m->fullName, m->consecutiveAbsences, status);
       found++;
     }
   }
