@@ -5,19 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_PATH_LEN 512
+#define MAX_PATH_BASE 512
+#define MAX_PATH_FULL 1024
 
-static char pathMembers[MAX_PATH_LEN];
-static char pathViolations[MAX_PATH_LEN];
-static char pathAccounts[MAX_PATH_LEN];
+static char pathMembers[MAX_PATH_FULL];
+static char pathViolations[MAX_PATH_FULL];
+static char pathAccounts[MAX_PATH_FULL];
 
-static char pathTmpMembers[MAX_PATH_LEN];
-static char pathTmpViolations[MAX_PATH_LEN];
-static char pathTmpAccounts[MAX_PATH_LEN];
+static char pathTmpMembers[MAX_PATH_FULL];
+static char pathTmpViolations[MAX_PATH_FULL];
+static char pathTmpAccounts[MAX_PATH_FULL];
 
-static char pathBakMembers[MAX_PATH_LEN];
-static char pathBakViolations[MAX_PATH_LEN];
-static char pathBakAccounts[MAX_PATH_LEN];
+static char pathBakMembers[MAX_PATH_FULL];
+static char pathBakViolations[MAX_PATH_FULL];
+static char pathBakAccounts[MAX_PATH_FULL];
 
 static int pathsInitialized = 0;
 
@@ -26,10 +27,10 @@ static void initPaths(void) {
     return;
   }
 
-  char exeDir[MAX_PATH_LEN];
+  char exeDir[MAX_PATH_BASE];
   getExeDir(exeDir, sizeof(exeDir));
 
-  char dataDir[MAX_PATH_LEN];
+  char dataDir[MAX_PATH_BASE];
 #ifdef _WIN32
   snprintf(dataDir, sizeof(dataDir), "%s\\data", exeDir);
   const char *sep = "\\";
@@ -44,19 +45,21 @@ static void initPaths(void) {
        but we don't need to treat it as a hard error here. */
   }
 
-  snprintf(pathMembers, MAX_PATH_LEN, "%s%smembers.dat", dataDir, sep);
-  snprintf(pathViolations, MAX_PATH_LEN, "%s%sviolations.dat", dataDir, sep);
-  snprintf(pathAccounts, MAX_PATH_LEN, "%s%saccounts.dat", dataDir, sep);
+  snprintf(pathMembers, MAX_PATH_FULL, "%s%smembers.dat", dataDir, sep);
+  snprintf(pathViolations, MAX_PATH_FULL, "%s%sviolations.dat", dataDir, sep);
+  snprintf(pathAccounts, MAX_PATH_FULL, "%s%saccounts.dat", dataDir, sep);
 
-  snprintf(pathTmpMembers, MAX_PATH_LEN, "%s%smembers.dat.tmp", dataDir, sep);
-  snprintf(pathTmpViolations, MAX_PATH_LEN, "%s%sviolations.dat.tmp", dataDir,
+  snprintf(pathTmpMembers, MAX_PATH_FULL, "%s%smembers.dat.tmp", dataDir, sep);
+  snprintf(pathTmpViolations, MAX_PATH_FULL, "%s%sviolations.dat.tmp", dataDir,
            sep);
-  snprintf(pathTmpAccounts, MAX_PATH_LEN, "%s%saccounts.dat.tmp", dataDir, sep);
+  snprintf(pathTmpAccounts, MAX_PATH_FULL, "%s%saccounts.dat.tmp", dataDir,
+           sep);
 
-  snprintf(pathBakMembers, MAX_PATH_LEN, "%s%smembers.dat.bak", dataDir, sep);
-  snprintf(pathBakViolations, MAX_PATH_LEN, "%s%sviolations.dat.bak", dataDir,
+  snprintf(pathBakMembers, MAX_PATH_FULL, "%s%smembers.dat.bak", dataDir, sep);
+  snprintf(pathBakViolations, MAX_PATH_FULL, "%s%sviolations.dat.bak", dataDir,
            sep);
-  snprintf(pathBakAccounts, MAX_PATH_LEN, "%s%saccounts.dat.bak", dataDir, sep);
+  snprintf(pathBakAccounts, MAX_PATH_FULL, "%s%saccounts.dat.bak", dataDir,
+           sep);
 
   pathsInitialized = 1;
 }
