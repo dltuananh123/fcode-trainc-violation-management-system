@@ -5,6 +5,10 @@ bin/
 *.exe
 *.out
 
+# Clang cache files
+.cache/
+compile_commands.json
+
 # Data files (generated at runtime)
 data/*.dat
 
