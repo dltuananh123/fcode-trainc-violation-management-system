@@ -67,6 +67,20 @@ gpt-5
 - Public utility function names follow snake_case to match architecture naming rules
 - Member and violation modules already reuse the shared helpers for input, validation, formatting, and display mapping
 
+### Post-Implementation Fixes
+
+#### Fix #1: `is_email_valid` chặt hơn (v2)
+- **Problem:** Validation trước đó vẫn cho pass một số edge case: nhiều `@`, bắt đầu/kết thúc bằng `@` hoặc `.`, domain có `..`, ký tự không hợp lệ.
+- **Fix:** Rewrite toàn bộ — check đúng 1 dấu `@`, không bắt đầu/kết thúc bằng `@` hay `.`, domain phải có `.` với các phần không rỗng, chỉ cho phép ký tự hợp lệ (letters, digits, `.`, `_`, `%`, `+`, `-`, `@`).
+
+#### Fix #2: `is_id_valid` thêm min length và first-char check
+- **Problem:** MSSV có thể ngắn 1 ký tự hoặc bắt đầu bằng số.
+- **Fix:** Thêm check tối thiểu 4 ký tự, ký tự đầu phải là chữ cái (`isalpha`).
+
+#### Fix #3: Thêm hàm `is_phone_valid`
+- **Problem:** Chưa có hàm validate số điện thoại riêng — member validation chỉ check rỗng.
+- **Fix:** Thêm `is_phone_valid()` — chỉ cho phép chữ số, 7-15 ký tự, cho phép `+` ở đầu.
+
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-3-utility-functions.md`

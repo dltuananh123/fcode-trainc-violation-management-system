@@ -48,21 +48,51 @@ int isEmailValid(const char *email) {
     return 0;
   }
 
+  size_t len = strlen(email);
+
+  /* Must not start or end with '@' or '.' */
+  if (email[0] == '@' || email[0] == '.' || email[len - 1] == '@' ||
+      email[len - 1] == '.') {
+    return 0;
+  }
+
+  /* Exactly one '@' */
   const char *atSign = strchr(email, '@');
-  /* Must have '@' and it cannot be the first character */
-  if (atSign == NULL || atSign == email) {
+  if (atSign == NULL) {
+    return 0;
+  }
+  if (strchr(atSign + 1, '@') != NULL) {
     return 0;
   }
 
-  /* Must have '.' after '@', with at least one character between them */
-  const char *dotSign = strchr(atSign, '.');
-  if (dotSign == NULL || dotSign == atSign + 1) {
+  /* Local part (before @) must have at least one character */
+  if (atSign == email) {
     return 0;
   }
 
-  /* Cannot end with '.' */
-  if (dotSign[1] == '\0') {
+  /* Domain part (after @) must have at least one '.' with non-empty parts */
+  const char *domain = atSign + 1;
+  if (*domain == '\0' || *domain == '.') {
     return 0;
+  }
+
+  const char *dot = strchr(domain, '.');
+  if (dot == NULL) {
+    return 0;
+  }
+
+  /* Character before dot cannot be '.' (no "..") and after dot must exist */
+  if (*(dot - 1) == '.' || *(dot + 1) == '\0') {
+    return 0;
+  }
+
+  /* Only allow letters, digits, '.', '_', '%', '+', '-', '@' */
+  for (size_t i = 0; i < len; i++) {
+    char c = email[i];
+    if (!isalnum((unsigned char)c) && c != '.' && c != '_' && c != '%' &&
+        c != '+' && c != '-' && c != '@') {
+      return 0;
+    }
   }
 
   return 1;
@@ -73,17 +103,55 @@ int isIdValid(const char *id) {
     return 0;
   }
 
-  /* Check length <= MAX_MSSV_LEN - 1 */
-  if (strlen(id) >= MAX_MSSV_LEN) {
+  size_t len = strlen(id);
+
+  /* MSSV should be at least 4 characters (e.g. "ADMIN") and at most MAX_MSSV_LEN-1 */
+  if (len < 4 || len >= MAX_MSSV_LEN) {
+    return 0;
+  }
+
+  /* Must start with a letter */
+  if (!isalpha((unsigned char)id[0])) {
     return 0;
   }
 
   /* Check if alphanumeric */
-  for (size_t i = 0; i < strlen(id); i++) {
+  for (size_t i = 0; i < len; i++) {
     if (!isalnum((unsigned char)id[i])) {
       return 0;
     }
   }
+  return 1;
+}
+
+int is_phone_valid(const char *phone) {
+  if (phone == NULL || phone[0] == '\0') {
+    return 0;
+  }
+
+  size_t len = strlen(phone);
+
+  /* Phone must be 7-15 digits, may start with '+' */
+  size_t start = 0;
+  if (phone[0] == '+') {
+    start = 1;
+    if (len < 8) {
+      return 0;
+    }
+  }
+
+  /* Must have at least 7 digits after optional '+' */
+  if (len - start < 7 || len - start > 15) {
+    return 0;
+  }
+
+  /* All remaining characters must be digits */
+  for (size_t i = start; i < len; i++) {
+    if (!isdigit((unsigned char)phone[i])) {
+      return 0;
+    }
+  }
+
   return 1;
 }
 

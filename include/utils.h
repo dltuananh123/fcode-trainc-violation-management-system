@@ -52,6 +52,14 @@ int isEmailValid(const char *email);
  */
 int isIdValid(const char *id);
 
+/**
+ * @brief Checks if a phone number is valid (digits only, 7-15 chars, optional leading '+').
+ *
+ * @param phone The phone string to validate.
+ * @return 1 if valid, 0 otherwise.
+ */
+int is_phone_valid(const char *phone);
+
 /* ============================================================
  * TIME & DATE HELPERS
  * ============================================================ */
