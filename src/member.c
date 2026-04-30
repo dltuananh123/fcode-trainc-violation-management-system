@@ -30,8 +30,15 @@ int memberValidateInput(const Member *m, const AppDatabase *db) {
     return -1;
   }
 
-  /* Check name is not empty */
-  if (strlen(m->fullName) == 0) {
+  /* Check name is not empty or whitespace-only */
+  int nameBlank = 1;
+  for (size_t i = 0; i < strlen(m->fullName); i++) {
+    if (!isspace((unsigned char)m->fullName[i])) {
+      nameBlank = 0;
+      break;
+    }
+  }
+  if (nameBlank) {
     printf("[LOI] Ho va ten khong duoc de trong\n");
     return -1;
   }
@@ -42,9 +49,9 @@ int memberValidateInput(const Member *m, const AppDatabase *db) {
     return -1;
   }
 
-  /* Check phone is not empty */
-  if (strlen(m->phone) == 0) {
-    printf("[LOI] So dien thoai khong duoc de trong\n");
+  /* Check phone is not empty and has valid format */
+  if (!is_phone_valid(m->phone)) {
+    printf("[LOI] So dien thoai khong hop le (chi chua so, 7-15 chu so)\n");
     return -1;
   }
 
