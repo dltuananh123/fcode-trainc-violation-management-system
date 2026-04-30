@@ -5,6 +5,10 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 /* ============================================================
  * INPUT HANDLING HELPERS
  * ============================================================ */
@@ -199,4 +203,25 @@ const char *reasonName(int reasonId) {
   default:
     return "Khong xac dinh";
   }
+}
+
+/* ============================================================
+ * PATH & DIRECTORY HELPERS
+ * ============================================================ */
+
+void getExeDir(char *buffer, size_t size) {
+  if (buffer == NULL || size == 0) {
+    return;
+  }
+#ifdef _WIN32
+  GetModuleFileNameA(NULL, buffer, (DWORD)size);
+  char *lastSlash = strrchr(buffer, '\\');
+  if (lastSlash != NULL) {
+    *lastSlash = '\0';
+  }
+#else
+  /* Basic fallback for POSIX */
+  strncpy(buffer, ".", size);
+  buffer[size - 1] = '\0';
+#endif
 }

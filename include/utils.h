@@ -111,4 +111,24 @@ const char *accountRoleName(int roleId);
  */
 const char *reasonName(int reasonId);
 
+/* ============================================================
+ * PATH & DIRECTORY HELPERS
+ * ============================================================ */
+
+#ifdef _WIN32
+#include <direct.h>
+#define MKDIR(path) _mkdir(path)
+#else
+#include <sys/stat.h>
+#define MKDIR(path) mkdir(path, 0755)
+#endif
+
+/**
+ * @brief Gets the directory where the executable is located.
+ *
+ * @param buffer The buffer to store the directory path.
+ * @param size The size of the buffer.
+ */
+void getExeDir(char *buffer, size_t size);
+
 #endif /* UTILS_H */
