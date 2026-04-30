@@ -1,10 +1,12 @@
 #ifndef VIOLATION_H
 #define VIOLATION_H
 
-/* violation.h — Story 3.1 & 3.2
- * Violation recording, Out CLB warning/enforcement.
+/**
+ * @file violation.h
+ * @brief Violation management module — Stories 3.1 & 3.2.
  *
- * Depends on: types.h, member.h (for memberFindById) */
+ * Handles recording violations, penalty calculation, and threshold checks.
+ */
 
 #include "types.h"
 
