@@ -27,6 +27,11 @@ CheckOptions:
   - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE
 
+  # Enum constants should use UPPER_CASE
+  # Example: enum Color { RED, GREEN, BLUE };
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+
   # Normal variables should use camelBack (theo requirement)
   # Example: memberCount, totalFine
   - key: readability-identifier-naming.VariableCase
@@ -59,6 +64,11 @@ CheckOptions:
   # Example: memberCount, totalFine
   - key: readability-identifier-naming.StructMemberCase
     value: camelBack
+
+  # Typedefs should use CamelCase
+  # Example: Member, Violation, AppDatabase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
 
   # Public members should also use camelBack
   - key: readability-identifier-naming.PublicMemberCase
