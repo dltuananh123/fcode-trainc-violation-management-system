@@ -30,7 +30,7 @@ static void initPaths(void) {
   char exeDir[MAX_PATH_BASE];
   getExeDir(exeDir, sizeof(exeDir));
 
-  char dataDir[MAX_PATH_BASE];
+  char dataDir[MAX_PATH_BASE + 5];
 #ifdef _WIN32
   snprintf(dataDir, sizeof(dataDir), "%s\\data", exeDir);
   const char *sep = "\\";
