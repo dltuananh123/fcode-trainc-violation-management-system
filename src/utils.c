@@ -114,7 +114,8 @@ int isIdValid(const char *id) {
 
   size_t len = strlen(id);
 
-  /* MSSV should be at least 4 characters (e.g. "ADMIN") and at most MAX_MSSV_LEN-1 */
+  /* MSSV should be at least 4 characters (e.g. "ADMIN") and at most
+   * MAX_MSSV_LEN-1 */
   if (len < 4 || len >= MAX_MSSV_LEN) {
     return 0;
   }
