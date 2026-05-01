@@ -1,9 +1,18 @@
+#ifndef _WIN32
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include "utils.h"
 #include "types.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 /* ============================================================
  * INPUT HANDLING HELPERS
@@ -267,4 +276,35 @@ const char *reasonName(int reasonId) {
   default:
     return "Khong xac dinh";
   }
+}
+
+/* ============================================================
+ * PATH & DIRECTORY HELPERS
+ * ============================================================ */
+
+void getExeDir(char *buffer, size_t size) {
+  if (buffer == NULL || size == 0) {
+    return;
+  }
+#ifdef _WIN32
+  GetModuleFileNameA(NULL, buffer, (DWORD)size);
+  char *lastSlash = strrchr(buffer, '\\');
+  if (lastSlash != NULL) {
+    *lastSlash = '\0';
+  }
+#else
+  /* POSIX implementation using /proc/self/exe */
+  ssize_t len = readlink("/proc/self/exe", buffer, size - 1);
+  if (len != -1) {
+    buffer[len] = '\0';
+    char *lastSlash = strrchr(buffer, '/');
+    if (lastSlash != NULL) {
+      *lastSlash = '\0';
+    }
+  } else {
+    /* Fallback to current directory */
+    strncpy(buffer, ".", size);
+    buffer[size - 1] = '\0';
+  }
+#endif
 }

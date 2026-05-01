@@ -1,20 +1,68 @@
 #include "fileio.h"
 #include "types.h"
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define FILE_MEMBERS "data/members.dat"
-#define FILE_VIOLATIONS "data/violations.dat"
-#define FILE_ACCOUNTS "data/accounts.dat"
+#define MAX_PATH_BASE 512
+#define MAX_PATH_FULL 1024
 
-#define TMP_MEMBERS "data/members.dat.tmp"
-#define TMP_VIOLATIONS "data/violations.dat.tmp"
-#define TMP_ACCOUNTS "data/accounts.dat.tmp"
+static char pathMembers[MAX_PATH_FULL];
+static char pathViolations[MAX_PATH_FULL];
+static char pathAccounts[MAX_PATH_FULL];
 
-#define BAK_MEMBERS "data/members.dat.bak"
-#define BAK_VIOLATIONS "data/violations.dat.bak"
-#define BAK_ACCOUNTS "data/accounts.dat.bak"
+static char pathTmpMembers[MAX_PATH_FULL];
+static char pathTmpViolations[MAX_PATH_FULL];
+static char pathTmpAccounts[MAX_PATH_FULL];
+
+static char pathBakMembers[MAX_PATH_FULL];
+static char pathBakViolations[MAX_PATH_FULL];
+static char pathBakAccounts[MAX_PATH_FULL];
+
+static int pathsInitialized = 0;
+
+static void initPaths(void) {
+  if (pathsInitialized) {
+    return;
+  }
+
+  char exeDir[MAX_PATH_BASE];
+  getExeDir(exeDir, sizeof(exeDir));
+
+  char dataDir[MAX_PATH_BASE + 5];
+#ifdef _WIN32
+  snprintf(dataDir, sizeof(dataDir), "%s\\data", exeDir);
+  const char *sep = "\\";
+#else
+  snprintf(dataDir, sizeof(dataDir), "%s/data", exeDir);
+  const char *sep = "/";
+#endif
+
+  /* Ensure data directory exists next to the executable */
+  if (MKDIR(dataDir) != 0) {
+    /* If directory exists, MKDIR returns non-zero on some systems,
+       but we don't need to treat it as a hard error here. */
+  }
+
+  snprintf(pathMembers, MAX_PATH_FULL, "%s%smembers.dat", dataDir, sep);
+  snprintf(pathViolations, MAX_PATH_FULL, "%s%sviolations.dat", dataDir, sep);
+  snprintf(pathAccounts, MAX_PATH_FULL, "%s%saccounts.dat", dataDir, sep);
+
+  snprintf(pathTmpMembers, MAX_PATH_FULL, "%s%smembers.dat.tmp", dataDir, sep);
+  snprintf(pathTmpViolations, MAX_PATH_FULL, "%s%sviolations.dat.tmp", dataDir,
+           sep);
+  snprintf(pathTmpAccounts, MAX_PATH_FULL, "%s%saccounts.dat.tmp", dataDir,
+           sep);
+
+  snprintf(pathBakMembers, MAX_PATH_FULL, "%s%smembers.dat.bak", dataDir, sep);
+  snprintf(pathBakViolations, MAX_PATH_FULL, "%s%sviolations.dat.bak", dataDir,
+           sep);
+  snprintf(pathBakAccounts, MAX_PATH_FULL, "%s%saccounts.dat.bak", dataDir,
+           sep);
+
+  pathsInitialized = 1;
+}
 
 /* --- Crash recovery --- */
 
@@ -35,9 +83,10 @@ static void recoverFromTmp(const char *tmpFile, const char *datFile) {
 }
 
 static void handleTmpFiles(void) {
-  recoverFromTmp(TMP_MEMBERS, FILE_MEMBERS);
-  recoverFromTmp(TMP_VIOLATIONS, FILE_VIOLATIONS);
-  recoverFromTmp(TMP_ACCOUNTS, FILE_ACCOUNTS);
+  initPaths();
+  recoverFromTmp(pathTmpMembers, pathMembers);
+  recoverFromTmp(pathTmpViolations, pathViolations);
+  recoverFromTmp(pathTmpAccounts, pathAccounts);
 }
 
 /* --- Checked read/write helpers --- */
@@ -166,7 +215,8 @@ int fileioSaveMembers(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
-  return saveStore(TMP_MEMBERS, FILE_MEMBERS, BAK_MEMBERS, db->members,
+  initPaths();
+  return saveStore(pathTmpMembers, pathMembers, pathBakMembers, db->members,
                    sizeof(Member), db->memberCount, "members");
 }
 
@@ -174,7 +224,8 @@ int fileioSaveViolations(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
-  return saveStore(TMP_VIOLATIONS, FILE_VIOLATIONS, BAK_VIOLATIONS,
+  initPaths();
+  return saveStore(pathTmpViolations, pathViolations, pathBakViolations,
                    db->violations, sizeof(Violation), db->violationCount,
                    "violations");
 }
@@ -183,14 +234,16 @@ int fileioSaveAccounts(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
-  return saveStore(TMP_ACCOUNTS, FILE_ACCOUNTS, BAK_ACCOUNTS, db->accounts,
+  initPaths();
+  return saveStore(pathTmpAccounts, pathAccounts, pathBakAccounts, db->accounts,
                    sizeof(Account), db->accountCount, "accounts");
 }
 
 /* --- Load helpers (Fix #3) --- */
 
 static int loadAccounts(AppDatabase *db) {
-  FILE *fp = fopen(FILE_ACCOUNTS, "rb");
+  initPaths();
+  FILE *fp = fopen(pathAccounts, "rb");
   if (fp != NULL) {
     if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") !=
         0) {
@@ -223,7 +276,8 @@ static int loadAccounts(AppDatabase *db) {
 }
 
 static int loadMembers(AppDatabase *db) {
-  FILE *fp = fopen(FILE_MEMBERS, "rb");
+  initPaths();
+  FILE *fp = fopen(pathMembers, "rb");
   if (fp != NULL) {
     if (readCountChecked(fp, &(db->memberCount), MAX_MEMBERS, "members") != 0) {
       fclose(fp);
@@ -245,7 +299,8 @@ static int loadMembers(AppDatabase *db) {
 }
 
 static int loadViolations(AppDatabase *db) {
-  FILE *fp = fopen(FILE_VIOLATIONS, "rb");
+  initPaths();
+  FILE *fp = fopen(pathViolations, "rb");
   if (fp != NULL) {
     if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS,
                          "violations") != 0) {
