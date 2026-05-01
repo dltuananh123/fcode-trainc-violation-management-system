@@ -58,7 +58,7 @@ int isIdValid(const char *id);
  * @param phone The phone string to validate.
  * @return 1 if valid, 0 otherwise.
  */
-int is_phone_valid(const char *phone);
+int isPhoneValid(const char *phone);
 
 /* ============================================================
  * TIME & DATE HELPERS

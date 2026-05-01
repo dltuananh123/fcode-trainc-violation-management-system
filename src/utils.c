@@ -133,7 +133,7 @@ int isIdValid(const char *id) {
   return 1;
 }
 
-int is_phone_valid(const char *phone) {
+int isPhoneValid(const char *phone) {
   if (phone == NULL || phone[0] == '\0') {
     return 0;
   }

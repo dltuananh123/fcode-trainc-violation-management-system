@@ -50,7 +50,7 @@ int memberValidateInput(const Member *m, const AppDatabase *db) {
   }
 
   /* Check phone is not empty and has valid format */
-  if (!is_phone_valid(m->phone)) {
+  if (!isPhoneValid(m->phone)) {
     printf("[LOI] So dien thoai khong hop le (chi chua so, 7-15 chu so)\n");
     return -1;
   }
