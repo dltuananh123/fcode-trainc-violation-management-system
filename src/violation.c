@@ -472,4 +472,83 @@ int violationMarkPaid(AppDatabase *db) {
   printf("[OK] Da thu tien thanh cong! Tong no con lai: %.0f VND\n", m->totalFine);
   return 0;
 }
+/* ============================================================
+ * Story 3.4 — View All Violations with Filters
+ * ============================================================ */
+
+void violationListAll(AppDatabase *db) {
+  if (db == NULL) return;
+
+  printf("\n--- DANH SACH TOAN BO VI PHAM ---\n");
+  printf("1. Xem tat ca\n");
+  printf("2. Loc theo Ban (Team)\n");
+  printf("3. Loc theo Ly do\n");
+  printf("4. Loc theo Trang thai thu tien\n");
+  printf("0. Quay lai\n");
+  printf("Chon bo loc: ");
+  
+  int choice;
+  if (readInt(&choice) != 1 || choice < 0 || choice > 4) {
+    printf("[LOI] Lua chon khong hop le.\n");
+    return;
+  }
+  if (choice == 0) return;
+
+  int filterTeam = -1;
+  int filterReason = -1;
+  int filterPaid = -1;
+
+  if (choice == 2) {
+    printf("Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong): ");
+    if (readInt(&filterTeam) != 1 || filterTeam < 0 || filterTeam > 3) {
+      printf("[LOI] Ban khong hop le.\n"); return;
+    }
+  } else if (choice == 3) {
+    printf("Chon ly do (0-Khong ao, 1-Vang hop, 2-Khong hoat dong, 3-Bao luc): ");
+    if (readInt(&filterReason) != 1 || filterReason < 0 || filterReason > 3) {
+      printf("[LOI] Ly do khong hop le.\n"); return;
+    }
+  } else if (choice == 4) {
+    printf("Chon trang thai (0-Chua thu, 1-Da thu): ");
+    if (readInt(&filterPaid) != 1 || (filterPaid != 0 && filterPaid != 1)) {
+      printf("[LOI] Trang thai khong hop le.\n"); return;
+    }
+  }
+
+  printf("\n+------+------------------+---------------------------+------------+---------------+\n");
+  printf("| MSSV | Thoi gian        | Ly do                     | Tien phat  | Trang thai    |\n");
+  printf("+------+------------------+---------------------------+------------+---------------+\n");
+
+  int found = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    
+    // Tìm member tương ứng để lấy thông tin Team (Ban) cho chức năng lọc
+    int mIdx = memberFindById(db, v->studentId);
+    if (mIdx == -1) continue; // Skip nếu dữ liệu mồ côi
+    Member *m = &db->members[mIdx];
+
+    // Áp dụng bộ lọc (Apply Filters)
+    if (choice == 2 && m->team != filterTeam) continue;
+    if (choice == 3 && v->reason != filterReason) continue;
+    if (choice == 4 && v->isPaid != filterPaid) continue;
+
+    char timeBuf[20];
+    formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
+    
+    const char *status = v->isPaid ? "Da thu" : "CHUA THU";
+    if (v->penalty == PENALTY_OUT_CLB) status = "OUT CLB";
+
+    printf("| %-4s | %-16s | %-25s | %-10.0f | %-13s |\n", 
+           v->studentId, timeBuf, reasonName(v->reason), v->fine, status);
+    found++;
+  }
+  printf("+------+------------------+---------------------------+------------+---------------+\n");
+
+  if (found == 0) {
+    printf("[THONG BAO] Khong co vi pham nao khop voi dieu kien loc.\n");
+  } else {
+    printf("Tong: %d ket qua.\n", found);
+  }
+}
 

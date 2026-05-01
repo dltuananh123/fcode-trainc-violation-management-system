@@ -77,3 +77,11 @@ void violationViewFines(AppDatabase *db);
  */
 int violationMarkPaid(AppDatabase *db);
 
+/* ============================================================
+ * Story 3.4 — View All Violations with Filters
+ * ============================================================ */
+
+/**
+ * @brief Admin views all violations with options to filter by team, reason, or status.
+ */
+void violationListAll(AppDatabase *db);
