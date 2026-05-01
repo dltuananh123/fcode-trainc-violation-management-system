@@ -57,3 +57,23 @@ int violationCheckOutThreshold(AppDatabase *db, Member *member);
 void violationCheckAllOutClb(AppDatabase *db);
 
 #endif /* VIOLATION_H */
+
+/* ============================================================
+ * Story 3.3 — Mark Paid & View Own Violations/Fines
+ * ============================================================ */
+
+/**
+ * @brief View all violations of the currently logged-in member.
+ */
+void violationViewOwn(AppDatabase *db);
+
+/**
+ * @brief View unpaid fines and total debt of the currently logged-in member.
+ */
+void violationViewFines(AppDatabase *db);
+
+/**
+ * @brief Admin marks a specific violation as paid and recalculates totalFine.
+ */
+int violationMarkPaid(AppDatabase *db);
+
