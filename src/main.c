@@ -117,6 +117,8 @@ static void adminMenu(void) {
       violationCheckAllOutClb(&gDb);
       break;
     case 9:
+      reportSortByViolations(&gDb);
+      break;
     case 10:
     case 11:
       printf("[CANH BAO] Chua cai dat\n");
