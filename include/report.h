@@ -26,3 +26,13 @@
 void reportTeamStats(const AppDatabase *db);
 
 #endif /* REPORT_H */
+
+/* ============================================================
+ * 4.3 REPORT VIOLATION TXT
+ * ============================================================ */
+/**
+ * @brief Explore report violations and collected to a timestamped .txt file.
+ * * @param db Pointer to the global application database.
+ * @return 0 if success, -1 if fail.
+ */
+int reportExportTxt(const AppDatabase *db);
