@@ -1,6 +1,6 @@
 # Story 4.4: Search Violations by Date Range
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -22,11 +22,11 @@ so that I can analyze violations for a specific period.
 
 ## Tasks / Subtasks
 
-- [ ] Add the BCN search-by-date flow in `src/violation.c`
-- [ ] Prompt for start and end dates with the documented CLI format
-- [ ] Use `parse_date()` to normalize start-of-day and end-of-day boundaries
-- [ ] Filter `violations[]` by inclusive `time_t` comparison
-- [ ] Display matching violations or an empty-result message without mutating stored data
+- [x] Add the BCN search-by-date flow in `src/violation.c`
+- [x] Prompt for start and end dates with the documented CLI format
+- [x] Use `parse_date()` to normalize start-of-day and end-of-day boundaries
+- [x] Filter `violations[]` by inclusive `time_t` comparison
+- [x] Display matching violations or an empty-result message without mutating stored data
 
 ## Dev Notes
 
@@ -53,4 +53,4 @@ gpt-5
 
 ### File List
 
-- `docs/stories/4-4-search-violations-by-date-range.md`
+- `_bmad-output/implementation-artifacts/4-4-search-violations-by-date-range.md`

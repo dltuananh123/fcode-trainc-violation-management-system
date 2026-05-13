@@ -625,3 +625,62 @@ void violationViewAllFiltered(AppDatabase *db) {
     break;
   }
 }
+
+/* ============================================================
+ * Story 4.4 - Search Violations by Date Range
+ * ============================================================ */
+
+void violationSearchByDate(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  if (db->violationCount == 0) {
+    printf("[THONG BAO] Khong co vi pham nao trong du lieu\n");
+    return;
+  }
+
+  char startBuf[16];
+  char endBuf[16];
+  time_t start;
+  time_t end;
+
+  printf("\nTIM KIEM VI PHAM THEO KHOANG NGAY\n");
+
+  printf("Nhap ngay bat dau (dd/mm/yyyy): ");
+  readString(startBuf, sizeof(startBuf));
+  if (parseDate(startBuf, &start, 0) != 1) {
+    printf("[LOI] Dinh dang ngay khong hop le (dd/mm/yyyy)\n");
+    return;
+  }
+
+  printf("Nhap ngay ket thuc (dd/mm/yyyy): ");
+  readString(endBuf, sizeof(endBuf));
+  if (parseDate(endBuf, &end, 1) != 1) {
+    printf("[LOI] Dinh dang ngay khong hop le (dd/mm/yyyy)\n");
+    return;
+  }
+
+  if (start > end) {
+    printf("[LOI] Ngay bat dau phai truoc hoac bang ngay ket thuc\n");
+    return;
+  }
+
+  printViolationTableHeader();
+
+  int found = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    const Violation *v = &db->violations[i];
+    if (v->violationTime >= start && v->violationTime <= end) {
+      printViolationRow(findMemberForViolation(db, v), v);
+      found++;
+    }
+  }
+
+  printf("+------------+----------------------+--------------+----------------------+------------------+------------+------------+\n");
+  if (found == 0) {
+    printf("Khong co vi pham nao trong khoang ngay nay\n");
+  } else {
+    printf("Tong: %d vi pham\n", found);
+  }
+}

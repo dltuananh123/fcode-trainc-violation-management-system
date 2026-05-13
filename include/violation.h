@@ -3,7 +3,7 @@
 
 /**
  * @file violation.h
- * @brief Violation management module - Stories 3.1, 3.2, 3.3, and 3.4.
+ * @brief Violation management module - Stories 3.1, 3.2, 3.3, 3.4, and 4.4.
  *
  * Handles recording violations, penalty calculation, threshold checks,
  * member self-service views, admin payment marking, and filtered
@@ -38,5 +38,11 @@ int violationMarkPaid(AppDatabase *db);
  * ============================================================ */
 
 void violationViewAllFiltered(AppDatabase *db);
+
+/* ============================================================
+ * Story 4.4 - Search Violations by Date Range
+ * ============================================================ */
+
+void violationSearchByDate(AppDatabase *db);
 
 #endif /* VIOLATION_H */

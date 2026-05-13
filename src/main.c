@@ -127,7 +127,7 @@ static void adminMenu(void) {
       reportExportTxt(&gDb);
       break;
     case 11:
-      printf("[CANH BAO] Chua cai dat\n");
+      violationSearchByDate(&gDb);
       break;
     case 12:
       memberViewProfile(&gDb);
