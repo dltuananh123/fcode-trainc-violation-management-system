@@ -3,6 +3,35 @@
 #include "utils.h"
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
+static void aggregateTeamTotals(const AppDatabase *db, double collected[],
+                                double outstanding[]) {
+  for (int team = TEAM_ACADEMIC; team <= TEAM_MEDIA; team++) {
+    collected[team] = 0.0;
+    outstanding[team] = 0.0;
+  }
+
+  for (int i = 0; i < db->violationCount; i++) {
+    const Violation *v = &db->violations[i];
+    int team = -1;
+
+    for (int j = 0; j < db->memberCount; j++) {
+      if (strcmp(db->members[j].studentId, v->studentId) == 0) {
+        team = db->members[j].team;
+        break;
+      }
+    }
+
+    if (team >= TEAM_ACADEMIC && team <= TEAM_MEDIA) {
+      if (v->isPaid) {
+        collected[team] += v->fine;
+      } else {
+        outstanding[team] += v->fine;
+      }
+    }
+  }
+}
 
 static int countMemberViolations(const AppDatabase *db, const char *studentId) {
   int count = 0;
@@ -64,27 +93,7 @@ void reportTeamStats(const AppDatabase *db) {
 
   double collected[4] = {0.0, 0.0, 0.0, 0.0};
   double outstanding[4] = {0.0, 0.0, 0.0, 0.0};
-
-  for (int i = 0; i < db->violationCount; i++) {
-    const Violation *v = &db->violations[i];
-
-    /* Find the team of the member who committed the violation */
-    int team = -1;
-    for (int j = 0; j < db->memberCount; j++) {
-      if (strcmp(db->members[j].studentId, v->studentId) == 0) {
-        team = db->members[j].team;
-        break;
-      }
-    }
-
-    if (team >= TEAM_ACADEMIC && team <= TEAM_MEDIA) {
-      if (v->isPaid) {
-        collected[team] += v->fine;
-      } else {
-        outstanding[team] += v->fine;
-      }
-    }
-  }
+  aggregateTeamTotals(db, collected, outstanding);
 
   printf("\n--- THONG KE TIEN PHAT THEO BAN ---\n");
   printf("%-15s | %-15s | %-15s | %-15s\n", "Ban", "Da thu (VND)",
@@ -152,4 +161,90 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
   printf("+----------------------+------------+--------------+--------------+\n");
   printf("Tong: %d thanh vien\n", db->memberCount);
+}
+
+void reportExportTxt(const AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  double collected[4];
+  double outstanding[4];
+  char exeDir[512];
+  char filePath[1024];
+  char timestampForFile[32];
+  char timestampDisplay[32];
+  time_t now = time(NULL);
+  struct tm *timeInfo = localtime(&now);
+
+  if (timeInfo == NULL) {
+    printf("[LOI] Khong the lay thoi gian he thong de xuat bao cao\n");
+    return;
+  }
+
+  strftime(timestampForFile, sizeof(timestampForFile), "%Y%m%d_%H%M%S",
+           timeInfo);
+  strftime(timestampDisplay, sizeof(timestampDisplay), "%d/%m/%Y %H:%M:%S",
+           timeInfo);
+
+  getExeDir(exeDir, sizeof(exeDir));
+#ifdef _WIN32
+  snprintf(filePath, sizeof(filePath), "%s\\violation_report_%s.txt", exeDir,
+           timestampForFile);
+#else
+  snprintf(filePath, sizeof(filePath), "%s/violation_report_%s.txt", exeDir,
+           timestampForFile);
+#endif
+
+  FILE *fp = fopen(filePath, "w");
+  if (fp == NULL) {
+    printf("[LOI] Khong the tao file bao cao %s\n", filePath);
+    return;
+  }
+
+  aggregateTeamTotals(db, collected, outstanding);
+
+  fprintf(fp, "BAO CAO VI PHAM CLB F-CODE\n");
+  fprintf(fp, "Thoi gian xuat: %s\n", timestampDisplay);
+  fprintf(fp, "========================================\n\n");
+
+  fprintf(fp, "TONG HOP THEO BAN\n");
+  fprintf(fp, "%-15s | %-15s | %-15s | %-15s\n", "Ban", "Da thu (VND)",
+          "Con no (VND)", "Tong (VND)");
+  fprintf(fp, "-----------------------------------------------------------------------\n");
+  for (int team = TEAM_ACADEMIC; team <= TEAM_MEDIA; team++) {
+    double total = collected[team] + outstanding[team];
+    fprintf(fp, "%-15s | %15.0f | %15.0f | %15.0f\n", teamName(team),
+            collected[team], outstanding[team], total);
+  }
+
+  fprintf(fp, "\nTHANH VIEN CON NO TIEN PHAT\n");
+  fprintf(fp, "%-20s | %-10s | %-15s\n", "Ho va ten", "MSSV", "Con no (VND)");
+  fprintf(fp, "---------------------------------------------------\n");
+
+  int foundOutstanding = 0;
+  for (int i = 0; i < db->memberCount; i++) {
+    double totalOwed = 0.0;
+
+    for (int j = 0; j < db->violationCount; j++) {
+      const Violation *v = &db->violations[j];
+      if (strcmp(v->studentId, db->members[i].studentId) == 0 &&
+          v->isPaid == 0 && v->fine > 0) {
+        totalOwed += v->fine;
+      }
+    }
+
+    if (totalOwed > 0.0) {
+      fprintf(fp, "%-20.20s | %-10.10s | %15.0f\n", db->members[i].fullName,
+              db->members[i].studentId, totalOwed);
+      foundOutstanding++;
+    }
+  }
+
+  if (foundOutstanding == 0) {
+    fprintf(fp, "Khong co thanh vien nao con no tien phat.\n");
+  }
+
+  fclose(fp);
+  printf("[OK] Da xuat bao cao ra file: %s\n", filePath);
 }

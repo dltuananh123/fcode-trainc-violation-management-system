@@ -1,6 +1,6 @@
 # Story 4.3: Export Report to .txt
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,11 +20,11 @@ so that I have a permanent record for reporting purposes.
 
 ## Tasks / Subtasks
 
-- [ ] Add `report_export_txt()` in `src/report.c`
-- [ ] Generate a timestamped output filename suitable for the local filesystem
-- [ ] Write report header, team summary, and outstanding-member section to the `.txt` file
-- [ ] Reuse existing aggregation logic where possible instead of duplicating business calculations
-- [ ] Show a clear CLI success or failure message after export
+- [x] Add `report_export_txt()` in `src/report.c`
+- [x] Generate a timestamped output filename suitable for the local filesystem
+- [x] Write report header, team summary, and outstanding-member section to the `.txt` file
+- [x] Reuse existing aggregation logic where possible instead of duplicating business calculations
+- [x] Show a clear CLI success or failure message after export
 
 ## Dev Notes
 
@@ -48,7 +48,14 @@ gpt-5
 ### Completion Notes List
 
 - Story prepared with timestamped text export requirements and reusable reporting calculations
+- Wired BCN menu option 10 to the text export flow
+- Reused shared team aggregation logic for both terminal statistics and exported summaries
+- Generated deterministic timestamped filenames using standard C time APIs only
+- Exported both team totals and the list of members with outstanding fines
 
 ### File List
 
-- `docs/stories/4-3-export-report-to-txt.md`
+- `_bmad-output/implementation-artifacts/4-3-export-report-to-txt.md`
+- `include/report.h`
+- `src/main.c`
+- `src/report.c`
