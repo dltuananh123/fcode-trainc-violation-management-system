@@ -8,10 +8,21 @@
 mingw32-make
 ```
 
-### 1.2 Nap demo data
+### 1.2 Build seed data tool
 
 ```bash
+gcc -std=c17 -m64 -Wall -Iinclude tools/seed_data.c -o bin/seed_data.exe
+```
+
+### 1.3 Nap demo data
+
+```bash
+# Chay tu thu muc goc project
 bin\seed_data.exe
+
+# HOAC chay tu ben trong bin\
+cd bin
+seed_data.exe
 ```
 
 Ket qua:
@@ -20,7 +31,7 @@ Ket qua:
 - 15 tai khoan
 - Du lieu tu dong duoc copy vao `bin\data\`
 
-### 1.3 Xoa data (reset ve trang thai ban dau)
+### 1.4 Xoa data (reset ve trang thai ban dau)
 
 ```bash
 bin\seed_data.exe clear
@@ -403,9 +414,39 @@ bin\seed_data.exe clear
 # Chay app -> Tu tao tai khoan ADMIN/ADMIN
 bin\violation-management-system.exe
 
-# Thoat app, nap lai demo data
+# Thoat app, nap lai demo data (chay tu bat ky thu muc nao)
 bin\seed_data.exe
 
 # Chay app lai voi data moi
 bin\violation-management-system.exe
+```
+
+---
+
+## 8. Luu y quan trong
+
+### 8.1 Build seed_data rieng
+
+Seed data tool **khong nam trong Makefile** vi co `main()` rieng. Build thu cong:
+
+```bash
+gcc -std=c17 -m64 -Wall -Iinclude tools/seed_data.c -o bin/seed_data.exe
+```
+
+### 8.2 Chay seed_data tu bat ky dau
+
+`seed_data.exe` tu dong tao thu muc `data\` va `bin\data\` neu chua ton tai.
+Ban co the chay no tu thu muc goc project hoac tu ben trong `bin\`.
+
+### 8.3 Chay app
+
+App luon doc data tu `bin\data\` (nam cung thu muc voi file .exe).
+
+```bash
+# Tu thu muc goc
+bin\violation-management-system.exe
+
+# Hoac vao bin\
+cd bin
+violation-management-system.exe
 ```

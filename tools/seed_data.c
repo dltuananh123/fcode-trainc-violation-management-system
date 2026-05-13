@@ -9,6 +9,12 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
+
 /* ---- clear: write empty .dat files ---- */
 
 /* ---- helpers ---- */
@@ -68,6 +74,14 @@ static int writeFile(const char *path, const void *data, size_t itemSize, int co
     if (count > 0) fwrite(data, itemSize, (size_t)count, fp);
     fclose(fp);
     return 0;
+}
+
+static void ensureDir(const char *dir) {
+#ifdef _WIN32
+    _mkdir(dir);
+#else
+    mkdir(dir, 0755);
+#endif
 }
 
 static int clearData(void) {
@@ -198,6 +212,10 @@ int main(int argc, char *argv[]) {
 #else
     const char *sep = "/";
 #endif
+
+    ensureDir("data");
+    snprintf(path, sizeof(path), "bin%sdata", sep);
+    ensureDir(path);
 
     snprintf(path, sizeof(path), "data%smembers.dat", sep);
     if (writeFile(path, members, sizeof(Member), mc) != 0) return 1;
