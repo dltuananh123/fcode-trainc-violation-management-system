@@ -526,17 +526,18 @@ void memberListAll(AppDatabase *db) {
   }
 
   printf("\nDANH SACH THANH VIEN\n");
-  printf("+------------+----------------------+--------------+-----------------"
-         "-----+\n");
-  printf("| MSSV       | Ho va ten            | Ban          | Chuc vu         "
-         "     |\n");
-  printf("+------------+----------------------+--------------+-----------------"
-         "-----+\n");
+  printf("+------------+----------------------+--------------+--------------------"
+         "+------------+\n");
+  printf("| MSSV       | Ho va ten            | Ban          | Chuc vu            "
+         "| Trang thai |\n");
+  printf("+------------+----------------------+--------------+--------------------"
+         "+------------+\n");
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s |\n", m->studentId,
-           m->fullName, teamName(m->team), memberRoleName(m->role));
+    printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s | %-10.10s |\n",
+           m->studentId, m->fullName, teamName(m->team), memberRoleName(m->role),
+           m->isActive ? "Hoat dong" : "Out CLB");
 
     if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
       printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de "
@@ -547,15 +548,15 @@ void memberListAll(AppDatabase *db) {
         break;
       }
       printf("\n+------------+----------------------+--------------+-----------"
-             "-----------+\n");
+             "---------+------------+\n");
       printf("| MSSV       | Ho va ten            | Ban          | Chuc vu     "
-             "         |\n");
+             "         | Trang thai |\n");
       printf("+------------+----------------------+--------------+-------------"
-             "---------+\n");
+             "---------+------------+\n");
     }
   }
 
-  printf("+------------+----------------------+--------------+-----------------"
-         "-----+\n");
+  printf("+------------+----------------------+--------------+--------------------"
+         "+------------+\n");
   printf("Tong: %d thanh vien\n\n", db->memberCount);
 }
