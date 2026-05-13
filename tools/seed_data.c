@@ -121,24 +121,25 @@ int main(int argc, char *argv[]) {
     makeAccount(&accounts[ac++], "ADMIN", "ADMIN", ACCOUNT_ROLE_BCN);
 
     /* === Members (4 teams, ~3 per team) === */
+    /* totalFine = CHUA THU only (tinh tu violations phia duoi) */
     /* Hoc thuat (0) */
-    makeMember(&members[mc], "SV0001", "Nguyen Van An",     TEAM_ACADEMIC, MEMBER_ROLE_LEADER, 20000, 0, 1); mc++;
-    makeMember(&members[mc], "SV0002", "Tran Thi Bich",     TEAM_ACADEMIC, MEMBER_ROLE_MEMBER, 60000, 2, 3); mc++;
+    makeMember(&members[mc], "SV0001", "Nguyen Van An",     TEAM_ACADEMIC, MEMBER_ROLE_LEADER, 0,     0, 1); mc++;
+    makeMember(&members[mc], "SV0002", "Tran Thi Bich",     TEAM_ACADEMIC, MEMBER_ROLE_MEMBER, 20000, 2, 3); mc++;
     makeMember(&members[mc], "SV0003", "Le Hoang Cuong",    TEAM_ACADEMIC, MEMBER_ROLE_MEMBER, 0,     0, 0); mc++;
 
     /* Ke hoach (1) */
-    makeMember(&members[mc], "SV0004", "Pham Minh Duc",     TEAM_PLANNING, MEMBER_ROLE_LEADER, 40000, 0, 2); mc++;
+    makeMember(&members[mc], "SV0004", "Pham Minh Duc",     TEAM_PLANNING, MEMBER_ROLE_LEADER, 50000, 0, 2); mc++;
     makeMember(&members[mc], "SV0005", "Vo Thi Mai",        TEAM_PLANNING, MEMBER_ROLE_MEMBER, 20000, 1, 1); mc++;
-    makeMember(&members[mc], "SV0006", "Bui Quoc Phong",    TEAM_PLANNING, MEMBER_ROLE_MEMBER, 20000, 0, 1); mc++;
+    makeMember(&members[mc], "SV0006", "Bui Quoc Phong",    TEAM_PLANNING, MEMBER_ROLE_MEMBER, 0,     0, 1); mc++;
 
     /* Nhan su (2) */
     makeMember(&members[mc], "SV0007", "Do Thanh Giang",    TEAM_HR, MEMBER_ROLE_LEADER, 0,     0, 0); mc++;
-    makeMember(&members[mc], "SV0008", "Ngo Thi Hanh",      TEAM_HR, MEMBER_ROLE_MEMBER, 40000, 3, 2); mc++;
-    makeMember(&members[mc], "SV0009", "Ly Minh Kien",      TEAM_HR, MEMBER_ROLE_MEMBER, 20000, 0, 1); mc++;
+    makeMember(&members[mc], "SV0008", "Ngo Thi Hanh",      TEAM_HR, MEMBER_ROLE_MEMBER, 20000, 3, 2); mc++;
+    makeMember(&members[mc], "SV0009", "Ly Minh Kien",      TEAM_HR, MEMBER_ROLE_MEMBER, 0,     0, 1); mc++;
 
     /* Truyen thong (3) */
-    makeMember(&members[mc], "SV0010", "Ha Thanh Long",     TEAM_MEDIA, MEMBER_ROLE_LEADER, 20000, 0, 1); mc++;
-    makeMember(&members[mc], "SV0011", "Dang Thi Ngoc",     TEAM_MEDIA, MEMBER_ROLE_MEMBER, 80000, 4, 4); mc++;
+    makeMember(&members[mc], "SV0010", "Ha Thanh Long",     TEAM_MEDIA, MEMBER_ROLE_LEADER, 0,     0, 1); mc++;
+    makeMember(&members[mc], "SV0011", "Dang Thi Ngoc",     TEAM_MEDIA, MEMBER_ROLE_MEMBER, 40000, 4, 4); mc++;
     makeMember(&members[mc], "SV0012", "Cao Van Phu",       TEAM_MEDIA, MEMBER_ROLE_MEMBER, 0,     0, 0); mc++;
 
     /* BCN members */
