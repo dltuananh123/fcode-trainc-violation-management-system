@@ -138,7 +138,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
     return;
   }
 
-  const Member *sorted[MAX_MEMBERS];
+  const Member *sorted[MAX_MEMBERS] = {NULL};
   for (int i = 0; i < db->memberCount; i++) {
     sorted[i] = &db->members[i];
   }
