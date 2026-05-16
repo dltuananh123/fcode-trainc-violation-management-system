@@ -199,14 +199,40 @@ int violationRecord(AppDatabase *db) {
 
   printf("\nGHI NHAN VI PHAM\n");
 
-  char studentId[MAX_MSSV_LEN];
-  printf("Nhap MSSV thanh vien: ");
-  readString(studentId, MAX_MSSV_LEN);
+  char input[MAX_NAME_LEN];
+  printf("Nhap MSSV hoac ten thanh vien: ");
+  readString(input, sizeof(input));
 
-  int memberIdx = memberFindById(db, studentId);
+  /* First try exact MSSV match */
+  int memberIdx = memberFindById(db, input);
+
   if (memberIdx == -1) {
-    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", studentId);
-    return -1;
+    /* No MSSV match — search by name */
+    int indices[MAX_MEMBERS];
+    int count = memberSearchByName(db, input, indices, MAX_MEMBERS);
+
+    if (count == 0) {
+      printf("[LOI] Khong tim thay thanh vien voi MSSV/ten: %s\n", input);
+      return -1;
+    }
+
+    if (count == 1) {
+      memberIdx = indices[0];
+    } else {
+      printf("\nTim thay %d thanh vien:\n", count);
+      for (int i = 0; i < count; i++) {
+        Member *m = &db->members[indices[i]];
+        printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
+               teamName(m->team));
+      }
+      printf("Chon STT (1-%d, 0 de huy): ", count);
+      int choice;
+      if (readInt(&choice) != 1 || choice < 1 || choice > count) {
+        printf("[THONG BAO] Da huy ghi nhan vi pham\n");
+        return -1;
+      }
+      memberIdx = indices[choice - 1];
+    }
   }
 
   Member *member = &db->members[memberIdx];
@@ -231,7 +257,7 @@ int violationRecord(AppDatabase *db) {
   Violation newViolation;
   memset(&newViolation, 0, sizeof(Violation));
 
-  strncpy(newViolation.studentId, studentId, MAX_MSSV_LEN - 1);
+  strncpy(newViolation.studentId, member->studentId, MAX_MSSV_LEN - 1);
   newViolation.studentId[MAX_MSSV_LEN - 1] = '\0';
   newViolation.reason = reason;
   newViolation.violationTime = time(NULL);
