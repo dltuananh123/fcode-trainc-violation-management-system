@@ -36,6 +36,18 @@ int memberAdd(AppDatabase *db);
 int memberFindById(const AppDatabase *db, const char *studentId);
 
 /**
+ * @brief Search members by name (case-insensitive substring match).
+ *
+ * @param db Pointer to the AppDatabase
+ * @param keyword Substring to search for in fullName
+ * @param outIndices Output array to store matching member indices
+ * @param maxResults Maximum number of results to return
+ * @return Number of matches found
+ */
+int memberSearchByName(const AppDatabase *db, const char *keyword,
+                       int *outIndices, int maxResults);
+
+/**
  * @brief Validate member input data.
  *
  * Checks: studentId not empty, unique, email format valid

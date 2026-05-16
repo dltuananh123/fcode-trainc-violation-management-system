@@ -25,6 +25,52 @@ int memberFindById(const AppDatabase *db, const char *studentId) {
   return -1;
 }
 
+/* Case-insensitive substring search: returns 1 if needle is found in haystack */
+static int containsIgnoreCase(const char *haystack, const char *needle) {
+  if (needle[0] == '\0') {
+    return 1;
+  }
+
+  size_t hLen = strlen(haystack);
+  size_t nLen = strlen(needle);
+
+  if (nLen > hLen) {
+    return 0;
+  }
+
+  for (size_t i = 0; i <= hLen - nLen; i++) {
+    int match = 1;
+    for (size_t j = 0; j < nLen; j++) {
+      if (tolower((unsigned char)haystack[i + j]) !=
+          tolower((unsigned char)needle[j])) {
+        match = 0;
+        break;
+      }
+    }
+    if (match) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int memberSearchByName(const AppDatabase *db, const char *keyword,
+                       int *outIndices, int maxResults) {
+  if (db == NULL || keyword == NULL || outIndices == NULL) {
+    return 0;
+  }
+
+  int count = 0;
+  for (int i = 0; i < db->memberCount && count < maxResults; i++) {
+    if (containsIgnoreCase(db->members[i].fullName, keyword)) {
+      outIndices[count++] = i;
+    }
+  }
+
+  return count;
+}
+
 int memberValidateInput(const Member *m, const AppDatabase *db) {
   if (m == NULL || db == NULL) {
     return -1;
@@ -533,8 +579,10 @@ void memberListAll(AppDatabase *db) {
   printf("+------------+----------------------+--------------+--------------------"
          "+------------+\n");
 
+  int active = 0, outClb = 0;
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
+    if (m->isActive) active++; else outClb++;
     printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s | %-10.10s |\n",
            m->studentId, m->fullName, teamName(m->team), memberRoleName(m->role),
            m->isActive ? "Hoat dong" : "Out CLB");
@@ -558,5 +606,6 @@ void memberListAll(AppDatabase *db) {
 
   printf("+------------+----------------------+--------------+--------------------"
          "+------------+\n");
-  printf("Tong: %d thanh vien\n\n", db->memberCount);
+  printf("Tong: %d thanh vien (Dang hoat dong: %d | Da Out CLB: %d)\n\n",
+         db->memberCount, active, outClb);
 }
