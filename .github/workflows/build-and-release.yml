@@ -28,26 +28,20 @@ jobs:
       shell: msys2 {0}
       run: |
         mingw32-make clean
-        mingw32-make
-
-    - name: Build Seed Data Tool
-      shell: msys2 {0}
-      run: |
-        gcc -std=c17 -m64 -Wall -Iinclude tools/seed_data.c -o bin/seed_data.exe
+        mingw32-make CFLAGS="-std=c17 -m64 -O2 -Iinclude"
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: fcode-violation-management-windows
-        path: |
-          bin/violation-management-system.exe
-          bin/seed_data.exe
-          README.md
+        path: bin/violation-management-system.exe
 
   release:
     needs: build-windows
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -58,16 +52,10 @@ jobs:
         name: fcode-violation-management-windows
         path: release-binaries
 
-    - name: Zip Release
-      run: |
-        cd release-binaries
-        zip -r ../fcode-violation-management-system-win64.zip .
-
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        files: fcode-violation-management-system-win64.zip
-        body_path: .github/release-template.md
+        files: release-binaries/violation-management-system.exe
         tag_name: ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}
         name: "Release ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
         draft: true
