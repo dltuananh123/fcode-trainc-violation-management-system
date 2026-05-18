@@ -25,7 +25,8 @@ int memberFindById(const AppDatabase *db, const char *studentId) {
   return -1;
 }
 
-/* Case-insensitive substring search: returns 1 if needle is found in haystack */
+/* Case-insensitive substring search: returns 1 if needle is found in haystack
+ */
 static int containsIgnoreCase(const char *haystack, const char *needle) {
   if (needle[0] == '\0') {
     return 1;
@@ -582,10 +583,15 @@ void memberListAll(AppDatabase *db) {
       "+------------+----------------------+--------------+--------------------"
       "+------------+\n");
 
-  int active = 0, outClb = 0;
+  int active = 0;
+  int outClb = 0;
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    if (m->isActive) active++; else outClb++;
+    if (m->isActive) {
+      active++;
+    } else {
+      outClb++;
+    }
     printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s | %-10.10s |\n",
            m->studentId, m->fullName, teamName(m->team),
            memberRoleName(m->role), m->isActive ? "Hoat dong" : "Out CLB");
