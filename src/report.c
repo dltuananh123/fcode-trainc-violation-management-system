@@ -2,6 +2,7 @@
 #include "types.h"
 #include "utils.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -48,45 +49,21 @@ static int countMemberViolations(const AppDatabase *db, const char *studentId) {
   return count;
 }
 
-static void swapMemberPointers(const Member **a, const Member **b) {
-  const Member *tmp = *a;
-  *a = *b;
-  *b = tmp;
+typedef struct {
+  const Member *member;
+  int violationCount;
+} MemberViolationCount;
+
+static int compareAscending(const void *a, const void *b) {
+  const MemberViolationCount *ma = (const MemberViolationCount *)a;
+  const MemberViolationCount *mb = (const MemberViolationCount *)b;
+  return ma->violationCount - mb->violationCount;
 }
 
-static void sortMemberPointersByViolationCount(const AppDatabase *db,
-                                               const Member *sorted[],
-                                               int memberCount, int ascending) {
-  for (int i = 0; i < memberCount - 1; i++) {
-    if (sorted[i] == NULL) {
-      continue;
-    }
-    int selected = i;
-    int selectedCount = countMemberViolations(db, sorted[selected]->studentId);
-
-    for (int j = i + 1; j < memberCount; j++) {
-      if (sorted[j] == NULL) {
-        continue;
-      }
-      int currentCount = countMemberViolations(db, sorted[j]->studentId);
-      int shouldSelect = 0;
-
-      if (ascending) {
-        shouldSelect = currentCount < selectedCount;
-      } else {
-        shouldSelect = currentCount > selectedCount;
-      }
-
-      if (shouldSelect) {
-        selected = j;
-        selectedCount = currentCount;
-      }
-    }
-
-    if (selected != i) {
-      swapMemberPointers(&sorted[i], &sorted[selected]);
-    }
-  }
+static int compareDescending(const void *a, const void *b) {
+  const MemberViolationCount *ma = (const MemberViolationCount *)a;
+  const MemberViolationCount *mb = (const MemberViolationCount *)b;
+  return mb->violationCount - ma->violationCount;
 }
 
 /* ============================================================
@@ -147,12 +124,15 @@ void reportSortMembersByViolations(const AppDatabase *db) {
     return;
   }
 
-  const Member *sorted[MAX_MEMBERS] = {NULL};
+  MemberViolationCount sorted[MAX_MEMBERS];
   for (int i = 0; i < db->memberCount; i++) {
-    sorted[i] = &db->members[i];
+    sorted[i].member = &db->members[i];
+    sorted[i].violationCount =
+        countMemberViolations(db, db->members[i].studentId);
   }
 
-  sortMemberPointersByViolationCount(db, sorted, db->memberCount, choice == 1);
+  qsort(sorted, (size_t)db->memberCount, sizeof(MemberViolationCount),
+        choice == 1 ? compareAscending : compareDescending);
 
   printf("\nDANH SACH THANH VIEN THEO SO LAN VI PHAM\n");
   printf(
@@ -163,12 +143,12 @@ void reportSortMembersByViolations(const AppDatabase *db) {
       "+----------------------+------------+--------------+--------------+\n");
 
   for (int i = 0; i < db->memberCount; i++) {
-    if (sorted[i] == NULL) {
+    if (sorted[i].member == NULL) {
       continue;
     }
-    int violationCount = countMemberViolations(db, sorted[i]->studentId);
-    printf("| %-20.20s | %-10.10s | %-12.12s | %-12d |\n", sorted[i]->fullName,
-           sorted[i]->studentId, teamName(sorted[i]->team), violationCount);
+    printf("| %-20.20s | %-10.10s | %-12.12s | %-12d |\n",
+           sorted[i].member->fullName, sorted[i].member->studentId,
+           teamName(sorted[i].member->team), sorted[i].violationCount);
   }
 
   printf(
