@@ -9,6 +9,8 @@
 #include <time.h>
 
 #ifdef _WIN32
+/* #include <libloaderapi.h> */
+/* #include <minwindef.h> */
 #include <windows.h>
 #else
 #include <unistd.h>
