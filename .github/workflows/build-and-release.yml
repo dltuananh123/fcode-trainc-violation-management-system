@@ -2,39 +2,38 @@ name: Build and Release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up GCC/MinGW
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-        update: true
-        install: >-
-          mingw-w64-x86_64-gcc
-          mingw-w64-x86_64-make
+      - name: Set up environment
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
 
-    - name: Build Project
-      shell: msys2 {0}
-      run: |
-        mingw32-make clean
-        mingw32-make CFLAGS="-std=c17 -m64 -O2 -Iinclude"
+      - name: Build project
+        shell: msys2 {0}
+        run: |
+          mkdir -p bin
+          gcc -std=c17 -m64 -O2 -Iinclude src/*.c -o bin/violation-management-system.exe
 
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: fcode-violation-management-windows
-        path: bin/violation-management-system.exe
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fcode-violation-management-windows
+          path: bin/violation-management-system.exe
 
   release:
     needs: build-windows
@@ -44,20 +43,20 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Download Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: fcode-violation-management-windows
-        path: release-binaries
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fcode-violation-management-windows
+          path: release-binaries
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: release-binaries/violation-management-system.exe
-        tag_name: ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}
-        name: "Release ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
-        draft: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-binaries/violation-management-system.exe
+          tag_name: ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}
+          name: "Release ${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
