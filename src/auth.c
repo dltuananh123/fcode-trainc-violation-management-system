@@ -1,6 +1,7 @@
 #include "auth.h"
 #include "fileio.h"
 #include "types.h"
+#include "utils.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -14,15 +15,6 @@ static int sessionActive = 0;
 /* ============================================================
  * Private helpers
  * ============================================================ */
-
-static void readInput(const char *prompt, char *buf, int size) {
-  printf("%s", prompt);
-  if (fgets(buf, size, stdin) != NULL) {
-    buf[strcspn(buf, "\n")] = '\0';
-  } else {
-    buf[0] = '\0';
-  }
-}
 
 static int findAccountIndex(const AppDatabase *db, const char *studentId) {
   for (int i = 0; i < db->accountCount; i++) {
@@ -55,8 +47,10 @@ int authLogin(AppDatabase *db) {
   while (1) {
     printLoginBanner();
 
-    readInput("MSSV: ", studentId, MAX_MSSV_LEN);
-    readInput("Mat khau: ", password, MAX_PASS_LEN);
+    printf("MSSV: ");
+    readString(studentId, MAX_MSSV_LEN);
+    printf("Mat khau: ");
+    readString(password, MAX_PASS_LEN);
 
     int idx = findAccountIndex(db, studentId);
     if (idx == -1) {
@@ -145,7 +139,8 @@ int authChangePassword(AppDatabase *db) {
 
   /* Verify old password */
   char oldPass[MAX_PASS_LEN];
-  readInput("Nhap mat khau cu: ", oldPass, MAX_PASS_LEN);
+  printf("Nhap mat khau cu: ");
+  readString(oldPass, MAX_PASS_LEN);
   if (strcmp(db->accounts[idx].password, oldPass) != 0) {
     printf("[LOI] Mat khau cu khong dung\n");
     return -1;
@@ -153,7 +148,8 @@ int authChangePassword(AppDatabase *db) {
 
   /* Enter new password */
   char newPass[MAX_PASS_LEN];
-  readInput("Nhap mat khau moi: ", newPass, MAX_PASS_LEN);
+  printf("Nhap mat khau moi: ");
+  readString(newPass, MAX_PASS_LEN);
   if (strlen(newPass) == 0) {
     printf("[LOI] Mat khau moi khong duoc de trong\n");
     return -1;
@@ -161,7 +157,8 @@ int authChangePassword(AppDatabase *db) {
 
   /* Confirm new password */
   char confirmPass[MAX_PASS_LEN];
-  readInput("Xac nhan mat khau moi: ", confirmPass, MAX_PASS_LEN);
+  printf("Xac nhan mat khau moi: ");
+  readString(confirmPass, MAX_PASS_LEN);
   if (strcmp(newPass, confirmPass) != 0) {
     printf("[LOI] Mat khau xac nhan khong khop\n");
     return -1;
