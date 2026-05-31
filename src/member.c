@@ -117,12 +117,7 @@ int memberAdd(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  THEM THANH VIEN MOI");
-    printf("                          ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Them thanh vien moi");
 
   Member newMember;
   memset(&newMember, 0, sizeof(Member));
@@ -290,12 +285,7 @@ int memberEdit(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  CHINH SUA THONG TIN THANH VIEN");
-  printf("                  ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sua thong tin thanh vien");
 
   /* Find member by MSSV with re-prompt */
   char studentId[MAX_MSSV_LEN];
@@ -424,12 +414,7 @@ int memberDelete(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_RED "  XOA THANH VIEN");
-  printf("                                  ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xoa thanh vien");
 
   /* Find member */
   char studentId[MAX_MSSV_LEN];
@@ -536,12 +521,7 @@ void memberViewProfile(AppDatabase *db) {
   Member *m = &db->members[idx];
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  THONG TIN CA NHAN");
-  printf("                            ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU > Thong tin ca nhan");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD "  MSSV:       " COLOR_RESET "%-39s",
@@ -617,12 +597,8 @@ void memberListAll(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DANG HOAT DONG (%d)", activeCount);
-  for (int i = 44; i < 68; i++) printf(" ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU > Danh sach thanh vien");
+
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 12; i++) printf(LINE_H);
   printf(LINE_cross);
@@ -702,14 +678,7 @@ void memberViewArchive(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DA LUU TRU");
-  for (int i = 33; i < 68; i++) {
-    printf(" ");
-  }
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kho luu tru");
 
   int archivedIndices[MAX_MEMBERS];
   int archivedCount = 0;
@@ -842,14 +811,7 @@ void memberKickOrRestore(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  KICK / KHOI PHUC THANH VIEN");
-  for (int i = 29; i < 68; i++) {
-    printf(" ");
-  }
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kick / Khoi phuc thanh vien");
 
   char studentId[MAX_MSSV_LEN];
   printf(COLOR_CYAN "  Nhap MSSV can thao tac: " COLOR_RESET);
@@ -1095,14 +1057,7 @@ void memberViewKicked(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DA KICK");
-  for (int i = 30; i < 68; i++) {
-    printf(" ");
-  }
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Danh sach thanh vien da kick");
 
   int kickedIndices[MAX_MEMBERS];
   int kickedCount = 0;

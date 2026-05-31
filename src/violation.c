@@ -237,12 +237,7 @@ void violationViewAllFiltered(AppDatabase *db) {
   int filterValue = 0;
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  XEM DANH SACH VI PHAM TOAN CLB");
-  printf("                      ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham");
   printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Loc theo ban                                            " COLOR_BLUE BOX_V COLOR_RESET "\n");
   printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Loc theo ly do vi pham                                  " COLOR_BLUE BOX_V COLOR_RESET "\n");
   printf(COLOR_BLUE BOX_V COLOR_RESET "  3. Loc theo trang thai thu tien                            " COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -257,13 +252,8 @@ void violationViewAllFiltered(AppDatabase *db) {
   }
 
   if (filterType == 1) {
-    printf("\n");
-    uiDrawSeparator();
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "  CHON BAN DE LOC");
-    printf("                                             ");
-    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-    uiDrawSeparator();
+    uiClear();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ban");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Academic                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Planning                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  3. HR                                                      " COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -271,13 +261,8 @@ void violationViewAllFiltered(AppDatabase *db) {
     uiDrawSeparator();
     filterValue = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 1, 4) - 1;
   } else if (filterType == 2) {
-    printf("\n");
-    uiDrawSeparator();
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "  CHON LY DO VI PHAM DE LOC");
-    printf("                                   ");
-    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-    uiDrawSeparator();
+    uiClear();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ly do");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Khong mac ao CLB                                        " COLOR_BLUE BOX_V COLOR_RESET "\n");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Vang hop/Train-C                                        " COLOR_BLUE BOX_V COLOR_RESET "\n");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  3. Khong tham gia hoat dong                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -285,13 +270,8 @@ void violationViewAllFiltered(AppDatabase *db) {
     uiDrawSeparator();
     filterValue = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 1, 4) - 1;
   } else if (filterType == 3) {
-    printf("\n");
-    uiDrawSeparator();
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "  CHON TRANG THAI DE LOC");
-    printf("                                      ");
-    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-    uiDrawSeparator();
+    uiClear();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon trang thai");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Chua thu tien                                           " COLOR_BLUE BOX_V COLOR_RESET "\n");
     printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Da thu tien                                             " COLOR_BLUE BOX_V COLOR_RESET "\n");
     uiDrawSeparator();
@@ -368,12 +348,7 @@ int violationRecord(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  GHI NHAN VI PHAM");
-  printf("                                  ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Ghi nhan vi pham");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -791,13 +766,8 @@ int violationMarkPaid(AppDatabase *db) {
     return -1;
   }
 
-  printf("\n");
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  THU TIEN PHAT");
-  printf("                                     ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thu tien phat");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -1033,12 +1003,7 @@ void violationSearchByDate(AppDatabase *db) {
   time_t end;
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  TIM KIEM VI PHAM THEO KHOANG NGAY");
-  printf("                   ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem vi pham theo khoang ngay");
 
   while (1) {
     printf(COLOR_CYAN "  Nhap ngay bat dau (dd/mm/yyyy): " COLOR_RESET);

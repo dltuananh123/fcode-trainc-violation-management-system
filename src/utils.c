@@ -475,14 +475,8 @@ void viewSystemLogs(void) {
     return;
   }
 
-  printf("\n");
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  NHAT KY HE THONG");
-  for (int i = 20; i < 68; i++) printf(" ");
-  printf(COLOR_RESET);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong");
 
   char line[1024];
   int lineCount = 0;
@@ -528,13 +522,7 @@ void viewSystemLogs(void) {
         break;
       }
       while (getchar() != '\n');
-      uiDrawSeparator();
-      printf(COLOR_BLUE BOX_V COLOR_RESET);
-      printf(COLOR_BOLD COLOR_CYAN "  NHAT KY HE THONG (tiep)");
-      for (int i = 20; i < 68; i++) printf(" ");
-      printf(COLOR_RESET);
-      printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-      uiDrawSeparator();
+      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong (tiep)");
     }
   }
 

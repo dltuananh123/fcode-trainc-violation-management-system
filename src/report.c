@@ -95,12 +95,7 @@ void reportTeamStats(const AppDatabase *db) {
   aggregateTeamTotals(db, collected, outstanding);
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  THONG KE TIEN PHAT THEO BAN");
-  for (int i = 40; i < 68; i++) printf(" ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thong ke tien phat theo ban");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) printf(LINE_H);
   printf(LINE_cross);
@@ -193,12 +188,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
   int choice;
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  SAP XEP THEO SO LAN VI PHAM");
-  printf("                     ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
   printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Tang dan                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
   printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Giam dan                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
   printf(COLOR_BLUE BOX_V COLOR_RESET "  0. Quay lai                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -389,12 +379,7 @@ void reportDashboard(const AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawSeparator();
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  DASHBOARD THONG KE KY LUAT CLB");
-  printf("                      ");
-  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
-  uiDrawSeparator();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Dashboard thong ke ky luat CLB");
 
   /* 1. Calculate general stats */
   int totalViolations = db->violationCount;
@@ -427,8 +412,7 @@ void reportDashboard(const AppDatabase *db) {
   sortMemberPointersByViolationCount(db, sorted, activeCount, 0); /* descending */
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  [TOP 5 THANH VIEN VI PHAM NHIEU NHAT]               " COLOR_RESET);
-  printf("              ");
+  printf(COLOR_BOLD COLOR_YELLOW "  [TOP 5 THANH VIEN VI PHAM NHIEU NHAT]                     " COLOR_RESET);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   int showCount = activeCount < 5 ? activeCount : 5;
@@ -449,8 +433,7 @@ void reportDashboard(const AppDatabase *db) {
 
   /* 3. Reason Breakdown */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  [PHAN TICH LY DO VI PHAM]                           " COLOR_RESET);
-  printf("              ");
+  printf(COLOR_BOLD COLOR_YELLOW "  [PHAN TICH LY DO VI PHAM]                               " COLOR_RESET);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   if (totalViolations == 0) {
@@ -477,8 +460,7 @@ void reportDashboard(const AppDatabase *db) {
 
   /* 4. Fine Collection Progress */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  [TIEN DO THU TIEN PHAT]                            " COLOR_RESET);
-  printf("              ");
+  printf(COLOR_BOLD COLOR_YELLOW "  [TIEN DO THU TIEN PHAT]                                  " COLOR_RESET);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   char issuedStr[128];

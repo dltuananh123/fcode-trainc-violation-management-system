@@ -23,13 +23,7 @@ static void memberMenu(void) {
   int choice;
   do {
     uiClear();
-    uiDrawSeparator();
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "  MENU THANH VIEN");
-    printf("                                                   ");
-    printf(COLOR_RESET);
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-    uiDrawSeparator();
+    uiDrawBreadcrumb("MENU THANH VIEN");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  1. Xem profile ca nhan");
@@ -96,15 +90,7 @@ static void adminMenu(void) {
   int choice;
   do {
     uiClear();
-    uiDrawSeparator();
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "  MENU BAN CHU NHIEM");
-    for (int i = 20; i < 68; i++) {
-      printf(" ");
-    }
-    printf(COLOR_RESET);
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-    uiDrawSeparator();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM");
 
     /* Row 1 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
