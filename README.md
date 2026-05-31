@@ -14,6 +14,8 @@ Theo tài liệu yêu cầu, hệ thống hướng tới các chức năng chín
 - Theo dõi trạng thái đã thu/chưa thu tiền phạt
 - Cảnh báo ngưỡng Out CLB và xuất báo cáo ra file
 - Lưu dữ liệu xuống file để tránh mất dữ liệu khi thoát chương trình
+- Xem nhật ký hệ thống với phân trang và tô màu
+- Lưu vết tất cả hành động quản trị (audit log + webhook simulation)
 
 Hiện tại, repo đang ở giai đoạn scaffold ban đầu: đã có `Makefile`, cấu trúc thư mục cơ bản, công cụ format/tidy và `src/main.c` tối thiểu để xác nhận luồng build.
 
@@ -161,4 +163,4 @@ Theo thiết kế hiện tại, dự án dự kiến tách thành các module sa
 * `violation`: ghi nhận vi phạm, tính mức phạt, cảnh báo Out CLB
 * `fileio`: đọc/ghi `members.dat`, `violations.dat`, `accounts.dat`
 * `report`: thống kê và xuất báo cáo
-* `utils`: validate và các hàm dùng chung
+* `utils`: validate, audit log (ghi + xem), các hàm dùng chung

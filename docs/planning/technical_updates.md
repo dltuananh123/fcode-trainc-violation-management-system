@@ -186,3 +186,51 @@ BCN có một công cụ theo dõi trực quan cao cấp (Option 16) bao gồm:
 * Sinh muối ngẫu nhiên (Salt) và tự động băm mật khẩu qua thuật toán kéo giãn khóa 1000 rounds FNV-1a cho tất cả tài khoản mẫu (ví dụ: Super Admin `SE203055` / `Phuc@2006` và Legacy Super Admin `admin` / `admin`).
 * Giúp dự án khởi chạy lần đầu tiên là có ngay cơ sở dữ liệu siêu bảo mật, đồng bộ 100% với ứng dụng chính.
 
+---
+
+## 6. Hệ thống Ghi & Xem Nhật ký (Audit Log System)
+
+Hệ thống nhật ký được thiết kế để lưu vết mọi hành động quản trị nhằm phục vụ kiểm tra, truy xuất trách nhiệm và hỗ trợ giám sát hoạt động của Ban Chủ Nhiệm.
+
+### 6.1. Cơ chế Ghi nhật ký (`logSystemAction`)
+
+Mỗi thao tác nghiệp vụ quan trọng (thêm/sửa/xóa thành viên, ghi nhận vi phạm, thu tiền phạt, kick/khôi phục, reset mật khẩu) đều tự động gọi `logSystemAction(actor, action, target)`:
+
+```
+[dd/mm/yyyy HH:MM:SS] [actor    ] ACTION: action                   | TARGET: target
+```
+
+Hàm ghi đồng thời vào **2 file**:
+- `data/system_audit.log` — nhật ký dạng text thuần túy, dễ đọc
+- `data/simulated_webhooks.log` — mô phỏng webhook cho các hệ thống tích hợp bên ngoài
+
+### 6.2. Chức năng Xem nhật ký (`viewSystemLogs`)
+
+Chức năng này cho phép BCN xem toàn bộ nhật ký hệ thống trực tiếp từ terminal với các đặc điểm:
+
+- **Đọc file** `system_audit.log` từ thư mục `data/`
+- **Phân giải cấu trúc** dòng log bằng `sscanf` — trích xuất thời gian, người thực hiện, hành động, mục tiêu
+- **Tô màu theo thành phần**:
+  - Thời gian: xám (`COLOR_DIM`)
+  - Người thực hiện: xanh lá (`COLOR_GREEN`)
+  - Hành động: vàng (`COLOR_YELLOW`)
+  - Mục tiêu: xanh dương (`COLOR_CYAN`)
+- **Phân trang** 20 dòng/lần, nhấn `Enter` xem tiếp, nhấn `q` + Enter thoát
+- Xử lý lỗi khi file không tồn tại (hiển thị đường dẫn cho BCN kiểm tra)
+- Tương thích với dòng log không đúng chuẩn (hiển thị toàn bộ dòng gốc)
+
+```
+Log format:
+[%4d. ║ [thời_gian] [người_thực_hiện] hành_động | mục_tiêu]
+```
+
+### 6.3. Vị trí code
+
+| Thành phần | File | Hàm |
+|---|---|---|
+| Ghi log | `src/utils.c:420-458` | `logSystemAction()` |
+| Xem log | `src/utils.c:460-551` | `viewSystemLogs()` |
+| Khai báo | `include/utils.h:190` | `logSystemAction()` |
+| Khai báo | `include/utils.h:197` | `viewSystemLogs()` |
+| Menu entry | `src/main.c:269-271` | `case 20: viewSystemLogs()` |
+

@@ -180,4 +180,18 @@ void hashPassword(const char *password, const char *salt, char *outHashHex);
  */
 void generateSalt(char *salt, size_t size);
 
+/**
+ * @brief Logs an administrative action to data/system_audit.log and triggers a simulated webhook to data/simulated_webhooks.log.
+ * 
+ * @param actor The actor (e.g. BCN's student ID or username).
+ * @param action The action performed.
+ * @param target The target member or ID.
+ */
+void logSystemAction(const char *actor, const char *action, const char *target);
+
+/**
+ * @brief View system audit log with pagination and color-coded display.
+ */
+void viewSystemLogs(void);
+
 #endif /* UTILS_H */

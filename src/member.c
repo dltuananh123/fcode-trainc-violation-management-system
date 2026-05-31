@@ -247,6 +247,11 @@ int memberAdd(AppDatabase *db) {
   printf(COLOR_DIM "  Tai khoan da tao. Mat khau mac dinh = MSSV.\n"
          "  Thanh vien se phai doi mat khau khi dang nhap.\n" COLOR_RESET);
 
+  Account *session = authGetSession();
+  if (session != NULL) {
+    logSystemAction(session->studentId, "Them thanh vien", newMember.studentId);
+  }
+
   return 0;
 }
 
@@ -402,6 +407,10 @@ int memberEdit(AppDatabase *db) {
   }
 
   printf(ERR_OK "Sua thong tin thanh vien thanh cong!\n");
+  Account *session = authGetSession();
+  if (session != NULL) {
+    logSystemAction(session->studentId, "Sua thong tin TV", m->studentId);
+  }
   return 0;
 }
 
@@ -499,6 +508,7 @@ int memberDelete(AppDatabase *db) {
   }
 
   printf(ERR_OK "Xoa thanh vien thanh cong! (Du lieu da duoc an)\n");
+  logSystemAction(session->studentId, "Xoa thanh vien", studentId);
   return 0;
 }
 
@@ -808,6 +818,7 @@ void memberViewArchive(AppDatabase *db) {
   } else {
     printf(ERR_OK "Khoi phuc thanh vien \"%s\" (%s) thanh cong!\n\n",
            m->fullName, m->studentId);
+    logSystemAction(session->studentId, "Khoi phuc tu kho luu tru", m->studentId);
   }
 }
 
@@ -1004,6 +1015,7 @@ void memberKickOrRestore(AppDatabase *db) {
 
     printf(ERR_OK "Da kick thanh vien \"%s\" (%s) khoi CLB va khoa tai khoan dang nhap thanh cong!\n\n",
            m->fullName, m->studentId);
+    logSystemAction(session->studentId, "Kick thanh vien", m->studentId);
 
   } else {
     /* --- CASE 2: RESTORE MEMBER --- */
@@ -1059,6 +1071,7 @@ void memberKickOrRestore(AppDatabase *db) {
 
     printf(ERR_OK "Da khoi phuc trang thai hoat dong va mo khoa tai khoan cho \"%s\" thanh cong!\n\n",
            m->fullName);
+    logSystemAction(session->studentId, "Khoi phuc TV", m->studentId);
   }
 }
 

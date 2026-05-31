@@ -351,6 +351,26 @@ bin\violation-management-system
 
 ---
 
+---
+
+### 4.16 Xem nhat ky he thong (Option 20)
+
+**Muc dich:** Xem lich su cac thao tac da duoc thuc hien trong he thong
+
+**Thuc hien:**
+1. Chon `20`
+2. Xem bang nhat ky voi cac cot:
+   - Thoi gian (mau xam)
+   - Nguoi thuc hien (mau xanh la)
+   - Hanh dong (mau vang)
+   - Muc tieu (mau xanh duong)
+3. Nhan `Enter` de xem trang tiep theo
+4. Nhap `q` + Enter de thoat giua chang
+
+**Ket qua mong doi:** Hien thi danh sach cac hanh dong da thuc hien tu luc bat dau ung dung, phan trang 20 dong/lan, to mau theo tung thanh phan.
+
+---
+
 ## 5. Kich ban Demo - Menu Thanh vien
 
 **Dang nhap:** MSSV `SV0002`, mat khau `123456`

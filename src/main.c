@@ -186,9 +186,17 @@ static void adminMenu(void) {
     printf("     ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 11 */
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM "                           ");
+    printf("                    ");
+    printf(COLOR_RESET COLOR_GREEN "20" COLOR_RESET ". Xem nhat ky he thong       ");
+    printf("     ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
     uiDrawSeparator();
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 19);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 20);
 
     switch (choice) {
     case 1:
@@ -238,7 +246,12 @@ static void adminMenu(void) {
       char targetId[MAX_MSSV_LEN];
       readString(targetId, MAX_MSSV_LEN);
       trimSpaces(targetId);
-      authResetPassword(&gDb, targetId);
+      if (authResetPassword(&gDb, targetId) == 0) {
+        Account *session = authGetSession();
+        if (session != NULL) {
+          logSystemAction(session->studentId, "Reset mat khau", targetId);
+        }
+      }
       break;
     }
     case 16:
@@ -252,6 +265,9 @@ static void adminMenu(void) {
       break;
     case 19:
       memberViewKicked(&gDb);
+      break;
+    case 20:
+      viewSystemLogs();
       break;
     case 0:
       authLogout(&gDb);

@@ -416,3 +416,136 @@ void generateSalt(char *salt, size_t size) {
   }
   salt[size - 1] = '\0';
 }
+
+void logSystemAction(const char *actor, const char *action, const char *target) {
+  char exeDir[512];
+  char auditPath[1024];
+  char webhookPath[1024];
+  
+  getExeDir(exeDir, sizeof(exeDir));
+  
+#ifdef _WIN32
+  snprintf(auditPath, sizeof(auditPath), "%s\\data\\system_audit.log", exeDir);
+  snprintf(webhookPath, sizeof(webhookPath), "%s\\data\\simulated_webhooks.log", exeDir);
+#else
+  snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
+  snprintf(webhookPath, sizeof(webhookPath), "%s/data/simulated_webhooks.log", exeDir);
+#endif
+
+  time_t now = time(NULL);
+  struct tm *t = localtime(&now);
+  char timeBuf[32];
+  if (t != NULL) {
+    strftime(timeBuf, sizeof(timeBuf), "%d/%m/%Y %H:%M:%S", t);
+  } else {
+    snprintf(timeBuf, sizeof(timeBuf), "Unknown Time");
+  }
+
+  /* 1. Append to audit log */
+  FILE *fa = fopen(auditPath, "a");
+  if (fa != NULL) {
+    fprintf(fa, "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor, action, target);
+    fclose(fa);
+  }
+
+  /* 2. Append to simulated webhook log */
+  FILE *fw = fopen(webhookPath, "a");
+  if (fw != NULL) {
+    fprintf(fw, "[WEBHOOK TRIGGER] [%s] Event: %s | Payload: { actor: \"%s\", target: \"%s\" }\n", 
+            timeBuf, action, actor, target);
+    fclose(fw);
+  }
+}
+
+void viewSystemLogs(void) {
+  char exeDir[512];
+  char auditPath[1024];
+  getExeDir(exeDir, sizeof(exeDir));
+
+#ifdef _WIN32
+  snprintf(auditPath, sizeof(auditPath), "%s\\data\\system_audit.log", exeDir);
+#else
+  snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
+#endif
+
+  FILE *f = fopen(auditPath, "r");
+  if (f == NULL) {
+    printf(ERR_LOI "Khong tim thay file nhat ky he thong!\n");
+    printf(ERR_INFO "Thuong truc tai: %s\n", auditPath);
+    return;
+  }
+
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  NHAT KY HE THONG");
+  for (int i = 20; i < 68; i++) printf(" ");
+  printf(COLOR_RESET);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
+
+  char line[1024];
+  int lineCount = 0;
+  int pageSize = 20;
+
+  while (fgets(line, sizeof(line), f) != NULL) {
+    size_t len = strlen(line);
+    if (len > 0 && line[len - 1] == '\n') line[len - 1] = '\0';
+
+    lineCount++;
+
+    printf(COLOR_GRAY "%4d. " COLOR_RESET, lineCount);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " ");
+
+    char timePart[64];
+    char actorPart[64];
+    char actionPart[64];
+    char targetPart[256];
+    timePart[0] = '\0';
+    actorPart[0] = '\0';
+    actionPart[0] = '\0';
+    targetPart[0] = '\0';
+
+    int parsed = sscanf(line, "[%63[^]]] [%63[^]]] ACTION: %63[^|]| TARGET: %255[^\n]",
+                        timePart, actorPart, actionPart, targetPart);
+
+    if (parsed == 4) {
+      printf(COLOR_DIM "[%s]" COLOR_RESET " ", timePart);
+      printf(COLOR_GREEN "[%s]" COLOR_RESET " ", actorPart);
+      printf(COLOR_YELLOW "%s" COLOR_RESET, actionPart);
+      printf(COLOR_RESET " | " COLOR_RESET);
+      printf(COLOR_CYAN "%s" COLOR_RESET, targetPart);
+    } else {
+      printf("%s", line);
+    }
+
+    printf("\n" COLOR_RESET);
+
+    if (lineCount % pageSize == 0) {
+      printf("\n" COLOR_DIM "  -- Nhan Enter de xem tiep (hoac 'q' + Enter de thoat) --" COLOR_RESET);
+      char ch = getchar();
+      if (ch == 'q' || ch == 'Q') {
+        break;
+      }
+      while (getchar() != '\n');
+      uiDrawSeparator();
+      printf(COLOR_BLUE BOX_V COLOR_RESET);
+      printf(COLOR_BOLD COLOR_CYAN "  NHAT KY HE THONG (tiep)");
+      for (int i = 20; i < 68; i++) printf(" ");
+      printf(COLOR_RESET);
+      printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+      uiDrawSeparator();
+    }
+  }
+
+  fclose(f);
+
+  if (lineCount == 0) {
+    printf("  " COLOR_DIM "(Trong)" COLOR_RESET "\n");
+  } else {
+    printf("\n" COLOR_GREEN "  Tong cong: %d dong nhat ky." COLOR_RESET "\n", lineCount);
+  }
+
+  printf("\n" COLOR_CYAN "  Nhan Enter de quay lai..." COLOR_RESET);
+  while (getchar() != '\n');
+}
