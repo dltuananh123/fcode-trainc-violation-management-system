@@ -124,10 +124,14 @@ int memberAdd(AppDatabase *db) {
 
   /* MSSV with re-prompt */
   while (1) {
-    printf(COLOR_CYAN "  Nhap MSSV: " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap MSSV (0 de quay lai): " COLOR_RESET);
     readString(newMember.studentId, MAX_MSSV_LEN);
     trimSpaces(newMember.studentId);
     mssvAutoUpper(newMember.studentId);
+    if (strcmp(newMember.studentId, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return -1;
+    }
     if (validateMSSV(newMember.studentId, db)) {
       break;
     }
@@ -291,10 +295,14 @@ int memberEdit(AppDatabase *db) {
   char studentId[MAX_MSSV_LEN];
   int memberIndex = -1;
   while (1) {
-    printf(COLOR_CYAN "  Nhap MSSV can sua: " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap MSSV can sua (0 de quay lai): " COLOR_RESET);
     readString(studentId, MAX_MSSV_LEN);
     trimSpaces(studentId);
     mssvAutoUpper(studentId);
+    if (strcmp(studentId, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return 0;
+    }
     if (validateNotEmpty(studentId)) {
       memberIndex = memberFindById(db, studentId);
       if (memberIndex != -1) {
@@ -329,34 +337,73 @@ int memberEdit(AppDatabase *db) {
   editField("Ho va ten     ", m->fullName, MAX_NAME_LEN, validateName);
   nameAutoFix(m->fullName);
 
-  editField("Email         ", m->email, MAX_EMAIL_LEN, NULL);
-  /* Lowercase email */
-  for (int i = 0; m->email[i]; i++) {
-    m->email[i] = (char)tolower((unsigned char)m->email[i]);
-  }
-  /* Validate email format + uniqueness */
-  if (!validateEmailUnique(m->email, db, m->studentId)) {
-    printf(ERR_LOI "Email khong hop le, giu nguyen email cu!\n");
+  /* Email — re-prompt on validation failure */
+  while (1) {
+    printf(COLOR_CYAN "  Email         " COLOR_RESET "[%s]: ", m->email);
+    char buffer[256];
+    readString(buffer, sizeof(buffer));
+    trimSpaces(buffer);
+    if (strlen(buffer) == 0) break;
+    for (int i = 0; buffer[i]; i++) {
+      buffer[i] = (char)tolower((unsigned char)buffer[i]);
+    }
+    if (validateEmailUnique(buffer, db, m->studentId)) {
+      strncpy(m->email, buffer, MAX_EMAIL_LEN - 1);
+      m->email[MAX_EMAIL_LEN - 1] = '\0';
+      break;
+    }
   }
 
-  editField("So dien thoai ", m->phone, MAX_PHONE_LEN, NULL);
-  phoneNormalize(m->phone);
-  if (!validatePhoneUnique(m->phone, db, m->studentId)) {
-    printf(ERR_LOI "SDT khong hop le, giu nguyen SDT cu!\n");
+  /* Phone — re-prompt on validation failure */
+  while (1) {
+    printf(COLOR_CYAN "  So dien thoai" COLOR_RESET "[%s]: ", m->phone);
+    char buffer[256];
+    readString(buffer, sizeof(buffer));
+    trimSpaces(buffer);
+    if (strlen(buffer) == 0) break;
+    char normalized[MAX_PHONE_LEN];
+    strncpy(normalized, buffer, MAX_PHONE_LEN - 1);
+    normalized[MAX_PHONE_LEN - 1] = '\0';
+    phoneNormalize(normalized);
+    if (validatePhoneUnique(normalized, db, m->studentId)) {
+      strncpy(m->phone, normalized, MAX_PHONE_LEN - 1);
+      m->phone[MAX_PHONE_LEN - 1] = '\0';
+      break;
+    }
   }
 
-  /* Team selection */
-  m->team = readMenuChoice(
-      COLOR_CYAN "  Ban moi (0-Hoc thuat, 1-Ke hoach, "
-      "2-Nhan su, 3-Truyen thong): " COLOR_RESET,
-      TEAM_ACADEMIC, TEAM_MEDIA);
+  /* Team selection — Enter to keep */
+  while (1) {
+    printf(COLOR_CYAN "  Ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong)"
+           COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET, m->team);
+    char buf[32];
+    readString(buf, sizeof(buf));
+    trimSpaces(buf);
+    if (strlen(buf) == 0) break;
+    int val = 0;
+    if (sscanf(buf, "%d", &val) == 1 && val >= TEAM_ACADEMIC && val <= TEAM_MEDIA) {
+      m->team = val;
+      break;
+    }
+    printf(ERR_LOI "Vui long chon 0-3!\n");
+  }
 
-  /* Role selection */
+  /* Role selection — Enter to keep */
   int oldRole = m->role;
-  m->role = readMenuChoice(
-      COLOR_CYAN "  Chuc vu moi (0-Thanh vien, 1-Truong nhom, 2-BCN): "
-      COLOR_RESET,
-      MEMBER_ROLE_MEMBER, MEMBER_ROLE_BCN);
+  while (1) {
+    printf(COLOR_CYAN "  Chuc vu moi (0-Thanh vien, 1-Truong nhom, 2-BCN)"
+           COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET, m->role);
+    char buf[32];
+    readString(buf, sizeof(buf));
+    trimSpaces(buf);
+    if (strlen(buf) == 0) break;
+    int val = 0;
+    if (sscanf(buf, "%d", &val) == 1 && val >= MEMBER_ROLE_MEMBER && val <= MEMBER_ROLE_BCN) {
+      m->role = val;
+      break;
+    }
+    printf(ERR_LOI "Vui long chon 0-2!\n");
+  }
   int roleChanged = (oldRole != m->role);
 
   if (roleChanged) {
@@ -420,10 +467,14 @@ int memberDelete(AppDatabase *db) {
   char studentId[MAX_MSSV_LEN];
   int memberIndex = -1;
   while (1) {
-    printf(COLOR_CYAN "  Nhap MSSV can xoa: " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap MSSV can xoa (0 de quay lai): " COLOR_RESET);
     readString(studentId, MAX_MSSV_LEN);
     trimSpaces(studentId);
     mssvAutoUpper(studentId);
+    if (strcmp(studentId, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return 0;
+    }
     if (validateNotEmpty(studentId)) {
       memberIndex = memberFindById(db, studentId);
       if (memberIndex != -1) {
@@ -594,66 +645,94 @@ void memberListAll(AppDatabase *db) {
     return;
   }
 
-  uiClear();
-  uiDrawBreadcrumb("MENU > Danh sach thanh vien");
+  int totalPages = (activeCount + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
+  int currentPage = 0;
 
-  printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
-  for (int i = 0; i < 34; i++) printf(LINE_H);
-  printf(LINE_cross);
-  for (int i = 0; i < 14; i++) printf(LINE_H);
-  printf(LINE_TR "\n" COLOR_RESET);
+  while (currentPage < totalPages) {
+    uiClear();
+    uiDrawBreadcrumb("MENU > Danh sach thanh vien");
 
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
-         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-         " Ho va ten                        " COLOR_CYAN LINE_V COLOR_RESET
-         " Ban          " COLOR_CYAN LINE_V COLOR_RESET "\n");
-
-  printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
-  for (int i = 0; i < 34; i++) printf(LINE_H);
-  printf(LINE_cross);
-  for (int i = 0; i < 14; i++) printf(LINE_H);
-  printf(LINE_TR "\n" COLOR_RESET);
-
-  int displayed = 0;
-  for (int i = 0; i < db->memberCount; i++) {
-    Member *m = &db->members[i];
-    if (m->isDeleted || m->isActive != STATUS_ACTIVE) {
-      continue;
-    }
+    printf(COLOR_CYAN "  " LINE_TL);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 26; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_TR "\n" COLOR_RESET);
 
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-    printf(" %-10s ", m->studentId);
-    printf(COLOR_CYAN LINE_V COLOR_RESET);
-    printf(" %-32s ", m->fullName);
-    printf(COLOR_CYAN LINE_V COLOR_RESET);
-    printf(" %-12s ", teamName(m->team));
-    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+    printf(" %-10s " COLOR_CYAN LINE_V COLOR_RESET, "MSSV");
+    printf(" %-20s " COLOR_CYAN LINE_V COLOR_RESET, "Ho va ten");
+    printf(" %-24s " COLOR_CYAN LINE_V COLOR_RESET, "Email");
+    printf(" %-12s " COLOR_CYAN LINE_V COLOR_RESET, "SDT");
+    printf(" %-10s " COLOR_CYAN LINE_V COLOR_RESET "\n", "Ban");
 
-    displayed++;
-    if (displayed % 20 == 0 && displayed < activeCount) {
-      printf("\n  [Enter = tiep tuc | q = thoat]: ");
-      char buf[10];
-      readString(buf, sizeof(buf));
-      if (buf[0] == 'q' || buf[0] == 'Q') {
-        break;
-      }
+    printf(COLOR_CYAN "  " LINE_T_RIGHT);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 26; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+    int start = currentPage * ROWS_PER_PAGE;
+    int end = start + ROWS_PER_PAGE;
+    if (end > activeCount) end = activeCount;
+
+    int row = 0;
+    int displayed = 0;
+    for (int i = 0; i < db->memberCount && displayed < end; i++) {
+      Member *m = &db->members[i];
+      if (m->isDeleted || m->isActive != STATUS_ACTIVE) continue;
+      displayed++;
+      if (displayed <= start) continue;
+
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+      printf(" %-10.10s ", m->studentId);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-20.20s ", m->fullName);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-24.24s ", m->email);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-12.12s ", m->phone);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-10.10s ", teamName(m->team));
+      printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+      row++;
     }
-  }
 
-  printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
-  for (int i = 0; i < 34; i++) printf(LINE_H);
-  printf(LINE_cross);
-  for (int i = 0; i < 14; i++) printf(LINE_H);
-  printf(LINE_BR "\n" COLOR_RESET);
-  
-  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien dang hoat dong.\n\n",
-         activeCount);
+    printf(COLOR_CYAN "  " LINE_BL);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 26; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_BR "\n" COLOR_RESET);
+
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
+           COLOR_BOLD "%d" COLOR_RESET " thanh vien\n",
+           currentPage + 1, totalPages, activeCount);
+
+    printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET " > ");
+    char buf[10];
+    readString(buf, sizeof(buf));
+    char c = buf[0];
+    if (c == 'q' || c == 'Q') break;
+    if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
+    else if ((c == 'm' || c == 'M') && currentPage > 0) currentPage--;
+  }
 }
 
 /* ============================================================
@@ -693,17 +772,16 @@ void memberViewArchive(AppDatabase *db) {
     return;
   }
 
-  /* Render beautiful UTF-8 table with column padding */
   /* Columns: STT (6), MSSV (12), Ho va ten (22), Ban (14), Ngay xoa (18) */
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 22; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 14; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
 
@@ -713,17 +791,17 @@ void memberViewArchive(AppDatabase *db) {
          " Ban          " COLOR_CYAN LINE_V COLOR_RESET
          " Ngay xoa          " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
-  printf(COLOR_CYAN "  " LINE_TL);
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
   for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 22; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 14; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 18; i++) printf(LINE_H);
-  printf(LINE_TR "\n" COLOR_RESET);
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < archivedCount; i++) {
     Member *m = &db->members[archivedIndices[i]];
@@ -740,13 +818,13 @@ void memberViewArchive(AppDatabase *db) {
 
   printf(COLOR_CYAN "  " LINE_BL);
   for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 22; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 14; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
@@ -807,28 +885,35 @@ void memberKickOrRestore(AppDatabase *db) {
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kick / Khoi phuc thanh vien");
 
   char studentId[MAX_MSSV_LEN];
-  printf(COLOR_CYAN "  Nhap MSSV can thao tac: " COLOR_RESET);
-  readString(studentId, sizeof(studentId));
-  trimSpaces(studentId);
-  mssvAutoUpper(studentId);
-
-  if (!validateNotEmpty(studentId)) {
-    printf(ERR_LOI "MSSV khong duoc de trong!\n");
-    return;
-  }
-
-  /* Find member */
   int memberIdx = -1;
-  for (int i = 0; i < db->memberCount; i++) {
-    if (!db->members[i].isDeleted && strcmp(db->members[i].studentId, studentId) == 0) {
-      memberIdx = i;
+  while (1) {
+    printf(COLOR_CYAN "  Nhap MSSV can thao tac (0 de quay lai): " COLOR_RESET);
+    readString(studentId, sizeof(studentId));
+    trimSpaces(studentId);
+    mssvAutoUpper(studentId);
+
+    if (strcmp(studentId, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return;
+    }
+
+    if (!validateNotEmpty(studentId)) {
+      continue;
+    }
+
+    /* Find member */
+    memberIdx = -1;
+    for (int i = 0; i < db->memberCount; i++) {
+      if (!db->members[i].isDeleted && strcmp(db->members[i].studentId, studentId) == 0) {
+        memberIdx = i;
+        break;
+      }
+    }
+
+    if (memberIdx != -1) {
       break;
     }
-  }
-
-  if (memberIdx == -1) {
     printf(ERR_LOI "Khong tim thay thanh vien hoat dong voi MSSV: %s!\n", studentId);
-    return;
   }
 
   Member *m = &db->members[memberIdx];
@@ -1067,17 +1152,16 @@ void memberViewKicked(AppDatabase *db) {
     return;
   }
 
-  /* Render beautiful UTF-8 table with column padding */
   /* Columns: STT (6), MSSV (12), Ho va ten (20), Ban (12), Ly do kick (18) */
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 20; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
 
@@ -1087,17 +1171,17 @@ void memberViewKicked(AppDatabase *db) {
          " Ban        " COLOR_CYAN LINE_V COLOR_RESET
          " Ly do kick        " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
-  printf(COLOR_CYAN "  " LINE_TL);
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
   for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 20; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_DOWN);
   for (int i = 0; i < 18; i++) printf(LINE_H);
-  printf(LINE_TR "\n" COLOR_RESET);
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < kickedCount; i++) {
     Member *m = &db->members[kickedIndices[i]];
@@ -1122,13 +1206,13 @@ void memberViewKicked(AppDatabase *db) {
 
   printf(COLOR_CYAN "  " LINE_BL);
   for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 20; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_cross);
+  printf(LINE_T_UP);
   for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 

@@ -42,7 +42,8 @@
  * LAYOUT CONSTANTS
  * ============================================================ */
 
-#define UI_TERM_WIDTH 70
+#define UI_TERM_WIDTH 100
+#define ROWS_PER_PAGE 15
 
 /* ============================================================
  * BOX DRAWING CHARACTERS (UTF-8 encoded)
@@ -61,6 +62,10 @@
 #define LINE_BR "\xE2\x94\x98" /* ┘ */
 #define LINE_H "\xE2\x94\x80"  /* ─ */
 #define LINE_V "\xE2\x94\x82"  /* │ */
+#define LINE_T_RIGHT "\xE2\x94\x9C" /* ├ */
+#define LINE_T_LEFT "\xE2\x94\xA4" /* ┤ */
+#define LINE_T_DOWN "\xE2\x94\xAC" /* ┬ */
+#define LINE_T_UP "\xE2\x94\xB4" /* ┴ */
 #define LINE_cross "\xE2\x94\xBC" /* ┼ */
 #define LINE_TL2 "\xE2\x95\x94" /* ╔ (double) */
 #define LINE_V2 "\xE2\x95\x91"  /* ║ (double) */

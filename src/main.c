@@ -271,11 +271,13 @@ static void adminMenu(void) {
       authChangePassword(&gDb);
       break;
     case 15: {
-      printf("Nhap MSSV can reset mat khau: ");
+      printf("Nhap MSSV can reset mat khau (0 de quay lai): ");
       char targetId[MAX_MSSV_LEN];
       readString(targetId, MAX_MSSV_LEN);
       trimSpaces(targetId);
-      if (authResetPassword(&gDb, targetId) == 0) {
+      if (strcmp(targetId, "0") == 0) {
+        printf(ERR_INFO "Da huy thao tac.\n");
+      } else if (authResetPassword(&gDb, targetId) == 0) {
         Account *session = authGetSession();
         if (session != NULL) {
           logSystemAction(session->studentId, "Reset mat khau", targetId);

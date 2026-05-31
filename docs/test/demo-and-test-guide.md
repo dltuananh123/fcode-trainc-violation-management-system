@@ -1,12 +1,395 @@
-# Huong dan Demo & Test - He thong Quan ly Vi pham CLB F-Code
+# Hướng dẫn Demo & Test — Hệ thống Quản lý Vi phạm CLB F-Code
 
-## 1. Chuan bi
+## 1. Chuẩn bị
 
-### 1.1 Build project
+### 1.1 Build + Seed + Run (1 lệnh duy nhất)
 
-```bash
-mingw32-make
+```cmd
+run.bat
 ```
+
+### 1.2 Hoặc từng bước thủ công
+
+```cmd
+mingw32-make
+bin\seed_data.exe
+bin\violation-management-system.exe
+```
+
+### 1.3 Kết quả seed data
+
+- **72 thành viên** (70 sinh viên thật Challenge 3 + 2 BCN legacy)
+- **76 vi phạm** (17 gốc + 59 bổ sung) trên khắp 4 ban
+- **72 tài khoản** (mật khẩu = MSSV, riêng SE203055: `Phuc@2006`)
+- **3 thành viên đã bị kick** (SE210946, SE210117, SE203367)
+- **1 vi phạm OUT CLB** (SE200516 — đánh nhau)
+
+### 1.4 Xóa data (reset)
+
+```cmd
+bin\seed_data.exe clear
+```
+
+---
+
+## 2. Tài khoản Demo
+
+### BCN (Admin)
+
+| MSSV | Mật khẩu | Vai trò |
+|------|----------|---------|
+| **SE203055** | `Phuc@2006` | Super Admin (BCN) |
+| BCN001 | `BCN001` | Legacy BCN |
+| BCN002 | `BCN002` | Legacy BCN |
+
+### Thành viên
+
+Tất cả tài khoản có mật khẩu mặc định = **MSSV** (ví dụ: `SE201018` / `SE201018`).
+
+Một số thành viên tiêu biểu:
+
+| MSSV | Họ tên | Ban | Chức vụ | Ghi chú |
+|------|--------|-----|---------|---------|
+| SE201018 | Lam Hoang An | Học thuật | Leader | 1 VP (đã thu) |
+| SE210946 | Nguyen Vu Hao | Học thuật | Member | **Đã bị kick**, 2 VP |
+| SE200516 | Tran Vu Hai Duy | Học thuật | Leader | 2 VP, **1 OUT CLB** (đánh nhau) |
+| SE212026 | Bui Phuoc Trong | Kế hoạch | Leader | 2 VP (1 chưa thu) |
+| SE210117 | Nguyen Hung Hien | Kế hoạch | Member | **Đã bị kick** |
+| SE203367 | Trinh Thi Minh Tam | Truyền thông | Member | **Đã bị kick**, 4 VP |
+| SE200481 | Vang Khanh Khuyen | Truyền thông | Leader | 1 VP (chưa thu) |
+
+---
+
+## 3. Chạy ứng dụng
+
+```cmd
+bin\violation-management-system.exe
+```
+
+---
+
+## 4. Kịch bản Demo — Menu BCN
+
+**Đăng nhập:** MSSV `SE203055`, mật khẩu `Phuc@2006`
+
+### 4.1 Xem danh sách thành viên (Option 13)
+
+**Mục đích:** Hiển thị danh sách thành viên đang hoạt động, có phân trang.
+
+**Thực hiện:**
+1. Chọn `13`
+2. Bảng hiện 5 cột: MSSV, Họ và tên, Email, SDT, Ban
+3. Mỗi trang 15 dòng, nhấn `n` trang tiếp, `m` trang trước, `q` thoát
+
+**Kết quả mong đợi:** 69 thành viên đang hoạt động (72 - 3 bị kick).
+
+---
+
+### 4.2 Thêm thành viên mới (Option 1)
+
+**Mục đích:** Thêm thành viên thứ 73.
+
+**Thực hiện:**
+1. Chọn `1`
+2. Nhập MSSV: `SE209999` (nhập `0` để hủy)
+3. Nhập họ tên: `Nguyen Test Demo`
+4. Nhập email: `test@fcode.vn`
+5. Nhập SDT: `0987654321`
+6. Chọn ban: `2` (Nhân sự)
+7. Chọn chức vụ: `0` (Thành viên)
+
+**Kết quả mong đợi:** `[OK] Thêm thành viên thành công`
+
+---
+
+### 4.3 Sửa thông tin thành viên (Option 2)
+
+**Mục đích:** Sửa tên — kiểm tra validation re-prompt.
+
+**Thực hiện:**
+1. Chọn `2`
+2. Nhập MSSV: `SE209999` (`0` để hủy)
+3. Chọn trường sửa: `1` (Họ tên)
+4. Nhập họ tên mới: `NguyenTest` (Enter để giữ nguyên)
+5. Chọn `0` để kết thúc
+
+Các trường đều có vòng lặp re-prompt: nếu nhập sai định dạng (vd email thiếu `@`, SDT có chữ) sẽ yêu cầu nhập lại, Enter để giữ nguyên.
+
+**Kết quả mong đợi:** `[OK] Cập nhật thành công`
+
+---
+
+### 4.4 Ghi nhận vi phạm (Option 4)
+
+**Mục đích:** Tạo vi phạm mới với re-prompt MSSV.
+
+**Thực hiện:**
+1. Chọn `4`
+2. Nhập MSSV: `SE209999` (`0` để hủy)
+3. Xem thông tin thành viên
+4. Chọn lý do: `0` (Không mặc áo CLB)
+5. Nhập ghi chú: `Test demo`
+
+**Kết quả mong đợi:** Phạt 20000 VND, ghi nhận thành công.
+
+---
+
+### 4.5 Xem danh sách vi phạm có lọc (Option 6)
+
+**Mục đích:** Xem tất cả vi phạm với phân trang.
+
+**Test 1 — Xem tất cả:**
+1. Chọn `6` → `4` (Xem tất cả)
+2. Bảng 8 cột với phân trang (15 dòng/trang)
+3. Nhấn `n`/`m`/`q` để điều hướng
+
+**Kết quả mong đợi:** Tổng 76+ vi phạm, nhiều trang.
+
+**Test 2 — Lọc theo ban:**
+1. Chọn `6` → `1` (Lọc theo ban)
+2. Chọn ban: `1` (Học thuật)
+3. Xem danh sách vi phạm ban Học thuật
+
+**Kết quả mong đợi:** ~25 vi phạm (nhiều hơn 1 trang).
+
+**Test 3 — Lọc chưa thu:**
+1. Chọn `6` → `3` (Lọc trạng thái)
+2. Chọn `1` (Chưa thu)
+3. Xem danh sách vi phạm chưa đóng tiền
+
+---
+
+### 4.6 Thu tiền phạt (Option 5)
+
+**Mục đích:** Thu tiền phạt từ thành viên.
+
+**Thực hiện:**
+1. Chọn `5`
+2. Nhập MSSV: `SE203367` (`0` để hủy) — thành viên đã bị kick (có thể không thu được)
+   Hoặc: `SE212026` (đang có 1 VP chưa thu)
+3. Xem danh sách vi phạm chưa đóng
+4. Nhập `99` để thu tất cả, hoặc chọn STT
+
+**Kết quả mong đợi:** `[OK] Đã thu tiền thành công!`
+
+---
+
+### 4.7 Thống kê tiền phạt theo ban (Option 7)
+
+**Mục đích:** Xem báo cáo tổng hợp 4 ban.
+
+**Thực hiện:**
+1. Chọn `7`
+
+**Kết quả mong đợi:** Bảng thống kê với biểu đồ thanh tiến trình.
+
+---
+
+### 4.8 Kiểm tra ngưỡng Out CLB (Option 8)
+
+**Mục đích:** Xem thành viên gần hoặc đã quá ngưỡng Out CLB.
+
+**Thực hiện:**
+1. Chọn `8`
+
+**Kết quả mong đợi:** SE200516 hiện "Out CLB" (đánh nhau).
+
+---
+
+### 4.9 Sắp xếp thành viên theo số lần vi phạm (Option 9)
+
+**Thực hiện:**
+1. Chọn `9`
+2. Chọn `2` (Giảm dần)
+
+**Kết quả mong đợi:** Các thành viên vi phạm nhiều nhất đứng đầu.
+
+---
+
+### 4.10 Xuất báo cáo ra file .txt (Option 10)
+
+**Thực hiện:**
+1. Chọn `10`
+2. Kiểm tra file .txt trong thư mục `report/`
+
+---
+
+### 4.11 Tìm kiếm vi phạm theo ngày (Option 11)
+
+**Test 1 — Toàn bộ 2026 (có phân trang):**
+1. Chọn `11`
+2. Ngày bắt đầu: `01/01/2026`
+3. Ngày kết thúc: `31/12/2026`
+4. Nhấn `n`/`m`/`q` để điều hướng
+
+**Kết quả mong đợi:** 76 vi phạm, nhiều trang.
+
+**Test 2 — Sai định dạng:**
+1. Chọn `11`
+2. Ngày bắt đầu: `2026-01-01`
+
+**Kết quả mong đợi:** `[LOI] Định dạng ngày không hợp lệ`
+
+---
+
+### 4.12 Xem profile cá nhân (Option 12)
+
+**Thực hiện:** Chọn `12`
+
+**Kết quả mong đợi:** Thông tin của SE203055 (Nguyen Ngoc Phuc).
+
+---
+
+### 4.13 Đổi mật khẩu (Option 14)
+
+**Lưu ý:** Mật khẩu mới phải >= 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.
+
+**Thực hiện:**
+1. Chọn `14`
+2. Nhập mật khẩu cũ: `Phuc@2006`
+3. Nhập mật khẩu mới: `NewPass@123`
+4. Xác nhận: `NewPass@123`
+
+**Kết quả mong đợi:** `[OK] Đổi mật khẩu thành công`
+
+---
+
+### 4.14 Reset mật khẩu thành viên (Option 15)
+
+**Thực hiện:**
+1. Chọn `15`
+2. Nhập MSSV: `SE201018` (nhập `0` để hủy)
+3. Xác nhận
+
+**Kết quả mong đợi:** Mật khẩu reset về `SE201018`.
+
+---
+
+### 4.15 Kick thành viên (Option 17)
+
+**Mục đích:** Kick thành viên vi phạm ra khỏi CLB.
+
+**Thực hiện:**
+1. Chọn `17`
+2. Nhập MSSV: `SE209999` (thành viên vừa thêm, `0` để hủy)
+3. Nhập lý do: `Test kick`
+4. Xác nhận: `1` (Có)
+5. Gõ lại MSSV để xác nhận: `SE209999`
+
+**Kết quả mong đợi:** `[OK] Da kick thanh vien`
+
+### 4.16 Xem danh sách đã kick (Option 19)
+
+**Mục đích:** Xem các thành viên đã bị kick kèm lý do.
+
+**Thực hiện:**
+1. Chọn `19`
+
+**Kết quả mong đợi:** Danh sách 4 thành viên đã kick kèm lý do.
+
+---
+
+### 4.17 Xem danh sách vi phạm (Option 6 — phân trang)
+
+Tất cả các bảng danh sách vi phạm (xem tất cả, lọc, tìm kiếm theo ngày) đều có phân trang:
+- **15 dòng / trang**
+- `n`: trang tiếp | `m`: trang trước | `q`: thoát
+
+---
+
+### 4.18 Xem nhật ký hệ thống (Option 20)
+
+**Thực hiện:**
+1. Chọn `20`
+2. Xem audit log với tô màu
+3. `Enter` xem tiếp, `q` thoát
+
+---
+
+## 5. Kịch bản Demo — Menu Thành viên
+
+**Đăng nhập:** MSSV `SE201018`, mật khẩu `SE201018`
+
+### 5.1 Xem profile (Option 1)
+
+**Thực hiện:** Chọn `1`
+
+**Kết quả mong đợi:** Lam Hoang An, SE201018, Ban Học thuật, Leader.
+
+### 5.2 Xem lịch sử vi phạm (Option 2)
+
+**Thực hiện:** Chọn `2`
+
+**Kết quả mong đợi:** 1 vi phạm (10/03/2026, không mặc áo CLB, đã thu).
+
+### 5.3 Xem tổng tiền phạt còn nợ (Option 3)
+
+**Thực hiện:** Chọn `3`
+
+**Kết quả mong đợi:** 0 VND (đã thu hết).
+
+### 5.4 Xem danh sách thành viên (Option 4)
+
+**Thực hiện:** Chọn `4`
+
+**Kết quả mong đợi:** Bảng 69 thành viên đang hoạt động, phân trang.
+
+---
+
+## 6. Kịch bản — Đăng nhập thất bại
+
+### 6.1 Sai mật khẩu 3 lần
+
+1. MSSV: `SE203055`, Mật khẩu: `sai`
+2. Lặp lại 3 lần
+
+**Kết quả mong đợi:** `[CANH BAO] Tài khoản đã bị khóa sau 3 lần đăng nhập sai`
+
+### 6.2 Tài khoản không tồn tại
+
+**Thực hiện:** MSSV: `XXXXX`, Mật khẩu: `batky`
+
+**Kết quả mong đợi:** `[LOI] Tài khoản không tồn tại`
+
+---
+
+## 7. Xóa và nạp lại data
+
+```cmd
+bin\seed_data.exe clear
+bin\seed_data.exe
+bin\violation-management-system.exe
+```
+
+---
+
+## 8. Lưu ý quan trọng
+
+### 8.1 `run.bat` — Build + Seed + Run
+
+Script tự động:
+1. Xóa `bin\` cũ
+2. Build toàn bộ project
+3. Build `seed_data.exe`
+4. Chạy seed data
+5. Chạy app
+
+### 8.2 Các validation mới
+
+| Field | Validation |
+|-------|-----------|
+| Email | Phải có `@`, không `,` trong domain, TLD >= 2 ký tự, không `..` |
+| Phone | Chỉ số, đúng 10 số, đầu 0, unique trong hệ thống |
+| Password | >= 8 ký tự, có chữ hoa, thường, số, ký tự đặc biệt |
+| MSSV | Tất cả prompt có `0 để quay lại` |
+| Edit fields | Re-prompt `while(1)` khi nhập sai, Enter giữ nguyên |
+
+### 8.3 Giao diện
+
+- Terminal width: **100 ký tự**
+- Danh sách thành viên: 5 cột (MSSV, Họ tên, Email, SDT, Ban)
+- Tất cả bảng vi phạm: 8 cột, phân trang 15 dòng
+- Phân trang: `n` tiếp, `m` trước, `q` thoát
 
 ### 1.2 Build seed data tool
 

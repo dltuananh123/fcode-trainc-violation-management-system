@@ -318,6 +318,16 @@ void nameAutoFix(char *name) {
  * EMAIL
  * ============================================================ */
 
+static int isValidEmailChar(char c, int isLocal) {
+  if (c >= 'a' && c <= 'z') return 1;
+  if (c >= 'A' && c <= 'Z') return 1;
+  if (c >= '0' && c <= '9') return 1;
+  if (isLocal) {
+    return c == '.' || c == '_' || c == '%' || c == '+' || c == '-';
+  }
+  return c == '.' || c == '-';
+}
+
 int validateEmail(const char *email) {
   if (email == NULL || email[0] == '\0') {
     printf(ERR_LOI "Email khong duoc de trong!\n");
@@ -355,6 +365,28 @@ int validateEmail(const char *email) {
     return 0;
   }
 
+  /* Validate local part (before @) */
+  for (const char *p = email; p < at; p++) {
+    if (!isValidEmailChar(*p, 1)) {
+      printf(ERR_LOI "Email chua ky tu khong hop le trong phan ten!\n");
+      return 0;
+    }
+  }
+
+  /* No consecutive dots in local part */
+  for (const char *p = email; p < at - 1; p++) {
+    if (*p == '.' && *(p + 1) == '.') {
+      printf(ERR_LOI "Email khong duoc chua dau cham lien tiep!\n");
+      return 0;
+    }
+  }
+
+  /* Local part cannot start or end with dot */
+  if (email[0] == '.' || at[-1] == '.') {
+    printf(ERR_LOI "Email khong duoc bat dau hoac ket thuc bang dau cham!\n");
+    return 0;
+  }
+
   /* Domain after @ */
   char *domain = at + 1;
   if (domain[0] == '\0') {
@@ -362,25 +394,47 @@ int validateEmail(const char *email) {
     return 0;
   }
 
+  /* Validate domain characters */
+  for (const char *p = domain; *p != '\0'; p++) {
+    if (!isValidEmailChar(*p, 0)) {
+      printf(ERR_LOI "Email chua ky tu khong hop le trong ten mien!\n");
+      return 0;
+    }
+  }
+
   /* Domain must contain . */
-  if (strchr(domain, '.') == NULL) {
+  char *lastDot = strrchr(domain, '.');
+  if (lastDot == NULL) {
     printf(ERR_LOI "Email phai co ten mien hop le (vd: gmail.com)!\n");
     return 0;
   }
 
   /* No consecutive dots */
-  for (int i = 0; i < len - 1; i++) {
-    if (email[i] == '.' && email[i + 1] == '.') {
-      printf(ERR_LOI "Email khong hop le!\n");
-      return 0;
-    }
+  if (strstr(domain, "..") != NULL) {
+    printf(ERR_LOI "Email khong duoc chua dau cham lien tiep!\n");
+    return 0;
   }
 
-  /* Domain min 2 chars after last dot */
-  char *lastDot = strrchr(domain, '.');
-  if (lastDot != NULL && (int)strlen(lastDot + 1) < 2) {
-    printf(ERR_LOI "Domain phai co it nhat 2 ky tu (vd: .com, .vn)!\n");
+  /* Domain cannot start or end with dot or hyphen */
+  if (domain[0] == '.' || domain[0] == '-' || domain[strlen(domain) - 1] == '.') {
+    printf(ERR_LOI "Ten mien khong hop le!\n");
     return 0;
+  }
+
+  /* TLD must be at least 2 letters */
+  char *tld = lastDot + 1;
+  int tldLen = (int)strlen(tld);
+  if (tldLen < 2) {
+    printf(ERR_LOI "Domain phai co it nhat 2 ky tu sau dau cham cuoi (vd: .com, .vn)!\n");
+    return 0;
+  }
+
+  /* TLD must be only letters */
+  for (const char *p = tld; *p != '\0'; p++) {
+    if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z'))) {
+      printf(ERR_LOI "Duoi domain chi duoc chua chu cai (vd: .com, .vn)!\n");
+      return 0;
+    }
   }
 
   return 1;

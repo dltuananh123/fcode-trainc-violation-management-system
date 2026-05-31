@@ -289,5 +289,132 @@ Khi người dùng xác nhận mật khẩu mới không khớp, thay vì chỉ 
 * Trước: `Nhap mat khau moi` → `Xac nhan` (sai) → `Xac nhan` (sai) → `Xac nhan`...
 * Sau: `Nhap mat khau moi` → `Xac nhan` (sai) → `Nhap mat khau moi` → `Xac nhan`...
 
-Số lần nhập mật khẩu có thể tăng, nhưng giảm thiểu rủi ro người dùng không nhận ra mình đã gõ sai từ bước đầu. Lược bỏ bước kiểm tra `confirmPass == ""` vì đã có `validatePassword()` ở bước trước.|---
+Số lần nhập mật khẩu có thể tăng, nhưng giảm thiểu rủi ro người dùng không nhận ra mình đã gõ sai từ bước đầu. Lược bỏ bước kiểm tra `confirmPass == ""` vì đã có `validatePassword()` ở bước trước.
+
+---
+
+## 8. Nâng cấp Giao diện, Validation & Seed Data (v2.3 UI/UX & Data Enhancements)
+
+### 8.1. Re-prompt Toàn bộ Edit Field (Member Edit Validation Loop)
+
+Trước đây, khi sửa thông tin thành viên (`memberEdit`), nếu nhập dữ liệu không hợp lệ (email thiếu `@`, phone có chữ), hệ thống chỉ báo lỗi và kết thúc mà không cho nhập lại. Đã sửa thành vòng lặp `while(1)` cho tất cả các trường:
+
+| Trường | Cơ chế | File |
+|--------|--------|------|
+| Họ tên | `editField()` + `validateName()` — đã có sẵn | `src/member.c:337` |
+| Email | `while(1)` + `validateEmailUnique()` — Enter giữ nguyên, sai nhập lại | `src/member.c:340-355` |
+| SĐT | `while(1)` + `phoneNormalize()` + `validatePhoneUnique()` | `src/member.c:357-373` |
+| Team/Role | `while(1)` với menu chọn | `src/member.c:375-406` |
+| Mật khẩu cũ | `while(1)` trong `authChangePassword` | `src/auth.c:207-228` |
+
+### 8.2. "0 để quay lại" — Thoát an toàn từ MSSV Prompt
+
+Tất cả các prompt yêu cầu nhập MSSV đều có cơ chế nhập `0` để hủy thao tác và quay lại, tránh kẹt menu:
+
+| Chức năng | File |
+|-----------|------|
+| Sửa thành viên | `src/member.c:299` |
+| Xóa thành viên | `src/member.c:471` |
+| Kick/Restore | `src/member.c:891, 967` |
+| Thêm thành viên (team chỉ định) | `src/member.c:128` |
+| Ghi nhận vi phạm | `src/violation.c` |
+| Thu tiền phạt | `src/violation.c` |
+| Reset mật khẩu | `src/main.c` |
+| Tìm kiếm theo ngày | `src/violation.c` |
+
+### 8.3. Email Validation Chặt chẽ
+
+`validateEmail()` (`src/validate.c:321-418`) được viết lại hoàn toàn:
+
+| Điều kiện | Mô tả |
+|-----------|-------|
+| Có đúng 1 `@` | `a@b` — OK, `a@@b` — FAIL |
+| Không `,` trong domain | `test@f,c.vn` — FAIL |
+| Không `.` ở đầu/cuối local part | `.abc@d.com` — FAIL |
+| Không `.` liên tiếp | `a..b@c.com` — FAIL |
+| TLD >= 2 ký tự | `a@b.c` — FAIL, `a@b.com` — OK |
+| Không ký tự đặc biệt trong TLD | `a@b.c_o_m` — FAIL |
+| Ký tự hợp lệ: `a-z A-Z 0-9 . - _ +` | `a(b)@c.com` — FAIL |
+
+### 8.4. Member List — 5 Cột + Phân Trang
+
+Bảng danh sách thành viên (`memberListAll`, `src/member.c`) được thiết kế lại:
+
+- **5 cột**: MSSV (10), Họ và tên (20), Email (24), SDT (12), Ban (10)
+- **Terminal width**: `UI_TERM_WIDTH` = 100 (`include/ui.h:45`)
+- **Phân trang**: 15 dòng/trang, `n`: tiếp, `m`: trước, `q`: thoát
+- **Truncation**: `%-20.20s` format để tránh tràn cột
+- **Header động**: Dùng `printf("%-10s", "MSSV")` thay vì chuỗi hardcode
+- **`ROWS_PER_PAGE`**: Chuyển từ `member.c` lên `include/ui.h` để dùng chung
+
+### 8.5. Violation Table Column Fix
+
+Bảng vi phạm bị lệch cột "Chờ đóng phạt" và "Trạng thái":
+
+| Cột | Trước | Sau |
+|-----|-------|-----|
+| Chờ đóng phạt | LINE_H=14 (header 15 ký tự) | LINE_H=15 (khớp header) |
+| Trạng thái | Chuỗi 10 ký tự (cột 12) | Chuỗi 12 ký tự (đệm đúng) |
+| Border bottom | 14 ở 2 vị trí | 15 ở 2 vị trí |
+
+Tổng cộng sửa 5 bottom border trong `src/violation.c`.
+
+### 8.6. Violation List — Phân trang
+
+Hai view chính của vi phạm được thêm phân trang:
+
+- `violationViewAllFiltered()` — xem tất cả/lọc
+- `violationSearchByDate()` — tìm theo ngày
+
+Cơ chế:
+1. Duyệt toàn bộ violations, lưu index match vào `matchIdx[]`
+2. Nếu `found == 0` → thông báo và return
+3. Vòng lặp `while(1)` với `uiClear()` mỗi trang
+4. `n`/`m`/`q` điều hướng (giống member list)
+5. Nếu chỉ 1 trang → hiện `"Nhấn Enter để tiếp tục"` và thoát
+
+### 8.7. Seed Data Overhaul (`tools/seed_data.c`)
+
+Dữ liệu seed được thay thế hoàn toàn từ dữ liệu giả (SV0001-SV0012) sang sinh viên thật Challenge 3:
+
+| Thông số | Cũ | Mới |
+|----------|-----|------|
+| Thành viên | 14 (12 SV + 2 BCN) | **72** (70 thật + 2 BCN) |
+| Vi phạm | 16 | **76** (17 + 59 bổ sung) |
+| Tài khoản | 15 | **72** |
+| Bị kick | 0 | **3** (SE210946, SE210117, SE203367) |
+| OUT CLB | 0 | **1** (SE200516) |
+
+**Team mapping**: Nhóm 1-4 → Học thuật, 5-7 → Kế hoạch, 8-10 → Nhân sự, 11-14 → Truyền thông
+
+**Mật khẩu**: 
+- Tất cả thành viên: mật khẩu = MSSV
+- SE203055 (Super Admin): `Phuc@2006` (hashed với salted FNV-1a)
+- `Violation violations[40]` → `[100]` để chứa đủ
+
+### 8.8. `ROWS_PER_PAGE` Centralized
+
+```c
+// include/ui.h (thêm mới)
+#define ROWS_PER_PAGE 15
+
+// src/member.c (xóa)
+-#define ROWS_PER_PAGE 15
+```
+
+Dùng chung cho tất cả view có phân trang.
+
+### 8.9. `run.bat` — Build + Seed + Run
+
+Script `run.bat` tự động hóa toàn bộ quy trình:
+
+```batch
+@echo off
+if exist bin\ rmdir /s /q bin\
+mkdir bin\data
+mingw32-make
+gcc -std=c17 -m64 -Wall -Iinclude tools/seed_data.c -o bin/seed_data.exe
+bin\seed_data.exe
+bin\violation-management-system.exe
+```
 

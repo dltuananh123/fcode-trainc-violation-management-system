@@ -201,31 +201,32 @@ int authChangePassword(AppDatabase *db) {
     return -1;
   }
 
-  /* Old password */
+  /* Old password — re-prompt on invalid */
   char oldPass[MAX_PASS_LEN];
-  printf(COLOR_CYAN "  Nhap mat khau cu: " COLOR_RESET);
-  readPassword(oldPass, sizeof(oldPass));
+  while (1) {
+    printf(COLOR_CYAN "  Nhap mat khau cu: " COLOR_RESET);
+    readPassword(oldPass, sizeof(oldPass));
+    if (strlen(oldPass) == 0) {
+      printf(ERR_LOI "Vui long nhap mat khau cu!\n");
+      continue;
+    }
 
-  if (strlen(oldPass) == 0) {
-    printf(ERR_LOI "Vui long nhap mat khau cu!\n");
-    return -1;
-  }
+    char oldHashed[32];
+    /* If legacy account has no salt, generate one and hash it */
+    if (strlen(db->accounts[idx].salt) == 0) {
+      generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
+      char oldPlain[MAX_PASS_LEN];
+      strncpy(oldPlain, db->accounts[idx].password, MAX_PASS_LEN - 1);
+      oldPlain[MAX_PASS_LEN - 1] = '\0';
+      hashPassword(oldPlain, db->accounts[idx].salt, db->accounts[idx].password);
+      (void)fileioSaveAccounts(db);
+    }
 
-  char oldHashed[32];
-  /* If legacy account has no salt, generate one and hash it */
-  if (strlen(db->accounts[idx].salt) == 0) {
-    generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
-    char oldPlain[MAX_PASS_LEN];
-    strncpy(oldPlain, db->accounts[idx].password, MAX_PASS_LEN - 1);
-    oldPlain[MAX_PASS_LEN - 1] = '\0';
-    hashPassword(oldPlain, db->accounts[idx].salt, db->accounts[idx].password);
-    (void)fileioSaveAccounts(db);
-  }
-
-  hashPassword(oldPass, db->accounts[idx].salt, oldHashed);
-  if (strcmp(db->accounts[idx].password, oldHashed) != 0) {
+    hashPassword(oldPass, db->accounts[idx].salt, oldHashed);
+    if (strcmp(db->accounts[idx].password, oldHashed) == 0) {
+      break;
+    }
     printf(ERR_LOI "Mat khau cu khong dung!\n");
-    return -1;
   }
 
   /* New password with confirmation loop */
