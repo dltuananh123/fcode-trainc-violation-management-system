@@ -163,4 +163,21 @@ const char *reasonName(int reasonId);
  */
 void getExeDir(char *buffer, size_t size);
 
+/**
+ * @brief Salter and Hasher for passwords using key stretched FNV-1a.
+ * 
+ * @param password The plain text password.
+ * @param salt The salt value.
+ * @param outHashHex 32-character buffer to hold output hex string.
+ */
+void hashPassword(const char *password, const char *salt, char *outHashHex);
+
+/**
+ * @brief Generates a random salt.
+ * 
+ * @param salt The output salt buffer.
+ * @param size Size of the buffer.
+ */
+void generateSalt(char *salt, size_t size);
+
 #endif /* UTILS_H */

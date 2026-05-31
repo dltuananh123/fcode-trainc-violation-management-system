@@ -96,7 +96,19 @@ int authLogin(AppDatabase *db) {
       continue;
     }
 
-    if (strcmp(acc->password, password) != 0) {
+    char inputHashed[32];
+    /* Backward-compatible migration: If legacy account has no salt, generate one and hash password in-place */
+    if (strlen(acc->salt) == 0) {
+      generateSalt(acc->salt, sizeof(acc->salt));
+      char oldPlain[MAX_PASS_LEN];
+      strncpy(oldPlain, acc->password, MAX_PASS_LEN - 1);
+      oldPlain[MAX_PASS_LEN - 1] = '\0';
+      hashPassword(oldPlain, acc->salt, acc->password);
+      (void)fileioSaveAccounts(db);
+    }
+
+    hashPassword(password, acc->salt, inputHashed);
+    if (strcmp(acc->password, inputHashed) != 0) {
       acc->failCount++;
       printf(ERR_LOI "Mat khau sai!\n");
 
@@ -198,7 +210,19 @@ int authChangePassword(AppDatabase *db) {
     return -1;
   }
 
-  if (strcmp(db->accounts[idx].password, oldPass) != 0) {
+  char oldHashed[32];
+  /* If legacy account has no salt, generate one and hash it */
+  if (strlen(db->accounts[idx].salt) == 0) {
+    generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
+    char oldPlain[MAX_PASS_LEN];
+    strncpy(oldPlain, db->accounts[idx].password, MAX_PASS_LEN - 1);
+    oldPlain[MAX_PASS_LEN - 1] = '\0';
+    hashPassword(oldPlain, db->accounts[idx].salt, db->accounts[idx].password);
+    (void)fileioSaveAccounts(db);
+  }
+
+  hashPassword(oldPass, db->accounts[idx].salt, oldHashed);
+  if (strcmp(db->accounts[idx].password, oldHashed) != 0) {
     printf(ERR_LOI "Mat khau cu khong dung!\n");
     return -1;
   }
@@ -241,10 +265,13 @@ int authChangePassword(AppDatabase *db) {
     break;
   }
 
-  /* Update password */
-  strncpy(db->accounts[idx].password, newPass, MAX_PASS_LEN - 1);
-  db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
-  strncpy(session->password, newPass, MAX_PASS_LEN - 1);
+  /* Update password and session with a fresh salt and hash */
+  generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
+  hashPassword(newPass, db->accounts[idx].salt, db->accounts[idx].password);
+  
+  strncpy(session->salt, db->accounts[idx].salt, MAX_SALT_LEN - 1);
+  session->salt[MAX_SALT_LEN - 1] = '\0';
+  strncpy(session->password, db->accounts[idx].password, MAX_PASS_LEN - 1);
   session->password[MAX_PASS_LEN - 1] = '\0';
 
   if (fileioSaveAccounts(db) != 0) {
@@ -279,9 +306,9 @@ int authResetPassword(AppDatabase *db, const char *targetStudentId) {
     return -1;
   }
 
-  /* Reset password to MSSV, unlock, mark as default */
-  strncpy(db->accounts[idx].password, targetStudentId, MAX_PASS_LEN - 1);
-  db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
+  /* Reset password to MSSV, unlock, mark as default using fresh salt and hash */
+  generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
+  hashPassword(targetStudentId, db->accounts[idx].salt, db->accounts[idx].password);
   db->accounts[idx].failCount = 0;
   db->accounts[idx].isLocked = 0;
   db->accounts[idx].isDefaultPassword = 1;

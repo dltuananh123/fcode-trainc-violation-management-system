@@ -232,6 +232,7 @@ static void adminMenu(void) {
 int main(void) {
   /* Initialize UI (enable ANSI colors on Windows, set UTF-8) */
   uiInit();
+  srand((unsigned int)time(NULL));
 
   printf(COLOR_BOLD COLOR_BLUE "\n  F-CODE VIOLATION MANAGEMENT SYSTEM v2.0\n" COLOR_RESET);
 

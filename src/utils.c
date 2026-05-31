@@ -7,6 +7,7 @@
 #include "types.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -375,4 +376,43 @@ void getExeDir(char *buffer, size_t size) {
     buffer[size - 1] = '\0';
   }
 #endif
+}
+
+void hashPassword(const char *password, const char *salt, char *outHashHex) {
+  #define FNV_PRIME 0x00000100000001B3ULL
+  #define FNV_OFFSET_BASIS 0xCBF29CE484222325ULL
+
+  char temp[256];
+  snprintf(temp, sizeof(temp), "%s%s", password, salt);
+
+  unsigned long long hash = FNV_OFFSET_BASIS;
+  /* 1000 iterations of FNV-1a stretching */
+  for (int iter = 0; iter < 1000; iter++) {
+    for (int i = 0; temp[i] != '\0'; i++) {
+      hash ^= (unsigned char)temp[i];
+      hash *= FNV_PRIME;
+    }
+    snprintf(temp, sizeof(temp), "%016llx%s", hash, salt);
+  }
+
+  /* Stretch again to fill the 31 characters of password storage */
+  unsigned long long hash2 = FNV_OFFSET_BASIS;
+  for (int i = 0; temp[i] != '\0'; i++) {
+    hash2 ^= (unsigned char)temp[i];
+    hash2 *= FNV_PRIME;
+  }
+
+  snprintf(outHashHex, 32, "%015llx%016llx", hash & 0xFFFFFFFFFFFFFFFULL, hash2);
+}
+
+void generateSalt(char *salt, size_t size) {
+  const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  if (size == 0) {
+    return;
+  }
+  for (size_t n = 0; n < size - 1; n++) {
+    int key = rand() % (int)(sizeof(charset) - 1);
+    salt[n] = charset[key];
+  }
+  salt[size - 1] = '\0';
 }

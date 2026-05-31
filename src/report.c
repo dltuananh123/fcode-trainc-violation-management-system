@@ -1,6 +1,7 @@
 #include "report.h"
 #include "types.h"
 #include "utils.h"
+#include "ui.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -93,19 +94,86 @@ void reportTeamStats(const AppDatabase *db) {
   double outstanding[4] = {0.0, 0.0, 0.0, 0.0};
   aggregateTeamTotals(db, collected, outstanding);
 
-  printf("\n--- THONG KE TIEN PHAT THEO BAN ---\n");
-  printf("%-15s | %-15s | %-15s | %-15s\n", "Ban", "Da thu (VND)",
-         "Con no (VND)", "Tong (VND)");
-  printf("---------------------------------------------------------------------"
-         "-\n");
+  printf("\n");
+  printf(COLOR_BOLD "  THONG KE TIEN PHAT THEO BAN\n" COLOR_RESET);
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+         " Ban            " COLOR_CYAN LINE_V COLOR_RESET
+         " Da thu (VND)    " COLOR_CYAN LINE_V COLOR_RESET
+         " Con no (VND)    " COLOR_CYAN LINE_V COLOR_RESET
+         " Tong (VND)      " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  double grandCollected = 0.0;
+  double grandOutstanding = 0.0;
 
   for (int team = TEAM_ACADEMIC; team <= TEAM_MEDIA; team++) {
     double total = collected[team] + outstanding[team];
-    printf("%-15s | %15.0f | %15.0f | %15.0f\n", teamName(team),
-           collected[team], outstanding[team], total);
+    grandCollected += collected[team];
+    grandOutstanding += outstanding[team];
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+    printf(" %-14s ", teamName(team));
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" " COLOR_GREEN "%15.0f" COLOR_RESET " ", collected[team]);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" " COLOR_RED "%15.0f" COLOR_RESET " ", outstanding[team]);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" " COLOR_PURPLE "%15.0f" COLOR_RESET " ", total);
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   }
-  printf("---------------------------------------------------------------------"
-         "-\n");
+
+  /* Bottom separator before grand total */
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  /* Grand total row */
+  double grandTotal = grandCollected + grandOutstanding;
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD "%-14s" COLOR_RESET " ", "Tong Cong");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_GREEN "%15.0f" COLOR_RESET " ", grandCollected);
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_RED "%15.0f" COLOR_RESET " ", grandOutstanding);
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_PURPLE "%15.0f" COLOR_RESET " ", grandTotal);
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  /* Final bottom border */
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
 }
 
 void reportSortMembersByViolations(const AppDatabase *db) {
@@ -114,27 +182,26 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   }
 
   if (db->memberCount == 0) {
-    printf("[THONG BAO] Chua co thanh vien nao trong du lieu\n");
+    printf(ERR_INFO "Chua co thanh vien nao trong du lieu\n");
     return;
   }
 
   int choice;
-  printf("\nSAP XEP THEO SO LAN VI PHAM\n");
-  printf("1. Tang dan\n");
-  printf("2. Giam dan\n");
-  printf("0. Quay lai\n");
-  printf("Nhap lua chon: ");
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  SAP XEP THEO SO LAN VI PHAM");
+  printf("                     ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Tang dan                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
+  printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Giam dan                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
+  printf(COLOR_BLUE BOX_V COLOR_RESET "  0. Quay lai                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
 
-  if (readInt(&choice) != 1) {
-    printf("[LOI] Lua chon khong hop le\n");
-    return;
-  }
+  choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 2);
 
   if (choice == 0) {
-    return;
-  }
-  if (choice != 1 && choice != 2) {
-    printf("[LOI] Lua chon khong hop le\n");
     return;
   }
 
@@ -145,23 +212,62 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
   sortMemberPointersByViolationCount(db, sorted, db->memberCount, choice == 1);
 
-  printf("\nDANH SACH THANH VIEN THEO SO LAN VI PHAM\n");
-  printf(
-      "+----------------------+------------+--------------+--------------+\n");
-  printf(
-      "| Ho va ten            | MSSV       | Ban          | So vi pham   |\n");
-  printf(
-      "+----------------------+------------+--------------+--------------+\n");
+  printf("\n");
+  printf(COLOR_BOLD "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 22; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+         " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
+         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+         " Ban          " COLOR_CYAN LINE_V COLOR_RESET
+         " So vi pham   " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 22; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
 
   for (int i = 0; i < db->memberCount; i++) {
     int violationCount = countMemberViolations(db, sorted[i]->studentId);
-    printf("| %-20.20s | %-10.10s | %-12.12s | %-12d |\n", sorted[i]->fullName,
-           sorted[i]->studentId, teamName(sorted[i]->team), violationCount);
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+    printf(" %-20.20s ", sorted[i]->fullName);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" %-10.10s ", sorted[i]->studentId);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" %-12.12s ", teamName(sorted[i]->team));
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    if (violationCount > 0) {
+      printf(" " COLOR_RED "%-12d" COLOR_RESET " ", violationCount);
+    } else {
+      printf(" %-12d ", violationCount);
+    }
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   }
 
-  printf(
-      "+----------------------+------------+--------------+--------------+\n");
-  printf("Tong: %d thanh vien\n", db->memberCount);
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 22; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien\n\n", db->memberCount);
 }
 
 void reportExportTxt(const AppDatabase *db) {

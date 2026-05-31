@@ -209,8 +209,8 @@ int memberAdd(AppDatabase *db) {
   memset(&newAccount, 0, sizeof(Account));
   strncpy(newAccount.studentId, newMember.studentId, MAX_MSSV_LEN - 1);
   newAccount.studentId[MAX_MSSV_LEN - 1] = '\0';
-  strncpy(newAccount.password, newMember.studentId, MAX_PASS_LEN - 1);
-  newAccount.password[MAX_PASS_LEN - 1] = '\0';
+  generateSalt(newAccount.salt, sizeof(newAccount.salt));
+  hashPassword(newMember.studentId, newAccount.salt, newAccount.password);
   if (newMember.role == MEMBER_ROLE_BCN) {
     newAccount.role = ACCOUNT_ROLE_BCN;
   } else {
