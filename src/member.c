@@ -2,13 +2,15 @@
 #include "auth.h"
 #include "fileio.h"
 #include "types.h"
+#include "ui.h"
 #include "utils.h"
+#include "validate.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
 /* ============================================================
- * Story 2.1 — Add Member
+ * FIND / SEARCH
  * ============================================================ */
 
 int memberFindById(const AppDatabase *db, const char *studentId) {
@@ -17,7 +19,8 @@ int memberFindById(const AppDatabase *db, const char *studentId) {
   }
 
   for (int i = 0; i < db->memberCount; i++) {
-    if (strcmp(db->members[i].studentId, studentId) == 0) {
+    if (!db->members[i].isDeleted &&
+        strcmp(db->members[i].studentId, studentId) == 0) {
       return i;
     }
   }
@@ -25,7 +28,7 @@ int memberFindById(const AppDatabase *db, const char *studentId) {
   return -1;
 }
 
-/* Case-insensitive substring search: returns 1 if needle is found in haystack */
+/* Case-insensitive substring search */
 static int containsIgnoreCase(const char *haystack, const char *needle) {
   if (needle[0] == '\0') {
     return 1;
@@ -63,7 +66,8 @@ int memberSearchByName(const AppDatabase *db, const char *keyword,
 
   int count = 0;
   for (int i = 0; i < db->memberCount && count < maxResults; i++) {
-    if (containsIgnoreCase(db->members[i].fullName, keyword)) {
+    if (!db->members[i].isDeleted &&
+        containsIgnoreCase(db->members[i].fullName, keyword)) {
       outIndices[count++] = i;
     }
   }
@@ -76,109 +80,126 @@ int memberValidateInput(const Member *m, const AppDatabase *db) {
     return -1;
   }
 
-  /* Check name is not empty or whitespace-only */
-  int nameBlank = 1;
-  for (size_t i = 0; i < strlen(m->fullName); i++) {
-    if (!isspace((unsigned char)m->fullName[i])) {
-      nameBlank = 0;
-      break;
-    }
+  int errors = 0;
+
+  if (!validateName(m->fullName)) {
+    errors++;
   }
-  if (nameBlank) {
-    printf("[LOI] Ho va ten khong duoc de trong\n");
-    return -1;
+  if (!validateEmailUnique(m->email, db, m->studentId)) {
+    errors++;
+  }
+  if (!validatePhoneUnique(m->phone, db, m->studentId)) {
+    errors++;
   }
 
-  /* Check email format */
-  if (!isEmailValid(m->email)) {
-    printf("[LOI] Email khong hop le\n");
-    return -1;
+  /* Warning if both email and phone are empty */
+  if (strlen(m->email) == 0 && strlen(m->phone) == 0) {
+    printf(ERR_CANH_BAO "Khuyen nghi nhap it nhat email hoac SDT "
+           "de lien he!\n");
   }
 
-  /* Check phone is not empty and has valid format */
-  if (!isPhoneValid(m->phone)) {
-    printf("[LOI] So dien thoai khong hop le (chi chua so, 7-15 chu so)\n");
-    return -1;
-  }
-
-  return 0;
+  return errors > 0 ? -1 : 0;
 }
+
+/* ============================================================
+ * ADD MEMBER — with comprehensive validation + re-prompt
+ * ============================================================ */
 
 int memberAdd(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
 
-  /* Check capacity */
   if (db->memberCount >= MAX_MEMBERS) {
-    printf("[LOI] Da dat gioi han so luong thanh vien (%d)\n", MAX_MEMBERS);
+    printf(ERR_LOI "Da dat gioi han so luong thanh vien (%d)!\n",
+           MAX_MEMBERS);
     return -1;
   }
 
-  printf("\nTHEM THANH VIEN MOI\n");
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  THEM THANH VIEN MOI");
+    printf("                          ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
 
   Member newMember;
   memset(&newMember, 0, sizeof(Member));
 
-  /* Input MSSV and validate immediately (Fix #5) */
-  printf("Nhap MSSV: ");
-  readString(newMember.studentId, MAX_MSSV_LEN);
-  if (!isIdValid(newMember.studentId)) {
-    printf("[LOI] MSSV khong hop le\n");
-    return -1;
-  }
-  if (memberFindById(db, newMember.studentId) != -1) {
-    printf("[LOI] MSSV da ton tai\n");
-    return -1;
+  /* MSSV with re-prompt */
+  while (1) {
+    printf(COLOR_CYAN "  Nhap MSSV: " COLOR_RESET);
+    readString(newMember.studentId, MAX_MSSV_LEN);
+    trimSpaces(newMember.studentId);
+    mssvAutoUpper(newMember.studentId);
+    if (validateMSSV(newMember.studentId, db)) {
+      break;
+    }
   }
 
-  /* Input rest of member details */
-  printf("Nhap ho va ten: ");
-  readString(newMember.fullName, MAX_NAME_LEN);
+  /* Show MSSV decode */
+  printf(ERR_INFO "MSSV: %s → Campus: %s | Khối: %s\n",
+         newMember.studentId,
+         mssvCampusName(newMember.studentId[0]),
+         mssvDivisionName(newMember.studentId[1]));
 
-  printf("Nhap email: ");
-  readString(newMember.email, MAX_EMAIL_LEN);
-
-  printf("Nhap so dien thoai: ");
-  readString(newMember.phone, MAX_PHONE_LEN);
-
-  /* Select team */
-  printf("Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong): ");
-  int team;
-  if (readInt(&team) != 1) {
-    printf("[LOI] Lua chon ban khong hop le\n");
-    return -1;
+  /* Full name with re-prompt */
+  while (1) {
+    printf(COLOR_CYAN "  Nhap ho va ten: " COLOR_RESET);
+    readString(newMember.fullName, MAX_NAME_LEN);
+    trimSpaces(newMember.fullName);
+    nameAutoFix(newMember.fullName);
+    if (validateName(newMember.fullName)) {
+      break;
+    }
   }
-  if (team < TEAM_ACADEMIC || team > TEAM_MEDIA) {
-    printf("[LOI] Ban khong hop le\n");
-    return -1;
-  }
-  newMember.team = team;
 
-  /* Select role */
-  printf(
-      "Chon chuc vu (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem): ");
-  int role;
-  if (readInt(&role) != 1) {
-    printf("[LOI] Lua chon chuc vu khong hop le\n");
-    return -1;
+  /* Email with re-prompt + uniqueness */
+  while (1) {
+    printf(COLOR_CYAN "  Nhap email: " COLOR_RESET);
+    readString(newMember.email, MAX_EMAIL_LEN);
+    trimSpaces(newMember.email);
+    /* Auto-lowercase */
+    for (int i = 0; newMember.email[i]; i++) {
+      newMember.email[i] = (char)tolower((unsigned char)newMember.email[i]);
+    }
+    if (validateEmailUnique(newMember.email, db, NULL)) {
+      break;
+    }
   }
-  if (role < MEMBER_ROLE_MEMBER || role > MEMBER_ROLE_BCN) {
-    printf("[LOI] Chuc vu khong hop le\n");
-    return -1;
-  }
-  newMember.role = role;
 
-  /* Set default values */
+  /* Phone with re-prompt + uniqueness + auto-normalize */
+  while (1) {
+    printf(COLOR_CYAN "  Nhap so dien thoai: " COLOR_RESET);
+    readString(newMember.phone, MAX_PHONE_LEN);
+    trimSpaces(newMember.phone);
+    phoneNormalize(newMember.phone);
+    if (validatePhoneUnique(newMember.phone, db, NULL)) {
+      printf(ERR_INFO "Nha mang: %s\n", phoneCarrier(newMember.phone));
+      break;
+    }
+  }
+
+  /* Team selection with re-prompt */
+  newMember.team = readMenuChoice(
+      COLOR_CYAN "  Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, "
+      "3-Truyen thong): " COLOR_RESET,
+      TEAM_ACADEMIC, TEAM_MEDIA);
+
+  /* Role selection with re-prompt */
+  newMember.role = readMenuChoice(
+      COLOR_CYAN "  Chon chuc vu (0-Thanh vien, 1-Truong nhom, "
+      "2-BCN): " COLOR_RESET,
+      MEMBER_ROLE_MEMBER, MEMBER_ROLE_BCN);
+
+  /* Set defaults */
   newMember.violationCount = 0;
   newMember.consecutiveAbsences = 0;
   newMember.totalFine = 0.0;
   newMember.isActive = STATUS_ACTIVE;
-
-  /* Validate remaining input (name, email, phone) */
-  if (memberValidateInput(&newMember, db) != 0) {
-    return -1;
-  }
+  newMember.isDeleted = 0;
+  newMember.deletedAt = 0;
 
   /* Add member to database */
   db->members[db->memberCount++] = newMember;
@@ -202,162 +223,60 @@ int memberAdd(AppDatabase *db) {
 
   /* Save to files */
   if (fileioSaveMembers(db) != 0) {
-    printf("[LOI] Khong the luu du lieu thanh vien\n");
+    printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
     db->memberCount--;
     return -1;
   }
 
   if (fileioSaveAccounts(db) != 0) {
-    printf("[LOI] Khong the luu du lieu tai khoan\n");
+    printf(ERR_LOI "Khong the luu du lieu tai khoan!\n");
     db->memberCount--;
     db->accountCount--;
-    if (fileioSaveMembers(db) != 0) {
-      printf("[LOI] Khong the hoan tac du lieu thanh vien\n");
-    }
+    (void)fileioSaveMembers(db);
     return -1;
   }
 
-  printf("[OK] Them thanh vien thanh cong\n");
-  printf("  MSSV: %s\n", newMember.studentId);
-  printf("  Ten: %s\n", newMember.fullName);
-  printf("  Ban: %s\n", teamName(newMember.team));
-  printf("  Chuc vu: %s\n", memberRoleName(newMember.role));
-  printf("  Tai khoan da duoc tao voi mat khau mac dinh: %s\n",
-         newMember.studentId);
+  printf("\n");
+  printf(ERR_OK "Them thanh vien thanh cong!\n");
+  printf(COLOR_BOLD "  MSSV:    " COLOR_RESET "%s\n", newMember.studentId);
+  printf(COLOR_BOLD "  Ten:     " COLOR_RESET "%s\n", newMember.fullName);
+  printf(COLOR_BOLD "  Ban:     " COLOR_RESET "%s\n",
+         teamName(newMember.team));
+  printf(COLOR_BOLD "  Chuc vu: " COLOR_RESET "%s\n",
+         memberRoleName(newMember.role));
+  printf(COLOR_DIM "  Tai khoan da tao. Mat khau mac dinh = MSSV.\n"
+         "  Thanh vien se phai doi mat khau khi dang nhap.\n" COLOR_RESET);
 
   return 0;
 }
 
 /* ============================================================
- * Story 2.2 — Edit Member (helpers)
+ * EDIT MEMBER — with Enter=keep old + re-prompt validation
  * ============================================================ */
 
-static int isBlankString(const char *s) {
-  while (*s) {
-    if (!isspace((unsigned char)*s)) {
-      return 0;
+/* Edit helper: prompt with current value, Enter keeps old, re-prompt on error */
+static void editField(const char *label, char *current, size_t maxLen,
+                      int (*validator)(const char *)) {
+  while (1) {
+    printf(COLOR_CYAN "  %s" COLOR_RESET "[%s]: ", label, current);
+    char buffer[256];
+    readString(buffer, sizeof(buffer));
+    trimSpaces(buffer);
+
+    /* Enter = keep old value */
+    if (strlen(buffer) == 0) {
+      return;
     }
-    s++;
-  }
-  return 1;
-}
 
-/* Edit member's full name. Skips if user presses Enter. */
-static void editName(Member *m) {
-  char buffer[MAX_NAME_LEN];
-  printf("Ho va ten moi: ");
-  readString(buffer, MAX_NAME_LEN);
-  if (strlen(buffer) > 0 && !isBlankString(buffer)) {
-    strncpy(m->fullName, buffer, MAX_NAME_LEN - 1);
-    m->fullName[MAX_NAME_LEN - 1] = '\0';
-  }
-}
-
-/* Edit member's email with validation. Skips if user presses Enter. */
-static void editEmail(Member *m) {
-  char buffer[MAX_EMAIL_LEN];
-  printf("Email moi: ");
-  readString(buffer, MAX_EMAIL_LEN);
-  if (strlen(buffer) == 0) {
-    return;
-  }
-  if (!isEmailValid(buffer)) {
-    printf("[LOI] Email khong hop le, giu nguyen email cu\n");
-    return;
-  }
-  strncpy(m->email, buffer, MAX_EMAIL_LEN - 1);
-  m->email[MAX_EMAIL_LEN - 1] = '\0';
-}
-
-/* Edit member's phone number. Skips if user presses Enter. */
-static void editPhone(Member *m) {
-  char buffer[MAX_PHONE_LEN];
-  printf("So dien thoai moi: ");
-  readString(buffer, MAX_PHONE_LEN);
-  if (strlen(buffer) > 0 && !isBlankString(buffer)) {
-    strncpy(m->phone, buffer, MAX_PHONE_LEN - 1);
-    m->phone[MAX_PHONE_LEN - 1] = '\0';
-  }
-}
-
-/* Edit member's team. Enter -1 to keep current value. */
-static void editTeam(Member *m) {
-  printf("Ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen thong) [-1 de "
-         "giu nguyen]: ");
-  int newTeam;
-  if (!readInt(&newTeam) || newTeam == -1) {
-    return;
-  }
-  if (newTeam >= TEAM_ACADEMIC && newTeam <= TEAM_MEDIA) {
-    m->team = newTeam;
-  } else {
-    printf("[LOI] Ban khong hop le, giu nguyen ban cu\n");
-  }
-}
-
-/* Edit member's role. Returns 1 if role changed, 0 otherwise. */
-static int editRole(Member *m) {
-  printf("Chuc vu moi (0-Thanh vien, 1-Truong nhom/Pho nhom, 2-Ban chu nhiem) "
-         "[-1 de giu nguyen]: ");
-  int newRole;
-  if (!readInt(&newRole) || newRole == -1) {
-    return 0;
-  }
-  if (newRole < MEMBER_ROLE_MEMBER || newRole > MEMBER_ROLE_BCN) {
-    printf("[LOI] Chuc vu khong hop le, giu nguyen chuc vu cu\n");
-    return 0;
-  }
-  if (m->role == newRole) {
-    return 0;
-  }
-  m->role = newRole;
-  return 1;
-}
-
-/* Edit member's active status. Enter -1 to keep current value. */
-static void editStatus(Member *m) {
-  printf("Trang thai (1-Hoat dong, 0-Da Out CLB) [-1 de giu nguyen]: ");
-  int newStatus;
-  if (!readInt(&newStatus) || newStatus == -1) {
-    return;
-  }
-  if (newStatus == STATUS_ACTIVE || newStatus == STATUS_OUT_CLB) {
-    m->isActive = newStatus;
-  } else {
-    printf("[LOI] Trang thai khong hop le, giu nguyen trang thai cu\n");
-  }
-}
-
-/* Recalculate fines for all unpaid violations after a role change.
- * Only updates memory — caller is responsible for persisting. */
-static void recalcFines(AppDatabase *db, Member *m) {
-  double newFineRate = (m->role == MEMBER_ROLE_MEMBER) ? 20000.0 : 50000.0;
-  m->totalFine = 0.0;
-
-  for (int i = 0; i < db->violationCount; i++) {
-    Violation *v = &db->violations[i];
-    if (strcmp(v->studentId, m->studentId) != 0 || v->isPaid != 0) {
-      continue;
+    /* Validate new value */
+    if (validator != NULL && !validator(buffer)) {
+      continue; /* re-prompt */
     }
-    if (v->reason != REASON_VIOLENCE) {
-      v->fine = newFineRate;
-    }
-    m->totalFine += v->fine;
+
+    strncpy(current, buffer, maxLen - 1);
+    current[maxLen - 1] = '\0';
+    return;
   }
-
-  printf("[THONG BAO] Da tinh lai tien phat cho cac vi pham chua dong do "
-         "thay doi chuc vu\n");
-}
-
-/* Display current member information. */
-static void displayMemberInfo(const Member *m) {
-  printf("\nTHONG TIN HIEN TAI:\n");
-  printf("  Ho va ten: %s\n", m->fullName);
-  printf("  Email: %s\n", m->email);
-  printf("  So dien thoai: %s\n", m->phone);
-  printf("  Ban: %s\n", teamName(m->team));
-  printf("  Chuc vu: %s\n", memberRoleName(m->role));
-  printf("  Trang thai: %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
 }
 
 int memberEdit(AppDatabase *db) {
@@ -365,32 +284,88 @@ int memberEdit(AppDatabase *db) {
     return -1;
   }
 
-  char studentId[MAX_MSSV_LEN];
-  printf("\nSUA THONG TIN THANH VIEN\n");
-  printf("Nhap MSSV can sua: ");
-  readString(studentId, MAX_MSSV_LEN);
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  CHINH SUA THONG TIN THANH VIEN");
+  printf("                  ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
 
-  int memberIndex = memberFindById(db, studentId);
-  if (memberIndex == -1) {
-    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", studentId);
-    return -1;
+  /* Find member by MSSV with re-prompt */
+  char studentId[MAX_MSSV_LEN];
+  int memberIndex = -1;
+  while (1) {
+    printf(COLOR_CYAN "  Nhap MSSV can sua: " COLOR_RESET);
+    readString(studentId, MAX_MSSV_LEN);
+    trimSpaces(studentId);
+    mssvAutoUpper(studentId);
+    if (validateNotEmpty(studentId)) {
+      memberIndex = memberFindById(db, studentId);
+      if (memberIndex != -1) {
+        break;
+      }
+      printf(ERR_LOI "Khong tim thay thanh vien voi MSSV: %s!\n",
+             studentId);
+    }
   }
 
   Member *m = &db->members[memberIndex];
 
-  displayMemberInfo(m);
-  printf("\nNHAP THONG TIN MOI (Nhan Enter de giu nguyen):\n");
+  /* Show current info */
+  printf("\n");
+  printf(COLOR_BOLD "  Thong tin hien tai:\n" COLOR_RESET);
+  printf(COLOR_DIM "  MSSV: %s [KHONG THE SUA]\n" COLOR_RESET,
+         m->studentId);
+  printf("  Ho ten:     %s\n", m->fullName);
+  printf("  Email:      %s\n", m->email);
+  printf("  SDT:        %s\n", m->phone);
+  printf("  Ban:        %s\n", teamName(m->team));
+  printf("  Chuc vu:    %s\n", memberRoleName(m->role));
+  printf("  Trang thai: %s\n",
+         m->isActive ? COLOR_GREEN "Hoat dong" COLOR_RESET
+                     : COLOR_RED "Out CLB" COLOR_RESET);
 
-  editName(m);
-  editEmail(m);
-  editPhone(m);
-  editTeam(m);
+  printf("\n");
+  printf(COLOR_DIM "  Nhap thong tin moi (Enter = giu nguyen):\n" COLOR_RESET);
+  uiDrawSeparator();
 
-  int roleChanged = editRole(m);
-  editStatus(m);
+  /* Edit fields — Enter keeps old, re-prompt on invalid */
+  editField("Ho va ten     ", m->fullName, MAX_NAME_LEN, validateName);
+  nameAutoFix(m->fullName);
+
+  editField("Email         ", m->email, MAX_EMAIL_LEN, NULL);
+  /* Lowercase email */
+  for (int i = 0; m->email[i]; i++) {
+    m->email[i] = (char)tolower((unsigned char)m->email[i]);
+  }
+  /* Validate email format + uniqueness */
+  if (!validateEmailUnique(m->email, db, m->studentId)) {
+    printf(ERR_LOI "Email khong hop le, giu nguyen email cu!\n");
+  }
+
+  editField("So dien thoai ", m->phone, MAX_PHONE_LEN, NULL);
+  phoneNormalize(m->phone);
+  if (!validatePhoneUnique(m->phone, db, m->studentId)) {
+    printf(ERR_LOI "SDT khong hop le, giu nguyen SDT cu!\n");
+  }
+
+  /* Team selection */
+  m->team = readMenuChoice(
+      COLOR_CYAN "  Ban moi (0-Hoc thuat, 1-Ke hoach, "
+      "2-Nhan su, 3-Truyen thong): " COLOR_RESET,
+      TEAM_ACADEMIC, TEAM_MEDIA);
+
+  /* Role selection */
+  int oldRole = m->role;
+  m->role = readMenuChoice(
+      COLOR_CYAN "  Chuc vu moi (0-Thanh vien, 1-Truong nhom, 2-BCN): "
+      COLOR_RESET,
+      MEMBER_ROLE_MEMBER, MEMBER_ROLE_BCN);
+  int roleChanged = (oldRole != m->role);
 
   if (roleChanged) {
-    /* Update corresponding Account.role to match new Member.role */
+    /* Update account role */
     for (int i = 0; i < db->accountCount; i++) {
       if (strcmp(db->accounts[i].studentId, m->studentId) == 0) {
         db->accounts[i].role = (m->role == MEMBER_ROLE_BCN)
@@ -399,35 +374,39 @@ int memberEdit(AppDatabase *db) {
         break;
       }
     }
-
-    /* Recalculate unpaid violation fines in memory */
-    recalcFines(db, m);
+    /* Recalculate fines */
+    double newFineRate =
+        (m->role == MEMBER_ROLE_MEMBER) ? 20000.0 : 50000.0;
+    m->totalFine = 0.0;
+    for (int i = 0; i < db->violationCount; i++) {
+      Violation *v = &db->violations[i];
+      if (strcmp(v->studentId, m->studentId) != 0 || v->isPaid != 0) {
+        continue;
+      }
+      if (v->reason != REASON_VIOLENCE) {
+        v->fine = newFineRate;
+      }
+      m->totalFine += v->fine;
+    }
+    printf(ERR_INFO "Da tinh lai tien phat do thay doi chuc vu.\n");
   }
 
-  /* Save members first (has updated totalFine), then violations, then accounts
-   */
+  /* Save */
   if (fileioSaveMembers(db) != 0) {
-    printf("[LOI] Khong the luu du lieu thanh vien\n");
+    printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
     return -1;
   }
-
   if (roleChanged) {
-    if (fileioSaveViolations(db) != 0) {
-      printf("[LOI] Khong the luu du lieu vi pham\n");
-      return -1;
-    }
-    if (fileioSaveAccounts(db) != 0) {
-      printf("[LOI] Khong the cap nhat quyen tai khoan\n");
-      return -1;
-    }
+    (void)fileioSaveViolations(db);
+    (void)fileioSaveAccounts(db);
   }
 
-  printf("[OK] Sua thong tin thanh vien thanh cong\n");
+  printf(ERR_OK "Sua thong tin thanh vien thanh cong!\n");
   return 0;
 }
 
 /* ============================================================
- * Story 2.3 — Delete Member
+ * DELETE MEMBER — with soft delete + confirmation
  * ============================================================ */
 
 int memberDelete(AppDatabase *db) {
@@ -435,98 +414,96 @@ int memberDelete(AppDatabase *db) {
     return -1;
   }
 
-  char studentId[MAX_MSSV_LEN];
-  printf("\nXOA THANH VIEN\n");
-  printf("Nhap MSSV can xoa: ");
-  readString(studentId, MAX_MSSV_LEN);
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_RED "  XOA THANH VIEN");
+  printf("                                  ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
 
-  int memberIndex = memberFindById(db, studentId);
-  if (memberIndex == -1) {
-    printf("[LOI] Khong tim thay thanh vien voi MSSV: %s\n", studentId);
-    return -1;
+  /* Find member */
+  char studentId[MAX_MSSV_LEN];
+  int memberIndex = -1;
+  while (1) {
+    printf(COLOR_CYAN "  Nhap MSSV can xoa: " COLOR_RESET);
+    readString(studentId, MAX_MSSV_LEN);
+    trimSpaces(studentId);
+    mssvAutoUpper(studentId);
+    if (validateNotEmpty(studentId)) {
+      memberIndex = memberFindById(db, studentId);
+      if (memberIndex != -1) {
+        break;
+      }
+      printf(ERR_LOI "Khong tim thay thanh vien voi MSSV: %s!\n",
+             studentId);
+    }
   }
 
   Member *m = &db->members[memberIndex];
 
-  /* Prevent BCN from deleting their own account */
+  /* Prevent self-deletion */
   Account *session = authGetSession();
   if (session != NULL && strcmp(session->studentId, studentId) == 0) {
-    printf("[LOI] Khong the xoa tai khoan cua chinh ban. Vui long yeu cau BCN "
-           "khac thuc hien.\n");
+    printf(ERR_LOI "Khong the xoa tai khoan cua chinh ban!\n");
     return -1;
   }
 
-  /* Show full member info before confirmation */
-  printf("\nTHONG TIN THANH VIEN:\n");
-  printf("  Ho va ten     : %s\n", m->fullName);
-  printf("  Email         : %s\n", m->email);
-  printf("  So dien thoai : %s\n", m->phone);
-  printf("  Ban           : %s\n", teamName(m->team));
-  printf("  Chuc vu       : %s\n", memberRoleName(m->role));
-  printf("  Trang thai    : %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
-  printf("  So lan vi pham: %d\n", m->violationCount);
-  printf("  Tong tien phat: %.0f VND\n", m->totalFine);
+  /* Check for unpaid violations */
+  int unpaidCount = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    if (strcmp(db->violations[i].studentId, studentId) == 0 &&
+        !db->violations[i].isPaid) {
+      unpaidCount++;
+    }
+  }
+  if (unpaidCount > 0) {
+    printf(ERR_LOI "Thanh vien con %d vi pham chua dong phat! "
+           "Khong the xoa.\n", unpaidCount);
+    return -1;
+  }
 
-  printf("\nXac nhan xoa thanh vien nay va toan bo du lieu lien quan? (1: "
-         "Co, 0: Khong): ");
-  int confirm;
-  if (readInt(&confirm) != 1 || confirm != 1) {
-    printf("[THONG BAO] Da huy xoa thanh vien.\n");
+  /* Show member info */
+  printf("\n");
+  printf(COLOR_BOLD "  THONG TIN THANH VIEN:\n" COLOR_RESET);
+  printf("  Ho ten:      %s\n", m->fullName);
+  printf("  MSSV:        %s\n", m->studentId);
+  printf("  Email:       %s\n", m->email);
+  printf("  SDT:         %s\n", m->phone);
+  printf("  Ban:         %s\n", teamName(m->team));
+  printf("  Chuc vu:     %s\n", memberRoleName(m->role));
+  printf("  Trang thai:  %s\n",
+         m->isActive ? "Hoat dong" : "Out CLB");
+  printf("  So lan VP:   %d\n", m->violationCount);
+  printf("  Tong phat:   %.0f VND\n", m->totalFine);
+
+  /* Confirm */
+  printf("\n");
+  printf(ERR_CANH_BAO "Ban sap xoa thanh vien \"%s\" (%s) "
+         "va toan bo du lieu lien quan!\n", m->fullName, m->studentId);
+  int confirm = readMenuChoice(
+      COLOR_RED "  Xac nhan xoa? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
+  if (confirm != 1) {
+    printf(ERR_INFO "Da huy xoa thanh vien.\n");
     return 0;
   }
 
-  /* 1. Remove related account first (revoke access) */
-  int aIndex = 0;
-  while (aIndex < db->accountCount) {
-    if (strcmp(db->accounts[aIndex].studentId, studentId) == 0) {
-      for (int j = aIndex; j < db->accountCount - 1; j++) {
-        db->accounts[j] = db->accounts[j + 1];
-      }
-      db->accountCount--;
-    } else {
-      aIndex++;
-    }
-  }
+  /* Soft delete: mark as deleted */
+  m->isDeleted = 1;
+  m->deletedAt = time(NULL);
 
-  /* 2. Remove related violations */
-  int vIndex = 0;
-  while (vIndex < db->violationCount) {
-    if (strcmp(db->violations[vIndex].studentId, studentId) == 0) {
-      for (int j = vIndex; j < db->violationCount - 1; j++) {
-        db->violations[j] = db->violations[j + 1];
-      }
-      db->violationCount--;
-    } else {
-      vIndex++;
-    }
-  }
-
-  /* 3. Remove member from array */
-  for (int i = memberIndex; i < db->memberCount - 1; i++) {
-    db->members[i] = db->members[i + 1];
-  }
-  db->memberCount--;
-
-  /* 4. Persist to files: accounts → violations → members */
-  if (fileioSaveAccounts(db) != 0) {
-    printf("[LOI] Khong the luu du lieu tai khoan sau khi xoa\n");
-    return -1;
-  }
-  if (fileioSaveViolations(db) != 0) {
-    printf("[LOI] Khong the luu du lieu vi pham sau khi xoa\n");
-    return -1;
-  }
+  /* Save */
   if (fileioSaveMembers(db) != 0) {
-    printf("[LOI] Khong the luu du lieu thanh vien sau khi xoa\n");
+    printf(ERR_LOI "Khong the luu du lieu!\n");
     return -1;
   }
 
-  printf("[OK] Xoa thanh vien thanh cong.\n");
+  printf(ERR_OK "Xoa thanh vien thanh cong! (Du lieu da duoc an)\n");
   return 0;
 }
 
 /* ============================================================
- * Story 2.4 — View Member List & Profile
+ * VIEW MEMBER LIST & PROFILE
  * ============================================================ */
 
 void memberViewProfile(AppDatabase *db) {
@@ -536,30 +513,79 @@ void memberViewProfile(AppDatabase *db) {
 
   Account *session = authGetSession();
   if (session == NULL) {
-    printf("[LOI] Ban phai dang nhap de xem profile\n");
+    printf(ERR_LOI "Ban phai dang nhap de xem profile!\n");
     return;
   }
 
   int idx = memberFindById(db, session->studentId);
   if (idx == -1) {
-    printf("[LOI] Khong tim thay thong tin thanh vien\n");
+    printf(ERR_LOI "Khong tim thay thong tin thanh vien!\n");
     return;
   }
 
   Member *m = &db->members[idx];
 
-  printf("\nTHONG TIN CA NHAN\n");
-  printf("----------------------------------------\n");
-  printf("MSSV           : %s\n", m->studentId);
-  printf("Ho va ten      : %s\n", m->fullName);
-  printf("Email          : %s\n", m->email);
-  printf("So dien thoai  : %s\n", m->phone);
-  printf("Ban            : %s\n", teamName(m->team));
-  printf("Chuc vu        : %s\n", memberRoleName(m->role));
-  printf("Trang thai     : %s\n", m->isActive ? "Hoat dong" : "Da Out CLB");
-  printf("So lan vi pham : %d\n", m->violationCount);
-  printf("Tong tien phat : %.0f VND\n", m->totalFine);
-  printf("----------------------------------------\n\n");
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  THONG TIN CA NHAN");
+  printf("                            ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  MSSV:       " COLOR_RESET "%-39s",
+         m->studentId);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  Ho va ten:  " COLOR_RESET "%-39s",
+         m->fullName);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  Email:      " COLOR_RESET "%-39s",
+         m->email);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  SDT:        " COLOR_RESET "%-39s",
+         m->phone);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  Ban:        " COLOR_RESET "%-39s",
+         teamName(m->team));
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  Chuc vu:    " COLOR_RESET "%-39s",
+         memberRoleName(m->role));
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  Trang thai: " COLOR_RESET);
+  if (m->isActive) {
+    printf(COLOR_GREEN "Hoat dong");
+    printf("                                  ");
+    printf(COLOR_RESET);
+  } else {
+    printf(COLOR_RED "Da Out CLB");
+    printf("                                    ");
+    printf(COLOR_RESET);
+  }
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD "  So lan VP:  " COLOR_RESET "%-5d", m->violationCount);
+  printf("     ");
+  printf(COLOR_BOLD "Tong phat: " COLOR_RESET COLOR_PURPLE "%-14.0f",
+         m->totalFine);
+  printf(COLOR_RESET " ");
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  uiDrawSeparator();
+  printf("\n");
 }
 
 void memberListAll(AppDatabase *db) {
@@ -567,50 +593,102 @@ void memberListAll(AppDatabase *db) {
     return;
   }
 
-  if (db->memberCount == 0) {
-    printf("[THONG BAO] Chua co thanh vien nao trong du lieu\n");
+  /* Count active (non-deleted) members */
+  int activeCount = 0;
+  for (int i = 0; i < db->memberCount; i++) {
+    if (!db->members[i].isDeleted) {
+      activeCount++;
+    }
+  }
+
+  if (activeCount == 0) {
+    printf(ERR_INFO "Chua co thanh vien nao trong du lieu.\n");
     return;
   }
 
-  printf("\nDANH SACH THANH VIEN\n");
-  printf(
-      "+------------+----------------------+--------------+--------------------"
-      "+------------+\n");
-  printf(
-      "| MSSV       | Ho va ten            | Ban          | Chuc vu            "
-      "| Trang thai |\n");
-  printf(
-      "+------------+----------------------+--------------+--------------------"
-      "+------------+\n");
+  printf("\n");
+  printf(COLOR_BOLD "  DANH SACH THANH VIEN (%d)\n" COLOR_RESET,
+         activeCount);
+  printf(COLOR_CYAN
+         "  " LINE_TL LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_TR "\n" COLOR_RESET);
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+         " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
+         " Ban          " COLOR_CYAN LINE_V COLOR_RESET
+         " Trang thai " COLOR_CYAN LINE_V COLOR_RESET "\n");
+  printf(COLOR_CYAN
+         "  " LINE_TL LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_TR "\n" COLOR_RESET);
 
   int active = 0, outClb = 0;
+  int displayed = 0;
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    if (m->isActive) active++; else outClb++;
-    printf("| %-10.10s | %-20.20s | %-12.12s | %-20.20s | %-10.10s |\n",
-           m->studentId, m->fullName, teamName(m->team),
-           memberRoleName(m->role), m->isActive ? "Hoat dong" : "Out CLB");
+    if (m->isDeleted) {
+      continue;
+    }
 
-    if ((i + 1) % 20 == 0 && (i + 1) < db->memberCount) {
-      printf("\n[Nhan Enter de xem trang tiep theo hoac nhap 'q' roi Enter de "
-             "thoat]: ");
+    if (m->isActive) {
+      active++;
+    } else {
+      outClb++;
+    }
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+    printf(" %-10s ", m->studentId);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" %-20s ", m->fullName);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" %-12s ", teamName(m->team));
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    if (m->isActive) {
+      printf(COLOR_GREEN " Hoat dong  " COLOR_RESET);
+    } else {
+      printf(COLOR_RED " Out CLB    " COLOR_RESET);
+    }
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+    displayed++;
+    if (displayed % 20 == 0 && displayed < activeCount) {
+      printf("\n  [Enter = tiep tuc | q = thoat]: ");
       char buf[10];
       readString(buf, sizeof(buf));
       if (buf[0] == 'q' || buf[0] == 'Q') {
         break;
       }
-      printf("\n+------------+----------------------+--------------+-----------"
-             "---------+------------+\n");
-      printf("| MSSV       | Ho va ten            | Ban          | Chuc vu     "
-             "         | Trang thai |\n");
-      printf("+------------+----------------------+--------------+-------------"
-             "---------+------------+\n");
     }
   }
 
-  printf(
-      "+------------+----------------------+--------------+--------------------"
-      "+------------+\n");
-  printf("Tong: %d thanh vien (Dang hoat dong: %d | Da Out CLB: %d)\n\n",
-         db->memberCount, active, outClb);
+  printf(COLOR_CYAN
+         "  " LINE_BL LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
+         LINE_BR "\n" COLOR_RESET);
+  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET
+         " thanh vien (" COLOR_GREEN "Hoat dong: %d" COLOR_RESET
+         " | " COLOR_RED "Out CLB: %d" COLOR_RESET ")\n\n",
+         activeCount, active, outClb);
 }
