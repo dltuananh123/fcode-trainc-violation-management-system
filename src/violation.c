@@ -236,6 +236,7 @@ void violationViewAllFiltered(AppDatabase *db) {
   int filterType;
   int filterValue = 0;
 
+filter_selection:
   while (1) {
     uiClear();
     uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham");
@@ -355,13 +356,13 @@ void violationViewAllFiltered(AppDatabase *db) {
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') break;
+      if (c == 'q' || c == 'Q') goto filter_selection;
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
       else if ((c == 'm' || c == 'M') && currentPage > 0) currentPage--;
     } else {
       printf("\n  Nhan Enter de tiep tuc...");
       while (getchar() != '\n' && getchar() != EOF);
-      break;
+      goto filter_selection;
     }
   }
 }
@@ -1263,6 +1264,7 @@ void violationSearchByDate(AppDatabase *db) {
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem vi pham theo khoang ngay");
 
+date_input:
   while (1) {
     while (1) {
       printf(COLOR_CYAN "  Nhap ngay bat dau (dd/mm/yyyy, 0 de quay lai): " COLOR_RESET);
@@ -1338,7 +1340,7 @@ void violationSearchByDate(AppDatabase *db) {
     printf(LINE_T_UP);
     for (int i = 0; i < 18; i++) printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++); printf(LINE_H);
     printf(LINE_T_UP);
     for (int i = 0; i < 15; i++) printf(LINE_H);
     printf(LINE_T_UP);
@@ -1354,13 +1356,13 @@ void violationSearchByDate(AppDatabase *db) {
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') break;
+      if (c == 'q' || c == 'Q') goto date_input;
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
       else if ((c == 'm' || c == 'M') && currentPage > 0) currentPage--;
     } else {
       printf("\n  Nhan Enter de tiep tuc...");
       while (getchar() != '\n' && getchar() != EOF);
-      break;
+      goto date_input;
     }
   }
 }
