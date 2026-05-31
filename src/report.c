@@ -206,14 +206,22 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   }
 
   const Member *sorted[MAX_MEMBERS] = {NULL};
+  int activeCount = 0;
   for (int i = 0; i < db->memberCount; i++) {
-    sorted[i] = &db->members[i];
+    if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_ACTIVE) {
+      sorted[activeCount++] = &db->members[i];
+    }
   }
 
-  sortMemberPointersByViolationCount(db, sorted, db->memberCount, choice == 1);
+  if (activeCount == 0) {
+    printf(ERR_INFO "Chua co thanh vien dang hoat dong nao trong du lieu\n");
+    return;
+  }
+
+  sortMemberPointersByViolationCount(db, sorted, activeCount, choice == 1);
 
   printf("\n");
-  printf(COLOR_BOLD "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
+  printf(COLOR_BOLD "  DANH SACH THANH VIEN DANG HOAT DONG THEO SO LAN VI PHAM\n" COLOR_RESET);
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 22; i++) printf(LINE_H);
   printf(LINE_cross);
@@ -240,7 +248,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   for (int i = 0; i < 14; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
 
-  for (int i = 0; i < db->memberCount; i++) {
+  for (int i = 0; i < activeCount; i++) {
     int violationCount = countMemberViolations(db, sorted[i]->studentId);
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
     printf(" %-20.20s ", sorted[i]->fullName);
@@ -267,7 +275,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   for (int i = 0; i < 14; i++) printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
-  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien\n\n", db->memberCount);
+  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien dang hoat dong\n\n", activeCount);
 }
 
 void reportExportTxt(const AppDatabase *db) {
@@ -342,6 +350,9 @@ void reportExportTxt(const AppDatabase *db) {
 
   int foundOutstanding = 0;
   for (int i = 0; i < db->memberCount; i++) {
+    if (db->members[i].isDeleted) {
+      continue;
+    }
     double totalOwed = 0.0;
 
     for (int j = 0; j < db->violationCount; j++) {
