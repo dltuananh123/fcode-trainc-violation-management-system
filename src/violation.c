@@ -624,8 +624,8 @@ void violationViewOwn(AppDatabase *db) {
     return;
   }
 
-  printf("\n");
-  printf(COLOR_BOLD "  DANH SACH VI PHAM CUA BAN\n" COLOR_RESET);
+  uiClear();
+  uiDrawBreadcrumb("MENU THANH VIEN > Danh sach vi pham cua ban");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) printf(LINE_H);
   printf(LINE_cross);
@@ -699,8 +699,8 @@ void violationViewFines(AppDatabase *db) {
     return;
   }
 
-  printf("\n");
-  printf(COLOR_BOLD "  CAC KHOAN PHAT CHUA DONG\n" COLOR_RESET);
+  uiClear();
+  uiDrawBreadcrumb("MENU THANH VIEN > Cac khoan phat chua dong");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) printf(LINE_H);
   printf(LINE_cross);
