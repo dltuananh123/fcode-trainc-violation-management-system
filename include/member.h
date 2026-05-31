@@ -112,4 +112,18 @@ void memberViewProfile(AppDatabase *db);
  */
 void memberListAll(AppDatabase *db);
 
+/**
+ * @brief View archived (soft-deleted) members and restore them.
+ *
+ * @param db Pointer to the AppDatabase.
+ */
+void memberViewArchive(AppDatabase *db);
+
+/**
+ * @brief Freeze or unfreeze an account.
+ *
+ * @param db Pointer to the AppDatabase.
+ */
+void memberFreezeAccount(AppDatabase *db);
+
 #endif /* MEMBER_H */

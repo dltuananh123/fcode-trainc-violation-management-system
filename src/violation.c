@@ -792,9 +792,70 @@ int violationMarkPaid(AppDatabase *db) {
     return 0;
   }
 
-  int choice = readMenuChoice(COLOR_CYAN "  Chon STT de thu (0 de huy): " COLOR_RESET, 0, unpaidCount);
-  if (choice == 0) {
-    printf(ERR_INFO "Da huy thao tac.\n\n");
+  int choice;
+  while (1) {
+    if (unpaidCount > 1) {
+      printf(COLOR_CYAN "  Chon STT de thu (0 de huy, 99 de thu tat ca): " COLOR_RESET);
+    } else {
+      printf(COLOR_CYAN "  Chon STT de thu (0 de huy): " COLOR_RESET);
+    }
+    
+    if (readInt(&choice)) {
+      if (choice == 0) {
+        printf(ERR_INFO "Da huy thao tac.\n\n");
+        return 0;
+      }
+      if (choice == 99 && unpaidCount > 1) {
+        break;
+      }
+      if (choice >= 1 && choice <= unpaidCount) {
+        break;
+      }
+      if (unpaidCount > 1) {
+        printf(ERR_LOI "Vui long nhap tu 1-%d hoac 99!\n", unpaidCount);
+      } else {
+        printf(ERR_LOI "Vui long nhap tu 1-%d!\n", unpaidCount);
+      }
+    } else {
+      printf(ERR_LOI "Vui long nhap so!\n");
+    }
+  }
+
+  if (choice == 99) {
+    /* Bulk payment: mark all unpaid violations of this member as paid */
+    double oldTotalFine = m->totalFine;
+    int oldPaidStates[MAX_VIOLATIONS];
+    for (int i = 0; i < db->violationCount; i++) {
+      oldPaidStates[i] = db->violations[i].isPaid;
+      if (strcmp(db->violations[i].studentId, m->studentId) == 0 &&
+          db->violations[i].isPaid == 0) {
+        db->violations[i].isPaid = 1;
+      }
+    }
+    m->totalFine = 0.0;
+
+    if (fileioSaveViolations(db) != 0) {
+      /* Restore old states */
+      for (int i = 0; i < db->violationCount; i++) {
+        db->violations[i].isPaid = oldPaidStates[i];
+      }
+      m->totalFine = oldTotalFine;
+      printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
+      return -1;
+    }
+
+    if (fileioSaveMembers(db) != 0) {
+      /* Restore old states */
+      for (int i = 0; i < db->violationCount; i++) {
+        db->violations[i].isPaid = oldPaidStates[i];
+      }
+      m->totalFine = oldTotalFine;
+      (void)fileioSaveViolations(db);
+      printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
+      return -1;
+    }
+
+    printf(ERR_OK "Da thu TOAN BO tien phat thanh cong!\n\n");
     return 0;
   }
 

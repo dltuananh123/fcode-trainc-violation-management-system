@@ -99,71 +99,97 @@ static void adminMenu(void) {
     uiDrawSeparator();
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_BOLD COLOR_CYAN "  MENU BAN CHU NHIEM");
-    printf("                            ");
+    for (int i = 20; i < 68; i++) {
+      printf(" ");
+    }
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
     uiDrawSeparator();
 
+    /* Row 1 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "1" COLOR_RESET ". Them thanh vien moi");
-    printf("         ");
+    printf("          ");
     printf(COLOR_GREEN "9" COLOR_RESET ". Sap xep theo so lan VP");
-    printf("  ");
+    printf("         ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 2 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "2" COLOR_RESET ". Sua thong tin TV");
-    printf("           ");
+    printf("             ");
     printf(COLOR_GREEN "10" COLOR_RESET ". Xuat bao cao");
-    printf("           ");
+    printf("                  ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 3 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "3" COLOR_RESET ". Xoa thanh vien");
-    printf("              ");
+    printf("               ");
     printf(COLOR_GREEN "11" COLOR_RESET ". Tim kiem theo ngay");
-    printf("     ");
+    printf("            ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 4 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "4" COLOR_RESET ". Ghi nhan vi pham");
-    printf("           ");
+    printf("             ");
     printf(COLOR_GREEN "12" COLOR_RESET ". Xem profile ca nhan");
-    printf("    ");
+    printf("           ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 5 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "5" COLOR_RESET ". Danh dau da thu tien");
-    printf("       ");
+    printf("         ");
     printf(COLOR_GREEN "13" COLOR_RESET ". Xem DS thanh vien");
-    printf("      ");
+    printf("             ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 6 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "6" COLOR_RESET ". Xem DS vi pham");
-    printf("           ");
+    printf("               ");
     printf(COLOR_GREEN "14" COLOR_RESET ". Doi mat khau");
-    printf("           ");
+    printf("                  ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 7 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "7" COLOR_RESET ". Thong ke tien phat theo ban");
     printf("  ");
     printf(COLOR_GREEN "15" COLOR_RESET ". Reset mat khau TV");
-    printf("      ");
+    printf("             ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+    /* Row 8 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "8" COLOR_RESET ". Kiem tra nguong Out CLB");
-    printf("   ");
-    printf(COLOR_DIM " 0. Dang xuat");
-    printf("                 ");
+    printf("      ");
+    printf(COLOR_GREEN "16" COLOR_RESET ". Xem Dashboard ky luat");
+    printf("         ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    /* Row 9 */
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "17" COLOR_RESET ". Quan ly kho luu tru");
+    printf("         ");
+    printf(COLOR_GREEN "18" COLOR_RESET ". Dong bang/Mo khoa TK");
+    printf("          ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    /* Row 10 */
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM "  0. Dang xuat");
+    for (int i = 14; i < 68; i++) {
+      printf(" ");
+    }
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     uiDrawSeparator();
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 15);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 18);
 
     switch (choice) {
     case 1:
@@ -216,6 +242,15 @@ static void adminMenu(void) {
       authResetPassword(&gDb, targetId);
       break;
     }
+    case 16:
+      reportDashboard(&gDb);
+      break;
+    case 17:
+      memberViewArchive(&gDb);
+      break;
+    case 18:
+      memberFreezeAccount(&gDb);
+      break;
     case 0:
       authLogout(&gDb);
       break;

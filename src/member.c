@@ -692,3 +692,252 @@ void memberListAll(AppDatabase *db) {
          " | " COLOR_RED "Out CLB: %d" COLOR_RESET ")\n\n",
          activeCount, active, outClb);
 }
+
+/* ============================================================
+ * ARCHIVE & RESTORE / ACCOUNT FREEZING
+ * ============================================================ */
+
+void memberViewArchive(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
+    return;
+  }
+  if (session->role != ACCOUNT_ROLE_BCN) {
+    printf(ERR_LOI "Chi BCN moi co quyen quan ly luu tru!\n");
+    return;
+  }
+
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DA LUU TRU");
+  for (int i = 33; i < 68; i++) {
+    printf(" ");
+  }
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
+
+  int archivedIndices[MAX_MEMBERS];
+  int archivedCount = 0;
+
+  for (int i = 0; i < db->memberCount; i++) {
+    if (db->members[i].isDeleted) {
+      archivedIndices[archivedCount++] = i;
+    }
+  }
+
+  if (archivedCount == 0) {
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  Kho luu tru hien tai trong.                         ");
+    for (int i = 54; i < 68; i++) {
+      printf(" ");
+    }
+    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawSeparator();
+    return;
+  }
+
+  /* Render beautiful UTF-8 table with column padding */
+  /* Columns: STT (6), MSSV (12), Ho va ten (22), Ban (14), Ngay xoa (18) */
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 6; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 22; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
+         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+         " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
+         " Ban          " COLOR_CYAN LINE_V COLOR_RESET
+         " Ngay xoa          " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 6; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 22; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  for (int i = 0; i < archivedCount; i++) {
+    Member *m = &db->members[archivedIndices[i]];
+    char timeBuf[20];
+    formatTime(m->deletedAt, timeBuf, sizeof(timeBuf));
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", i + 1);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", m->studentId);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", m->fullName);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-12s ", teamName(m->team));
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-16s ", timeBuf);
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+  }
+
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 6; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 22; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  int choice = readMenuChoice(
+      COLOR_CYAN "  Nhap STT thanh vien muon khoi phuc (0 de quay lai): " COLOR_RESET, 0, archivedCount);
+
+  if (choice == 0) {
+    printf(ERR_INFO "Da huy thao tac.\n\n");
+    return;
+  }
+
+  int targetIdx = archivedIndices[choice - 1];
+  Member *m = &db->members[targetIdx];
+
+  printf("\n");
+  printf(ERR_CANH_BAO "Ban co chac muon khoi phuc hoat dong cho \"%s\" (%s)?\n",
+         m->fullName, m->studentId);
+  int confirm = readMenuChoice(
+      COLOR_CYAN "  Xac nhan khoi phuc? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
+
+  if (confirm != 1) {
+    printf(ERR_INFO "Da huy khoi phuc.\n\n");
+    return;
+  }
+
+  /* Perform recovery */
+  m->isDeleted = 0;
+  m->deletedAt = 0;
+
+  if (fileioSaveMembers(db) != 0) {
+    /* Rollback */
+    m->isDeleted = 1;
+    m->deletedAt = time(NULL);
+    printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n\n");
+  } else {
+    printf(ERR_OK "Khoi phuc thanh vien \"%s\" (%s) thanh cong!\n\n",
+           m->fullName, m->studentId);
+  }
+}
+
+void memberFreezeAccount(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
+    return;
+  }
+  if (session->role != ACCOUNT_ROLE_BCN) {
+    printf(ERR_LOI "Chi BCN moi co quyen dong bang tai khoan!\n");
+    return;
+  }
+
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  DONG BANG / MO KHOA TAI KHOAN");
+  for (int i = 31; i < 68; i++) {
+    printf(" ");
+  }
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
+
+  char studentId[MAX_MSSV_LEN];
+  printf(COLOR_CYAN "  Nhap MSSV can thao tac: " COLOR_RESET);
+  readString(studentId, sizeof(studentId));
+  trimSpaces(studentId);
+  mssvAutoUpper(studentId);
+
+  if (!validateNotEmpty(studentId)) {
+    printf(ERR_LOI "MSSV khong duoc de trong!\n");
+    return;
+  }
+
+  /* Find account */
+  int accIdx = -1;
+  for (int i = 0; i < db->accountCount; i++) {
+    if (strcmp(db->accounts[i].studentId, studentId) == 0) {
+      accIdx = i;
+      break;
+    }
+  }
+
+  if (accIdx == -1) {
+    printf(ERR_LOI "Khong tim thay tai khoan voi MSSV: %s!\n", studentId);
+    return;
+  }
+
+  Account *acc = &db->accounts[accIdx];
+
+  /* Prevent self-freezing */
+  if (strcmp(session->studentId, acc->studentId) == 0) {
+    printf(ERR_LOI "Khong the dong bang tai khoan cua chinh ban!\n");
+    return;
+  }
+
+  /* Get member name for better UX if possible */
+  char name[MAX_NAME_LEN] = "Thanh vien";
+  for (int i = 0; i < db->memberCount; i++) {
+    if (strcmp(db->members[i].studentId, acc->studentId) == 0) {
+      strncpy(name, db->members[i].fullName, sizeof(name) - 1);
+      name[sizeof(name) - 1] = '\0';
+      break;
+    }
+  }
+
+  printf("\n");
+  printf("  Tai khoan: " COLOR_BOLD "%s" COLOR_RESET " (%s)\n", acc->studentId, name);
+  printf("  Trang thai hien tai: %s\n\n",
+         acc->isLocked ? COLOR_RED "Dang dong bang (Locked)" COLOR_RESET
+                       : COLOR_GREEN "Hoat dong binh thuong" COLOR_RESET);
+
+  if (acc->isLocked) {
+    int confirm = readMenuChoice(
+        COLOR_CYAN "  Ban co muon MO KHOA tai khoan nay? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
+    if (confirm == 1) {
+      acc->isLocked = 0;
+      acc->failCount = 0; /* Reset fail count too when unfreezing */
+      if (fileioSaveAccounts(db) != 0) {
+        acc->isLocked = 1;
+        printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n");
+      } else {
+        printf(ERR_OK "Da mo khoa tai khoan cho %s thanh cong!\n\n", name);
+      }
+    } else {
+      printf(ERR_INFO "Da huy thao tac.\n\n");
+    }
+  } else {
+    int confirm = readMenuChoice(
+        COLOR_CYAN "  Ban co muon DONG BANG tai khoan nay? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
+    if (confirm == 1) {
+      acc->isLocked = 1;
+      if (fileioSaveAccounts(db) != 0) {
+        acc->isLocked = 0;
+        printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n");
+      } else {
+        printf(ERR_OK "Da dong bang tai khoan cua %s thanh cong!\n\n", name);
+      }
+    } else {
+      printf(ERR_INFO "Da huy thao tac.\n\n");
+    }
+  }
+}
