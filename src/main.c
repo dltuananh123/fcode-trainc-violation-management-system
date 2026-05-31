@@ -174,7 +174,7 @@ static void adminMenu(void) {
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "17" COLOR_RESET ". Quan ly kho luu tru");
     printf("         ");
-    printf(COLOR_GREEN "18" COLOR_RESET ". Dong bang/Mo khoa TK");
+    printf(COLOR_GREEN "18" COLOR_RESET ". Kick/Khoi phuc TV   ");
     printf("          ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
@@ -249,7 +249,7 @@ static void adminMenu(void) {
       memberViewArchive(&gDb);
       break;
     case 18:
-      memberFreezeAccount(&gDb);
+      memberKickOrRestore(&gDb);
       break;
     case 0:
       authLogout(&gDb);

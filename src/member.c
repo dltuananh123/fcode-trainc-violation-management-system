@@ -836,7 +836,7 @@ void memberViewArchive(AppDatabase *db) {
   }
 }
 
-void memberFreezeAccount(AppDatabase *db) {
+void memberKickOrRestore(AppDatabase *db) {
   if (db == NULL) {
     return;
   }
@@ -847,15 +847,15 @@ void memberFreezeAccount(AppDatabase *db) {
     return;
   }
   if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen dong bang tai khoan!\n");
+    printf(ERR_LOI "Chi BCN moi co quyen kick/khoi phuc thanh vien!\n");
     return;
   }
 
   printf("\n");
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_CYAN "  DONG BANG / MO KHOA TAI KHOAN");
-  for (int i = 31; i < 68; i++) {
+  printf(COLOR_BOLD COLOR_CYAN "  KICK / KHOI PHUC THANH VIEN");
+  for (int i = 29; i < 68; i++) {
     printf(" ");
   }
   printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -872,72 +872,217 @@ void memberFreezeAccount(AppDatabase *db) {
     return;
   }
 
-  /* Find account */
+  /* Find member */
+  int memberIdx = -1;
+  for (int i = 0; i < db->memberCount; i++) {
+    if (!db->members[i].isDeleted && strcmp(db->members[i].studentId, studentId) == 0) {
+      memberIdx = i;
+      break;
+    }
+  }
+
+  if (memberIdx == -1) {
+    printf(ERR_LOI "Khong tim thay thanh vien hoat dong voi MSSV: %s!\n", studentId);
+    return;
+  }
+
+  Member *m = &db->members[memberIdx];
+
+  /* Prevent self-action */
+  if (strcmp(session->studentId, m->studentId) == 0) {
+    printf(ERR_LOI "Khong the tu kick hoac tu khoi phuc chinh ban!\n");
+    return;
+  }
+
+  /* Find corresponding account */
   int accIdx = -1;
   for (int i = 0; i < db->accountCount; i++) {
-    if (strcmp(db->accounts[i].studentId, studentId) == 0) {
+    if (strcmp(db->accounts[i].studentId, m->studentId) == 0) {
       accIdx = i;
       break;
     }
   }
 
-  if (accIdx == -1) {
-    printf(ERR_LOI "Khong tim thay tai khoan voi MSSV: %s!\n", studentId);
+  /* Role permission check (BCN protection)
+     Super Admin accounts (admin or SE203055) can kick any BCN,
+     but standard BCN accounts can NOT kick another BCN! */
+  int isSuperAdmin = (strcmp(session->studentId, "admin") == 0 || strcmp(session->studentId, "SE203055") == 0);
+  if (m->role == MEMBER_ROLE_BCN && !isSuperAdmin) {
+    printf(ERR_LOI "Chi Super Admin (admin/SE203055) moi co quyen kick/khoi phuc thanh vien BCN khac!\n");
     return;
-  }
-
-  Account *acc = &db->accounts[accIdx];
-
-  /* Prevent self-freezing */
-  if (strcmp(session->studentId, acc->studentId) == 0) {
-    printf(ERR_LOI "Khong the dong bang tai khoan cua chinh ban!\n");
-    return;
-  }
-
-  /* Get member name for better UX if possible */
-  char name[MAX_NAME_LEN] = "Thanh vien";
-  for (int i = 0; i < db->memberCount; i++) {
-    if (strcmp(db->members[i].studentId, acc->studentId) == 0) {
-      strncpy(name, db->members[i].fullName, sizeof(name) - 1);
-      name[sizeof(name) - 1] = '\0';
-      break;
-    }
   }
 
   printf("\n");
-  printf("  Tai khoan: " COLOR_BOLD "%s" COLOR_RESET " (%s)\n", acc->studentId, name);
-  printf("  Trang thai hien tai: %s\n\n",
-         acc->isLocked ? COLOR_RED "Dang dong bang (Locked)" COLOR_RESET
-                       : COLOR_GREEN "Hoat dong binh thuong" COLOR_RESET);
+  printf("  Thanh vien: " COLOR_BOLD "%s" COLOR_RESET " (%s)\n", m->fullName, m->studentId);
+  printf("  Ban:        %s\n", teamName(m->team));
+  printf("  Chuc vu:    %s\n", memberRoleName(m->role));
+  printf("  Trang thai: %s\n\n",
+         m->isActive ? COLOR_GREEN "Hoat dong (Active)" COLOR_RESET
+                     : COLOR_RED "Da roi CLB (Out CLB)" COLOR_RESET);
 
-  if (acc->isLocked) {
-    int confirm = readMenuChoice(
-        COLOR_CYAN "  Ban co muon MO KHOA tai khoan nay? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
-    if (confirm == 1) {
-      acc->isLocked = 0;
-      acc->failCount = 0; /* Reset fail count too when unfreezing */
-      if (fileioSaveAccounts(db) != 0) {
-        acc->isLocked = 1;
-        printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n");
-      } else {
-        printf(ERR_OK "Da mo khoa tai khoan cho %s thanh cong!\n\n", name);
-      }
-    } else {
+  if (m->isActive == STATUS_ACTIVE) {
+    /* --- CASE 1: KICK MEMBER --- */
+    printf(ERR_CANH_BAO "Ban chuan bi kick thanh vien \"%s\" khoi CLB va KHOA tai khoan dang nhap!\n", m->fullName);
+    int confirm1 = readMenuChoice(
+        COLOR_CYAN "  Ban co chac muon tiep tuc? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
+    if (confirm1 != 1) {
       printf(ERR_INFO "Da huy thao tac.\n\n");
+      return;
     }
+
+    /* Mandatory Kick Reason */
+    char reason[MAX_NOTE_LEN];
+    while (1) {
+      printf(COLOR_CYAN "  Nhap ly do kick (bat buoc, toi da 255 ky tu): " COLOR_RESET);
+      readString(reason, sizeof(reason));
+      trimSpaces(reason);
+      if (validateNotEmpty(reason)) {
+        break;
+      }
+      printf(ERR_LOI "Ly do kick khong duoc de trong!\n");
+    }
+
+    /* Step 2: Double confirmation (re-enter MSSV to confirm) */
+    printf("\n" COLOR_BOLD COLOR_RED "  XAC THUC AN TOAN (BUOC CUOI):" COLOR_RESET "\n");
+    printf("  Vui long nhap lai chinh xac MSSV cua thanh vien (%s) de hoan tat kick: ", m->studentId);
+    char confirmMSSV[MAX_MSSV_LEN];
+    readString(confirmMSSV, sizeof(confirmMSSV));
+    trimSpaces(confirmMSSV);
+    mssvAutoUpper(confirmMSSV);
+
+    if (strcmp(confirmMSSV, m->studentId) != 0) {
+      printf(ERR_LOI "MSSV xac nhan khong trung khop! Huy bo kick thanh vien.\n\n");
+      return;
+    }
+
+    /* Keep backup states for transactional rollback */
+    int oldActive = m->isActive;
+    int oldConsecAbs = m->consecutiveAbsences;
+    
+    int oldLocked = -1;
+    if (accIdx != -1) {
+      oldLocked = db->accounts[accIdx].isLocked;
+    }
+
+    int oldViolationCount = db->violationCount;
+
+    /* Perform Kick on RAM */
+    m->isActive = STATUS_OUT_CLB;
+    m->consecutiveAbsences = 0;
+    if (accIdx != -1) {
+      db->accounts[accIdx].isLocked = 1;
+    }
+
+    /* Create Disciplinary Violation Audit record */
+    int violationAdded = 0;
+    if (db->violationCount < MAX_VIOLATIONS) {
+      Violation *v = &db->violations[db->violationCount];
+      memset(v, 0, sizeof(Violation));
+      strncpy(v->studentId, m->studentId, MAX_MSSV_LEN - 1);
+      v->violationTime = time(NULL);
+      v->reason = REASON_VIOLENCE; /* System disciplinary violation reason */
+      v->fine = 0.0;
+      v->isPaid = 1;
+      v->penalty = PENALTY_OUT_CLB;
+      strncpy(v->note, reason, MAX_NOTE_LEN - 1);
+      db->violationCount++;
+      violationAdded = 1;
+    }
+
+    /* Transactionally save all modified data files */
+    if (fileioSaveMembers(db) != 0) {
+      /* Rollback */
+      m->isActive = oldActive;
+      m->consecutiveAbsences = oldConsecAbs;
+      if (accIdx != -1) {
+        db->accounts[accIdx].isLocked = oldLocked;
+      }
+      if (violationAdded) db->violationCount = oldViolationCount;
+      printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo kick.\n\n");
+      return;
+    }
+
+    if (accIdx != -1 && fileioSaveAccounts(db) != 0) {
+      /* Rollback */
+      m->isActive = oldActive;
+      m->consecutiveAbsences = oldConsecAbs;
+      db->accounts[accIdx].isLocked = oldLocked;
+      if (violationAdded) db->violationCount = oldViolationCount;
+      (void)fileioSaveMembers(db);
+      printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo kick.\n\n");
+      return;
+    }
+
+    if (violationAdded && fileioSaveViolations(db) != 0) {
+      /* Rollback */
+      m->isActive = oldActive;
+      m->consecutiveAbsences = oldConsecAbs;
+      if (accIdx != -1) {
+        db->accounts[accIdx].isLocked = oldLocked;
+      }
+      db->violationCount = oldViolationCount;
+      (void)fileioSaveMembers(db);
+      if (accIdx != -1) (void)fileioSaveAccounts(db);
+      printf(ERR_LOI "Khong the ghi file vi pham! Huy bo kick.\n\n");
+      return;
+    }
+
+    printf(ERR_OK "Da kick thanh vien \"%s\" (%s) khoi CLB va khoa tai khoan dang nhap thanh cong!\n\n",
+           m->fullName, m->studentId);
+
   } else {
+    /* --- CASE 2: RESTORE MEMBER --- */
+    printf(ERR_INFO "Thanh vien nay hien da roi CLB. Ban co muon MO LAI tai khoan va khoi phuc hoat dong?\n");
     int confirm = readMenuChoice(
-        COLOR_CYAN "  Ban co muon DONG BANG tai khoan nay? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
-    if (confirm == 1) {
-      acc->isLocked = 1;
-      if (fileioSaveAccounts(db) != 0) {
-        acc->isLocked = 0;
-        printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n");
-      } else {
-        printf(ERR_OK "Da dong bang tai khoan cua %s thanh cong!\n\n", name);
-      }
-    } else {
+        COLOR_CYAN "  Xac nhan khoi phuc? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
+    if (confirm != 1) {
       printf(ERR_INFO "Da huy thao tac.\n\n");
+      return;
     }
+
+    /* Backup for rollback */
+    int oldActive = m->isActive;
+    int oldConsecAbs = m->consecutiveAbsences;
+    int oldLocked = -1;
+    int oldFailCount = -1;
+    if (accIdx != -1) {
+      oldLocked = db->accounts[accIdx].isLocked;
+      oldFailCount = db->accounts[accIdx].failCount;
+    }
+
+    /* Perform Restore on RAM */
+    m->isActive = STATUS_ACTIVE;
+    m->consecutiveAbsences = 0;
+    if (accIdx != -1) {
+      db->accounts[accIdx].isLocked = 0;
+      db->accounts[accIdx].failCount = 0; /* Reset fails so they can login */
+    }
+
+    /* Transactionally save */
+    if (fileioSaveMembers(db) != 0) {
+      /* Rollback */
+      m->isActive = oldActive;
+      m->consecutiveAbsences = oldConsecAbs;
+      if (accIdx != -1) {
+        db->accounts[accIdx].isLocked = oldLocked;
+        db->accounts[accIdx].failCount = oldFailCount;
+      }
+      printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo khoi phuc.\n\n");
+      return;
+    }
+
+    if (accIdx != -1 && fileioSaveAccounts(db) != 0) {
+      /* Rollback */
+      m->isActive = oldActive;
+      m->consecutiveAbsences = oldConsecAbs;
+      db->accounts[accIdx].isLocked = oldLocked;
+      db->accounts[accIdx].failCount = oldFailCount;
+      (void)fileioSaveMembers(db);
+      printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo khoi phuc.\n\n");
+      return;
+    }
+
+    printf(ERR_OK "Da khoi phuc trang thai hoat dong va mo khoa tai khoan cho \"%s\" thanh cong!\n\n",
+           m->fullName);
   }
 }

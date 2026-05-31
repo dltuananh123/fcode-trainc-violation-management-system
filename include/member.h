@@ -120,10 +120,10 @@ void memberListAll(AppDatabase *db);
 void memberViewArchive(AppDatabase *db);
 
 /**
- * @brief Freeze or unfreeze an account.
+ * @brief Kick a member (forces Out CLB + locks account) or restore/readmit them.
  *
  * @param db Pointer to the AppDatabase.
  */
-void memberFreezeAccount(AppDatabase *db);
+void memberKickOrRestore(AppDatabase *db);
 
 #endif /* MEMBER_H */
