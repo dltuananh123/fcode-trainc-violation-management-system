@@ -5,6 +5,7 @@
 #include "types.h"
 #include "ui.h"
 #include "utils.h"
+#include "validate.h"
 #include "violation.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,23 +22,49 @@ static AppDatabase gDb;
 static void memberMenu(void) {
   int choice;
   do {
-    printf("\nMENU THANH VIEN\n");
-    printf("1. Xem profile ca nhan\n");
-    printf("2. Xem lich su vi pham\n");
-    printf("3. Xem tong tien phat con no\n");
-    printf("4. Xem danh sach thanh vien\n");
-    printf("5. Doi mat khau\n");
-    printf("0. Dang xuat\n");
-    printf("Nhap lua chon: ");
+    printf("\n");
+    uiDrawSeparator();
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_BOLD COLOR_CYAN "  MENU THANH VIEN");
+    printf("                              ");
+    printf(COLOR_RESET);
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawSeparator();
 
-    if (scanf("%d", &choice) != 1) {
-      printf("[LOI] Lua chon khong hop le\n");
-      while (getchar() != '\n') {
-      }
-      continue;
-    }
-    while (getchar() != '\n') {
-    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  1. Xem profile ca nhan");
+    printf("                            ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  2. Xem lich su vi pham");
+    printf("                          ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  3. Xem tong tien phat con no");
+    printf("                       ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  4. Xem danh sach thanh vien");
+    printf("                        ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  5. Doi mat khau");
+    printf("                                 ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM "  0. Dang xuat");
+    printf("                                   ");
+    printf(COLOR_RESET);
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    uiDrawSeparator();
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 5);
 
     switch (choice) {
     case 1:
@@ -59,7 +86,7 @@ static void memberMenu(void) {
       authLogout(&gDb);
       break;
     default:
-      printf("[LOI] Lua chon khong hop le\n");
+      break;
     }
   } while (choice != 0);
 }
@@ -68,33 +95,75 @@ static void memberMenu(void) {
 static void adminMenu(void) {
   int choice;
   do {
-    printf("\nMENU BAN CHU NHIEM\n");
-    printf("1. Them thanh vien moi\n");
-    printf("2. Sua thong tin thanh vien\n");
-    printf("3. Xoa thanh vien\n");
-    printf("4. Ghi nhan vi pham\n");
-    printf("5. Danh dau da thu tien\n");
-    printf("6. Xem danh sach vi pham\n");
-    printf("7. Thong ke tien phat theo ban\n");
-    printf("8. Kiem tra nguong Out CLB\n");
-    printf("9. Sap xep theo so lan vi pham\n");
-    printf("10. Xuat bao cao\n");
-    printf("11. Tim kiem theo ngay\n");
-    printf("12. Xem profile ca nhan\n");
-    printf("13. Xem danh sach thanh vien\n");
-    printf("14. Doi mat khau\n");
-    printf("15. Reset mat khau thanh vien\n");
-    printf("0. Dang xuat\n");
-    printf("Nhap lua chon: ");
+    printf("\n");
+    uiDrawSeparator();
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_BOLD COLOR_CYAN "  MENU BAN CHU NHIEM");
+    printf("                            ");
+    printf(COLOR_RESET);
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawSeparator();
 
-    if (scanf("%d", &choice) != 1) {
-      printf("[LOI] Lua chon khong hop le\n");
-      while (getchar() != '\n') {
-      }
-      continue;
-    }
-    while (getchar() != '\n') {
-    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "1" COLOR_RESET ". Them thanh vien moi");
+    printf("         ");
+    printf(COLOR_GREEN "9" COLOR_RESET ". Sap xep theo so lan VP");
+    printf("  ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "2" COLOR_RESET ". Sua thong tin TV");
+    printf("           ");
+    printf(COLOR_GREEN "10" COLOR_RESET ". Xuat bao cao");
+    printf("           ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "3" COLOR_RESET ". Xoa thanh vien");
+    printf("              ");
+    printf(COLOR_GREEN "11" COLOR_RESET ". Tim kiem theo ngay");
+    printf("     ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "4" COLOR_RESET ". Ghi nhan vi pham");
+    printf("           ");
+    printf(COLOR_GREEN "12" COLOR_RESET ". Xem profile ca nhan");
+    printf("    ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "5" COLOR_RESET ". Danh dau da thu tien");
+    printf("       ");
+    printf(COLOR_GREEN "13" COLOR_RESET ". Xem DS thanh vien");
+    printf("      ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "6" COLOR_RESET ". Xem DS vi pham");
+    printf("           ");
+    printf(COLOR_GREEN "14" COLOR_RESET ". Doi mat khau");
+    printf("           ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "7" COLOR_RESET ". Thong ke tien phat theo ban");
+    printf("  ");
+    printf(COLOR_GREEN "15" COLOR_RESET ". Reset mat khau TV");
+    printf("      ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  " COLOR_GREEN "8" COLOR_RESET ". Kiem tra nguong Out CLB");
+    printf("   ");
+    printf(COLOR_DIM " 0. Dang xuat");
+    printf("                 ");
+    printf(COLOR_RESET);
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    uiDrawSeparator();
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 15);
 
     switch (choice) {
     case 1:
@@ -143,6 +212,7 @@ static void adminMenu(void) {
       printf("Nhap MSSV can reset mat khau: ");
       char targetId[MAX_MSSV_LEN];
       readString(targetId, MAX_MSSV_LEN);
+      trimSpaces(targetId);
       authResetPassword(&gDb, targetId);
       break;
     }
@@ -150,7 +220,7 @@ static void adminMenu(void) {
       authLogout(&gDb);
       break;
     default:
-      printf("[LOI] Lua chon khong hop le\n");
+      break;
     }
   } while (choice != 0);
 }
@@ -163,27 +233,25 @@ int main(void) {
   /* Initialize UI (enable ANSI colors on Windows, set UTF-8) */
   uiInit();
 
-  printf("  F-CODE VIOLATION MANAGEMENT SYSTEM\n");
+  printf(COLOR_BOLD COLOR_BLUE "\n  F-CODE VIOLATION MANAGEMENT SYSTEM v2.0\n" COLOR_RESET);
+
   /* Load data from files */
   if (fileioLoadAll(&gDb) != 0) {
-    printf("[LOI] Khong the tai du lieu. Vui long kiem tra thu muc data/\n");
+    printf(ERR_LOI "Khong the tai du lieu! "
+           "Vui long kiem tra thu muc data/\n");
     return 1;
   }
 
-  printf("[OK] Tai du lieu thanh cong\n");
-  printf("  - Thanh vien: %d/%d\n", gDb.memberCount, MAX_MEMBERS);
-  printf("  - Vi pham: %d\n", gDb.violationCount);
-  printf("  - Tai khoan: %d\n", gDb.accountCount);
+  printf(ERR_OK "Tai du lieu thanh cong!\n");
+  printf(COLOR_GRAY "  - Thanh vien: %d/%d\n", gDb.memberCount, MAX_MEMBERS);
+  printf("  - Vi pham: %d\n" COLOR_RESET, gDb.violationCount);
 
   /* Main application loop */
   while (1) {
-    /* Login first */
     if (authLogin(&gDb) != 0) {
-      /* Account locked or exit requested */
       break;
     }
 
-    /* Route to appropriate menu based on role */
     Account *session = authGetSession();
     if (session != NULL) {
       if (session->role == ACCOUNT_ROLE_BCN) {
@@ -194,6 +262,6 @@ int main(void) {
     }
   }
 
-  printf("[OK] Thoat chuong trinh\n");
+  printf(ERR_OK "Thoat chuong trinh. Hen gap lai!\n");
   return 0;
 }

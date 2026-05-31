@@ -1,6 +1,9 @@
 #include "auth.h"
 #include "fileio.h"
 #include "types.h"
+#include "ui.h"
+#include "utils.h"
+#include "validate.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -15,15 +18,6 @@ static int sessionActive = 0;
  * Private helpers
  * ============================================================ */
 
-static void readInput(const char *prompt, char *buf, int size) {
-  printf("%s", prompt);
-  if (fgets(buf, size, stdin) != NULL) {
-    buf[strcspn(buf, "\n")] = '\0';
-  } else {
-    buf[0] = '\0';
-  }
-}
-
 static int findAccountIndex(const AppDatabase *db, const char *studentId) {
   for (int i = 0; i < db->accountCount; i++) {
     if (strcmp(db->accounts[i].studentId, studentId) == 0) {
@@ -35,12 +29,26 @@ static int findAccountIndex(const AppDatabase *db, const char *studentId) {
 
 static void printLoginBanner(void) {
   printf("\n");
-  printf("  HE THONG QUAN LY VI PHAM - CLB F-CODE   \n");
-  printf("  Vui long dang nhap de tiep tuc\n");
+  printf(COLOR_BLUE COLOR_BOLD);
+  printf("  " BOX_TL);
+  for (int i = 0; i < 40; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_TR "\n");
+  printf("  " BOX_V "                                        " BOX_V "\n");
+  printf("  " BOX_V "    FCODE VIOLATION MANAGEMENT SYSTEM    " BOX_V "\n");
+  printf("  " BOX_V "    Quan ly Vi pham TrainC CLB           " BOX_V "\n");
+  printf("  " BOX_V "                                        " BOX_V "\n");
+  printf("  " BOX_BL);
+  for (int i = 0; i < 40; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_BR "\n");
+  printf(COLOR_RESET "\n");
 }
 
 /* ============================================================
- * Story 1.5 — Login / Logout / Session
+ * Login / Logout / Session
  * ============================================================ */
 
 int authLogin(AppDatabase *db) {
@@ -55,54 +63,91 @@ int authLogin(AppDatabase *db) {
   while (1) {
     printLoginBanner();
 
-    readInput("MSSV: ", studentId, MAX_MSSV_LEN);
-    readInput("Mat khau: ", password, MAX_PASS_LEN);
+    /* MSSV input with re-prompt */
+    while (1) {
+      printf(COLOR_CYAN "  MSSV: " COLOR_RESET);
+      readString(studentId, sizeof(studentId));
+      trimSpaces(studentId);
+      if (validateNotEmpty(studentId)) {
+        break;
+      }
+    }
+
+    /* Password input with masking */
+    printf(COLOR_CYAN "  Mat khau: " COLOR_RESET);
+    readPassword(password, sizeof(password));
+
+    if (strlen(password) == 0) {
+      printf(ERR_LOI "Mat khau khong duoc de trong!\n");
+      continue;
+    }
 
     int idx = findAccountIndex(db, studentId);
     if (idx == -1) {
-      printf("[LOI] Tai khoan khong ton tai\n");
+      printf(ERR_LOI "Tai khoan khong ton tai!\n");
       continue;
     }
 
     Account *acc = &db->accounts[idx];
 
     if (acc->isLocked) {
-      printf("[LOI] Tai khoan da bi khoa. Vui long lien he BCN\n");
+      printf(ERR_LOI "Tai khoan da bi khoa! "
+             "Vui long lien he BCN de mo khoa.\n");
       continue;
     }
 
     if (strcmp(acc->password, password) != 0) {
       acc->failCount++;
-      printf("[LOI] Mat khau sai\n");
+      printf(ERR_LOI "Mat khau sai!\n");
 
       if (acc->failCount >= 3) {
         acc->isLocked = 1;
-        printf("[CANH BAO] Tai khoan da bi khoa sau 3 lan dang nhap sai\n");
-        if (fileioSaveAccounts(db) != 0) {
-          printf("[LOI] Khong the luu trang thai khoa tai khoan\n");
-        }
+        printf(ERR_CANH_BAO "Tai khoan da bi khoa sau 3 lan nhap sai! "
+               "Lien he BCN de mo khoa.\n");
+        (void)fileioSaveAccounts(db);
         return -1;
       }
 
-      if (fileioSaveAccounts(db) != 0) {
-        printf("[LOI] Khong the luu so lan dang nhap sai\n");
-        return -1;
-      }
-
-      printf("[THONG BAO] Con lai %d lan thu\n", 3 - acc->failCount);
+      (void)fileioSaveAccounts(db);
+      printf(ERR_INFO "Con %d lan thu.\n", 3 - acc->failCount);
       continue;
     }
 
     /* Login successful */
     acc->failCount = 0;
-    if (fileioSaveAccounts(db) != 0) {
-      printf("[LOI] Khong the cap nhat trang thai tai khoan sau dang nhap\n");
-      return -1;
-    }
+    (void)fileioSaveAccounts(db);
     currentSession = *acc;
     sessionActive = 1;
 
-    printf("[OK] Dang nhap thanh cong\n");
+    printf(ERR_OK "Dang nhap thanh cong! "
+           "Chao mung %s (%s)\n",
+           studentId, accountRoleName(acc->role));
+
+    /* Force change default password if needed */
+    if (acc->isDefaultPassword) {
+      printf("\n");
+      printf(ERR_CANH_BAO "Ban dang su dung mat khau mac dinh!\n");
+      printf("Bat buoc doi mat khau truoc khi tiep tuc.\n\n");
+
+      /* Must change password before proceeding */
+      int changed = 0;
+      while (!changed) {
+        changed = (authChangePassword(db) == 0);
+        if (!changed) {
+          printf(ERR_LOI "Ban phai doi mat khau truoc khi "
+                 "su dung he thong!\n\n");
+        }
+      }
+
+      /* Update isDefaultPassword */
+      idx = findAccountIndex(db, studentId);
+      if (idx != -1) {
+        db->accounts[idx].isDefaultPassword = 0;
+        currentSession.isDefaultPassword = 0;
+        (void)fileioSaveAccounts(db);
+      }
+    }
+
     return 0;
   }
 }
@@ -111,7 +156,7 @@ void authLogout(AppDatabase *db) {
   (void)db; /* unused */
   sessionActive = 0;
   memset(&currentSession, 0, sizeof(Account));
-  printf("[OK] Da dang xuat\n");
+  printf(ERR_OK "Da dang xuat!\n");
 }
 
 Account *authGetSession(void) {
@@ -122,7 +167,7 @@ Account *authGetSession(void) {
 }
 
 /* ============================================================
- * Story 1.6 — Change / Reset Password
+ * Change / Reset Password
  * ============================================================ */
 
 int authChangePassword(AppDatabase *db) {
@@ -132,56 +177,82 @@ int authChangePassword(AppDatabase *db) {
 
   Account *session = authGetSession();
   if (session == NULL) {
-    printf("[LOI] Ban phai dang nhap de doi mat khau\n");
+    printf(ERR_LOI "Ban phai dang nhap de doi mat khau!\n");
     return -1;
   }
 
   /* Find account in database */
   int idx = findAccountIndex(db, session->studentId);
   if (idx == -1) {
-    printf("[LOI] Khong tim thay tai khoan\n");
+    printf(ERR_LOI "Khong tim thay tai khoan!\n");
     return -1;
   }
 
-  /* Verify old password */
+  /* Old password */
   char oldPass[MAX_PASS_LEN];
-  readInput("Nhap mat khau cu: ", oldPass, MAX_PASS_LEN);
+  printf(COLOR_CYAN "  Nhap mat khau cu: " COLOR_RESET);
+  readPassword(oldPass, sizeof(oldPass));
+
+  if (strlen(oldPass) == 0) {
+    printf(ERR_LOI "Vui long nhap mat khau cu!\n");
+    return -1;
+  }
+
   if (strcmp(db->accounts[idx].password, oldPass) != 0) {
-    printf("[LOI] Mat khau cu khong dung\n");
+    printf(ERR_LOI "Mat khau cu khong dung!\n");
     return -1;
   }
 
-  /* Enter new password */
+  /* New password with validation loop */
   char newPass[MAX_PASS_LEN];
-  readInput("Nhap mat khau moi: ", newPass, MAX_PASS_LEN);
-  if (strlen(newPass) == 0) {
-    printf("[LOI] Mat khau moi khong duoc de trong\n");
-    return -1;
+  while (1) {
+    printf(COLOR_CYAN "  Nhap mat khau moi: " COLOR_RESET);
+    readPassword(newPass, sizeof(newPass));
+
+    if (!validatePassword(newPass)) {
+      continue;
+    }
+
+    if (strcmp(newPass, oldPass) == 0) {
+      printf(ERR_LOI "Mat khau moi phai khac mat khau cu!\n");
+      continue;
+    }
+
+    break;
   }
 
-  /* Confirm new password */
+  /* Confirm password with re-prompt */
   char confirmPass[MAX_PASS_LEN];
-  readInput("Xac nhan mat khau moi: ", confirmPass, MAX_PASS_LEN);
-  if (strcmp(newPass, confirmPass) != 0) {
-    printf("[LOI] Mat khau xac nhan khong khop\n");
-    return -1;
+  while (1) {
+    printf(COLOR_CYAN "  Xac nhan mat khau moi: " COLOR_RESET);
+    readPassword(confirmPass, sizeof(confirmPass));
+
+    if (strlen(confirmPass) == 0) {
+      printf(ERR_LOI "Vui long xac nhan mat khau!\n");
+      continue;
+    }
+
+    if (strcmp(newPass, confirmPass) != 0) {
+      printf(ERR_LOI "Mat khau xac nhan khong khop! "
+             "Vui long thu lai.\n");
+      continue;
+    }
+
+    break;
   }
 
-  /* Update password in database */
+  /* Update password */
   strncpy(db->accounts[idx].password, newPass, MAX_PASS_LEN - 1);
   db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
-
-  /* Update session copy */
   strncpy(session->password, newPass, MAX_PASS_LEN - 1);
   session->password[MAX_PASS_LEN - 1] = '\0';
 
-  /* Save */
   if (fileioSaveAccounts(db) != 0) {
-    printf("[LOI] Khong the luu mat khau moi\n");
+    printf(ERR_LOI "Khong the luu mat khau moi!\n");
     return -1;
   }
 
-  printf("[OK] Doi mat khau thanh cong\n");
+  printf(ERR_OK "Doi mat khau thanh cong!\n");
   return 0;
 }
 
@@ -192,35 +263,36 @@ int authResetPassword(AppDatabase *db, const char *targetStudentId) {
 
   Account *session = authGetSession();
   if (session == NULL) {
-    printf("[LOI] Ban phai dang nhap de thuc hien\n");
+    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
     return -1;
   }
 
   if (session->role != ACCOUNT_ROLE_BCN) {
-    printf("[LOI] Chi BCN moi co quyen reset mat khau\n");
+    printf(ERR_LOI "Chi BCN moi co quyen reset mat khau!\n");
     return -1;
   }
 
-  /* Find target account */
   int idx = findAccountIndex(db, targetStudentId);
   if (idx == -1) {
-    printf("[LOI] Khong tim thay tai khoan voi MSSV: %s\n", targetStudentId);
+    printf(ERR_LOI "Khong tim thay tai khoan voi MSSV: %s!\n",
+           targetStudentId);
     return -1;
   }
 
-  /* Reset password to MSSV, unlock account */
+  /* Reset password to MSSV, unlock, mark as default */
   strncpy(db->accounts[idx].password, targetStudentId, MAX_PASS_LEN - 1);
   db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
   db->accounts[idx].failCount = 0;
   db->accounts[idx].isLocked = 0;
   db->accounts[idx].isDefaultPassword = 1;
 
-  /* Save */
   if (fileioSaveAccounts(db) != 0) {
-    printf("[LOI] Khong the luu mat khau moi\n");
+    printf(ERR_LOI "Khong the luu mat khau moi!\n");
     return -1;
   }
 
-  printf("[OK] Da reset mat khau cua %s ve MSSV\n", targetStudentId);
+  printf(ERR_OK "Da reset mat khau cua %s ve MSSV. "
+         "Thanh vien se phai doi mat khau khi dang nhap.\n",
+         targetStudentId);
   return 0;
 }

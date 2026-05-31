@@ -1,7 +1,9 @@
 #ifndef _WIN32
 #define _POSIX_C_SOURCE 200809L
 #endif
+#include "ui.h"
 #include "utils.h"
+#include "validate.h"
 #include "types.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -9,8 +11,10 @@
 #include <time.h>
 
 #ifdef _WIN32
+#include <conio.h>
 #include <windows.h>
 #else
+#include <termios.h>
 #include <unistd.h>
 #endif
 
@@ -46,6 +50,69 @@ int readInt(int *value) {
     /* discard characters */
   }
   return result == 1 ? 1 : 0;
+}
+
+void readPassword(char *buffer, size_t size) {
+  if (buffer == NULL || size == 0) {
+    return;
+  }
+
+  size_t i = 0;
+#ifdef _WIN32
+  int ch;
+  while ((ch = _getch()) != '\r' && ch != EOF) {
+    if (ch == '\b' || ch == 127) {
+      /* Backspace */
+      if (i > 0) {
+        i--;
+        printf("\b \b");
+      }
+    } else if (ch >= 32 && ch < 127 && i < size - 1) {
+      buffer[i++] = (char)ch;
+      printf("*");
+    }
+  }
+#else
+  /* Linux: use termios for no-echo */
+  struct termios oldTerm, newTerm;
+  tcgetattr(STDIN_FILENO, &oldTerm);
+  newTerm = oldTerm;
+  newTerm.c_lflag &= ~(ECHO | ICANON);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newTerm);
+
+  int ch;
+  while ((ch = getchar()) != '\n' && ch != EOF) {
+    if (ch == 127 || ch == '\b') {
+      if (i > 0) {
+        i--;
+        printf("\b \b");
+      }
+    } else if (ch >= 32 && ch < 127 && i < size - 1) {
+      buffer[i++] = (char)ch;
+      printf("*");
+    }
+  }
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldTerm);
+#endif
+  buffer[i] = '\0';
+  printf("\n");
+}
+
+int readMenuChoice(const char *prompt, int min, int max) {
+  int choice;
+  while (1) {
+    printf("%s", prompt);
+    if (readInt(&choice)) {
+      if (choice >= min && choice <= max) {
+        return choice;
+      }
+      printf(ERR_LOI "Lua chon khong hop le! "
+             "Vui long chon tu %d-%d!\n",
+             min, max);
+    } else {
+      printf(ERR_LOI "Vui long nhap so!\n");
+    }
+  }
 }
 
 /* ============================================================
