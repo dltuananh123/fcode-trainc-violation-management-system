@@ -31,6 +31,7 @@ void violationCheckAllOutClb(AppDatabase *db);
 
 void violationViewOwn(AppDatabase *db);
 void violationViewFines(AppDatabase *db);
+void violationViewPaymentHistory(AppDatabase *db);
 int violationMarkPaid(AppDatabase *db);
 
 /* ============================================================

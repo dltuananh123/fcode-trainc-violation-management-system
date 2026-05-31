@@ -204,11 +204,15 @@ int authChangePassword(AppDatabase *db) {
   /* Old password — re-prompt on invalid */
   char oldPass[MAX_PASS_LEN];
   while (1) {
-    printf(COLOR_CYAN "  Nhap mat khau cu: " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap mat khau cu (0 de quay lai): " COLOR_RESET);
     readPassword(oldPass, sizeof(oldPass));
     if (strlen(oldPass) == 0) {
       printf(ERR_LOI "Vui long nhap mat khau cu!\n");
       continue;
+    }
+    if (strcmp(oldPass, "0") == 0) {
+      printf(ERR_INFO "Huy doi mat khau.\n");
+      return -1;
     }
 
     char oldHashed[32];
@@ -233,8 +237,18 @@ int authChangePassword(AppDatabase *db) {
   char newPass[MAX_PASS_LEN];
   char confirmPass[MAX_PASS_LEN];
   while (1) {
-    printf(COLOR_CYAN "  Nhap mat khau moi: " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap mat khau moi (0 de huy): " COLOR_RESET);
     readPassword(newPass, sizeof(newPass));
+
+    if (strlen(newPass) == 0) {
+      printf(ERR_LOI "Vui long nhap mat khau moi!\n");
+      continue;
+    }
+
+    if (strcmp(newPass, "0") == 0) {
+      printf(ERR_INFO "Huy doi mat khau.\n");
+      return -1;
+    }
 
     if (!validatePassword(newPass)) {
       continue;
@@ -245,8 +259,18 @@ int authChangePassword(AppDatabase *db) {
       continue;
     }
 
-    printf(COLOR_CYAN "  Xac nhan mat khau moi: " COLOR_RESET);
+    printf(COLOR_CYAN "  Xac nhan mat khau moi (0 de huy): " COLOR_RESET);
     readPassword(confirmPass, sizeof(confirmPass));
+
+    if (strcmp(confirmPass, "0") == 0) {
+      printf(ERR_INFO "Huy doi mat khau.\n");
+      return -1;
+    }
+
+    if (strlen(confirmPass) == 0) {
+      printf(ERR_LOI "Vui long xac nhan mat khau!\n");
+      continue;
+    }
 
     if (strcmp(newPass, confirmPass) != 0) {
       printf(ERR_LOI "Mat khau xac nhan khong khop! "

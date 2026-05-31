@@ -672,10 +672,15 @@ void violationViewOwn(AppDatabase *db) {
   printf(LINE_T_DOWN);
   for (int i = 0; i < 13; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET " Thoi gian      " COLOR_CYAN LINE_V COLOR_RESET
-         " Ly do                    " COLOR_CYAN LINE_V COLOR_RESET
-         " Tien phat " COLOR_CYAN LINE_V COLOR_RESET
-         " Trang thai  " COLOR_CYAN LINE_V COLOR_RESET "\n");
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf("%-16s", "Thoi gian");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-25s", "Ly do");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-10s", "Tien phat");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-13s", "Trang thai");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
   for (int i = 0; i < 16; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
@@ -692,16 +697,19 @@ void violationViewOwn(AppDatabase *db) {
     if (strcmp(v->studentId, session->studentId) == 0) {
       char timeBuf[20];
       formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
-      printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-14s ", timeBuf);
-      printf(COLOR_CYAN LINE_V COLOR_RESET " %-23s ", reasonName(v->reason));
-      printf(COLOR_CYAN LINE_V COLOR_RESET " %-9.0f ", v->fine);
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+      printf("%-16s", timeBuf);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf("%-25s", reasonName(v->reason));
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf("%-10.0f", v->fine);
       printf(COLOR_CYAN LINE_V COLOR_RESET);
       if (v->penalty == PENALTY_OUT_CLB) {
-        printf(COLOR_RED " OUT CLB    " COLOR_RESET);
+        printf(COLOR_RED "%-13s" COLOR_RESET, "OUT CLB");
       } else if (v->isPaid) {
-        printf(COLOR_GREEN " Da thu      " COLOR_RESET);
+        printf(COLOR_GREEN "%-13s" COLOR_RESET, "Da thu");
       } else {
-        printf(COLOR_RED " Chua thu    " COLOR_RESET);
+        printf(COLOR_RED "%-13s" COLOR_RESET, "Chua thu");
       }
       printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
       found++;
@@ -745,9 +753,13 @@ void violationViewFines(AppDatabase *db) {
   printf(LINE_T_DOWN);
   for (int i = 0; i < 15; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET " Thoi gian      " COLOR_CYAN LINE_V COLOR_RESET
-         " Ly do                    " COLOR_CYAN LINE_V COLOR_RESET
-         " So tien (VND) " COLOR_CYAN LINE_V COLOR_RESET "\n");
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf("%-16s", "Thoi gian");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-25s", "Ly do");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-15s", "So tien (VND)");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
   for (int i = 0; i < 16; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
@@ -764,9 +776,13 @@ void violationViewFines(AppDatabase *db) {
         v->fine > 0) {
       char timeBuf[20];
       formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
-      printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-14s ", timeBuf);
-      printf(COLOR_CYAN LINE_V COLOR_RESET " %-23s ", reasonName(v->reason));
-      printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-13.0f" COLOR_RESET " " COLOR_CYAN LINE_V COLOR_RESET "\n", v->fine);
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+      printf("%-16s", timeBuf);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf("%-25s", reasonName(v->reason));
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(COLOR_RED "%-15.0f" COLOR_RESET, v->fine);
+      printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
       total += v->fine;
       found++;
     }
@@ -785,6 +801,80 @@ void violationViewFines(AppDatabase *db) {
   } else {
     printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET " khoan phat chua dong.\n", found);
     printf("  TONG SO TIEN CAN DONG: " COLOR_BOLD COLOR_PURPLE "%.0f VND" COLOR_RESET "\n\n", total);
+  }
+}
+
+void violationViewPaymentHistory(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Chua dang nhap!\n");
+    return;
+  }
+
+  uiClear();
+  uiDrawBreadcrumb("MENU THANH VIEN > Lich su nop tien phat");
+
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 20; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 15; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf("%-16s", "Thoi gian");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-20s", "Ly do");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-15s", "So tien (VND)");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 20; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 15; i++) printf(LINE_H);
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+  double totalPaid = 0.0;
+  int found = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, session->studentId) == 0 && v->isPaid == 1 &&
+        v->fine > 0) {
+      char timeBuf[20];
+      formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+      printf("%-16s", timeBuf);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf("%-20s", reasonName(v->reason));
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(COLOR_GREEN "%-15.0f" COLOR_RESET, v->fine);
+      printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+      totalPaid += v->fine;
+      found++;
+    }
+  }
+
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 20; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 15; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  if (found == 0) {
+    printf(ERR_INFO "Ban chua nop khoan phat nao.\n");
+  } else {
+    printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET " lan nop.\n", found);
+    printf("  TONG SO TIEN DA NOP: " COLOR_BOLD COLOR_GREEN "%.0f VND" COLOR_RESET "\n\n", totalPaid);
   }
 }
 

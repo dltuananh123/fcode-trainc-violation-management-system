@@ -102,6 +102,14 @@ int memberDelete(AppDatabase *db);
 void memberViewProfile(AppDatabase *db);
 
 /**
+ * @brief Display personal statistics dashboard for current user.
+ *
+ * Shows total violations, paid/unpaid fines, violation breakdown by reason.
+ * @param db Pointer to the AppDatabase
+ */
+void memberViewStats(AppDatabase *db);
+
+/**
  * @brief Display list of all members.
  *
  * Shows: fullName, studentId, team, role only.
