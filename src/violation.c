@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 /* ============================================================
  * Private helpers
@@ -957,24 +959,24 @@ int violationMarkPaid(AppDatabase *db) {
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 6; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
   for (int i = 0; i < 25; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
-         " Thoi gian      " COLOR_CYAN LINE_V COLOR_RESET
+         " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
          " Ly do                    " COLOR_CYAN LINE_V COLOR_RESET
-         " Tien phat (VND)" COLOR_CYAN LINE_V COLOR_RESET "\n");
+         " Tien phat (VND) " COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
   for (int i = 0; i < 6; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
   for (int i = 0; i < 25; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < db->violationCount; i++) {
@@ -985,9 +987,9 @@ int violationMarkPaid(AppDatabase *db) {
       char timeBuf[20];
       formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", unpaidCount + 1);
-      printf(COLOR_CYAN LINE_V COLOR_RESET " %-14s ", timeBuf);
+      printf(COLOR_CYAN LINE_V COLOR_RESET " %-16s ", timeBuf);
       printf(COLOR_CYAN LINE_V COLOR_RESET " %-23s ", reasonName(v->reason));
-      printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-13.0f" COLOR_RESET " " COLOR_CYAN LINE_V COLOR_RESET "\n", v->fine);
+      printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-15.0f" COLOR_RESET " " COLOR_CYAN LINE_V COLOR_RESET "\n", v->fine);
       unpaidCount++;
     }
   }
@@ -995,11 +997,11 @@ int violationMarkPaid(AppDatabase *db) {
   printf(COLOR_CYAN "  " LINE_BL);
   for (int i = 0; i < 6; i++) printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
   printf(LINE_T_UP);
   for (int i = 0; i < 25; i++) printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
   if (unpaidCount == 0) {
@@ -1007,79 +1009,111 @@ int violationMarkPaid(AppDatabase *db) {
     return 0;
   }
 
-  int choice;
+  char choiceStr[128];
+  int selectedIndices[MAX_VIOLATIONS];
+  int selectedCount = 0;
+
   while (1) {
-    if (unpaidCount > 1) {
-      printf(COLOR_CYAN "  Chon STT de thu (0 de huy, 99 de thu tat ca): " COLOR_RESET);
-    } else {
-      printf(COLOR_CYAN "  Chon STT de thu (0 de huy): " COLOR_RESET);
+    printf(COLOR_CYAN "  Chon STT de thu (vd: 1,3 hoac 99 de thu tat ca, 0 de huy): " COLOR_RESET);
+    readString(choiceStr, sizeof(choiceStr));
+    trimSpaces(choiceStr);
+
+    if (strcmp(choiceStr, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n\n");
+      return 0;
     }
-    
-    if (readInt(&choice)) {
-      if (choice == 0) {
-        printf(ERR_INFO "Da huy thao tac.\n\n");
-        return 0;
+
+    if (strcmp(choiceStr, "99") == 0) {
+      selectedCount = unpaidCount;
+      for (int i = 0; i < unpaidCount; i++) {
+        selectedIndices[i] = unpaidIndices[i];
       }
-      if (choice == 99 && unpaidCount > 1) {
+      break;
+    }
+
+    /* Parse comma-separated list of STTs */
+    int valid = 1;
+    selectedCount = 0;
+    char tempStr[128];
+    strncpy(tempStr, choiceStr, sizeof(tempStr));
+    tempStr[sizeof(tempStr) - 1] = '\0';
+
+    char *token = strtok(tempStr, ",");
+    while (token != NULL) {
+      /* Trim spaces from token */
+      while (*token == ' ') token++;
+      int len = (int)strlen(token);
+      while (len > 0 && token[len - 1] == ' ') {
+        token[len - 1] = '\0';
+        len--;
+      }
+
+      if (len == 0) {
+        token = strtok(NULL, ",");
+        continue;
+      }
+
+      /* Check if token is a valid number */
+      int isNum = 1;
+      for (int i = 0; i < len; i++) {
+        if (!isdigit((unsigned char)token[i])) {
+          isNum = 0;
+          break;
+        }
+      }
+
+      if (!isNum) {
+        printf(ERR_LOI "Vi tri \"%s\" khong phai la so hop le!\n", token);
+        valid = 0;
         break;
       }
-      if (choice >= 1 && choice <= unpaidCount) {
+
+      int val = atoi(token);
+      if (val < 1 || val > unpaidCount) {
+        printf(ERR_LOI "STT %d nam ngoai pham vi (1-%d)!\n", val, unpaidCount);
+        valid = 0;
         break;
       }
-      if (unpaidCount > 1) {
-        printf(ERR_LOI "Vui long nhap tu 1-%d hoac 99!\n", unpaidCount);
-      } else {
-        printf(ERR_LOI "Vui long nhap tu 1-%d!\n", unpaidCount);
+
+      /* Check for duplicates in selectedIndices */
+      int dup = 0;
+      int realIdxVal = unpaidIndices[val - 1];
+      for (int i = 0; i < selectedCount; i++) {
+        if (selectedIndices[i] == realIdxVal) {
+          dup = 1;
+          break;
+        }
       }
-    } else {
-      printf(ERR_LOI "Vui long nhap so!\n");
+
+      if (!dup) {
+        if (selectedCount < MAX_VIOLATIONS) {
+          selectedIndices[selectedCount++] = realIdxVal;
+        }
+      }
+
+      token = strtok(NULL, ",");
+    }
+
+    if (valid && selectedCount > 0) {
+      break;
+    } else if (valid && selectedCount == 0) {
+      printf(ERR_LOI "Vui long chon it nhat mot STT hoac nhap 0 de huy!\n");
     }
   }
 
-  if (choice == 99) {
-    /* Bulk payment: mark all unpaid violations of this member as paid */
-    double oldTotalFine = m->totalFine;
-    int oldPaidStates[MAX_VIOLATIONS];
-    for (int i = 0; i < db->violationCount; i++) {
-      oldPaidStates[i] = db->violations[i].isPaid;
-      if (strcmp(db->violations[i].studentId, m->studentId) == 0 &&
-          db->violations[i].isPaid == 0) {
-        db->violations[i].isPaid = 1;
-      }
-    }
-    m->totalFine = 0.0;
-
-    if (fileioSaveViolations(db) != 0) {
-      /* Restore old states */
-      for (int i = 0; i < db->violationCount; i++) {
-        db->violations[i].isPaid = oldPaidStates[i];
-      }
-      m->totalFine = oldTotalFine;
-      printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
-      return -1;
-    }
-
-    if (fileioSaveMembers(db) != 0) {
-      /* Restore old states */
-      for (int i = 0; i < db->violationCount; i++) {
-        db->violations[i].isPaid = oldPaidStates[i];
-      }
-      m->totalFine = oldTotalFine;
-      (void)fileioSaveViolations(db);
-      printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
-      return -1;
-    }
-
-    printf(ERR_OK "Da thu TOAN BO tien phat thanh cong!\n\n");
-    logSystemAction(session->studentId, "Thu toan bo tien phat", m->studentId);
-    return 0;
-  }
-
-  int realIdx = unpaidIndices[choice - 1];
-  int oldPaidState = db->violations[realIdx].isPaid;
+  /* Save old states for restoration in case of save failure */
   double oldTotalFine = m->totalFine;
-  db->violations[realIdx].isPaid = 1;
+  int oldPaidStates[MAX_VIOLATIONS];
+  for (int i = 0; i < db->violationCount; i++) {
+    oldPaidStates[i] = db->violations[i].isPaid;
+  }
 
+  /* Mark selected violations as paid */
+  for (int i = 0; i < selectedCount; i++) {
+    db->violations[selectedIndices[i]].isPaid = 1;
+  }
+
+  /* Recalculate total fine */
   double newTotal = 0.0;
   for (int i = 0; i < db->violationCount; i++) {
     Violation *v = &db->violations[i];
@@ -1090,26 +1124,34 @@ int violationMarkPaid(AppDatabase *db) {
   m->totalFine = newTotal;
 
   if (fileioSaveViolations(db) != 0) {
-    db->violations[realIdx].isPaid = oldPaidState;
+    /* Restore old states */
+    for (int i = 0; i < db->violationCount; i++) {
+      db->violations[i].isPaid = oldPaidStates[i];
+    }
     m->totalFine = oldTotalFine;
     printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
     return -1;
   }
 
   if (fileioSaveMembers(db) != 0) {
-    db->violations[realIdx].isPaid = oldPaidState;
-    m->totalFine = oldTotalFine;
-    if (fileioSaveViolations(db) != 0) {
-      printf(ERR_LOI "Khong the phuc hoi du lieu vi pham sau loi luu thanh vien!\n");
-      return -1;
+    /* Restore old states */
+    for (int i = 0; i < db->violationCount; i++) {
+      db->violations[i].isPaid = oldPaidStates[i];
     }
+    m->totalFine = oldTotalFine;
+    (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
     return -1;
   }
 
-  printf(ERR_OK "Da thu tien thanh cong! Tong no con lai: " COLOR_BOLD COLOR_GREEN "%.0f VND" COLOR_RESET "\n\n",
-         m->totalFine);
-  logSystemAction(session->studentId, "Thu tien phat", m->studentId);
+  if (selectedCount == unpaidCount) {
+    printf(ERR_OK "Da thu TOAN BO tien phat thanh cong!\n\n");
+    logSystemAction(session->studentId, "Thu toan bo tien phat", m->studentId);
+  } else {
+    printf(ERR_OK "Da thu tien phat cua cac STT da chon thanh cong! Tong no con lai: " COLOR_BOLD COLOR_GREEN "%.0f VND" COLOR_RESET "\n\n",
+           m->totalFine);
+    logSystemAction(session->studentId, "Thu mot phan tien phat", m->studentId);
+  }
   return 0;
 }
 
