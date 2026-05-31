@@ -39,6 +39,8 @@ int violationMarkPaid(AppDatabase *db);
 
 void violationViewAllFiltered(AppDatabase *db);
 
+void violationViewByMSSV(AppDatabase *db);
+
 /* ============================================================
  * Story 4.4 - Search Violations by Date Range
  * ============================================================ */

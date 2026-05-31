@@ -1025,6 +1025,133 @@ int violationMarkPaid(AppDatabase *db) {
 
 
 /* ============================================================
+ * Story 17 - View Violation History by Member (BCN)
+ * ============================================================ */
+
+void violationViewByMSSV(AppDatabase *db) {
+  if (db == NULL) return;
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
+    return;
+  }
+  if (session->role != ACCOUNT_ROLE_BCN) {
+    printf(ERR_LOI "Chi BCN moi co quyen xem lich su vi pham theo MSSV!\n");
+    return;
+  }
+
+  char input[MAX_NAME_LEN];
+  int memberIdx = -1;
+  while (1) {
+    uiClear();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem lich su VP theo MSSV");
+
+    printf(COLOR_CYAN "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
+    readString(input, sizeof(input));
+    trimSpaces(input);
+    if (strcmp(input, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return;
+    }
+    if (!validateNotEmpty(input)) continue;
+
+    memberIdx = memberFindById(db, input);
+    if (memberIdx == -1) {
+      int indices[MAX_MEMBERS];
+      int count = memberSearchByName(db, input, indices, MAX_MEMBERS);
+      if (count == 0) {
+        printf(ERR_INFO "Khong tim thay thanh vien! Vui long thu lai.\n");
+        uiPause();
+        continue;
+      }
+      if (count == 1) {
+        memberIdx = indices[0];
+      } else {
+        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET, count);
+        for (int i = 0; i < count; i++) {
+          Member *m = &db->members[indices[i]];
+          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId,
+                 m->fullName, teamName(m->team));
+        }
+        int choice = readMenuChoice(
+            COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        memberIdx = indices[choice - 1];
+      }
+    }
+    if (memberIdx != -1) break;
+  }
+
+  Member *m = &db->members[memberIdx];
+  int matchIdx[MAX_VIOLATIONS];
+  int found = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    if (strcmp(db->violations[i].studentId, m->studentId) == 0) {
+      matchIdx[found++] = i;
+    }
+  }
+
+  if (found == 0) {
+    printf(ERR_INFO "Thanh vien \"%s\" (%s) khong co lich su vi pham.\n\n",
+           m->fullName, m->studentId);
+    return;
+  }
+
+  int totalPages = (found + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
+  int currentPage = 0;
+
+  while (1) {
+    uiClear();
+    printf(COLOR_BOLD "  LICH SU VI PHAM CUA: " COLOR_RESET "%s (%s) - %s\n\n",
+           m->fullName, m->studentId, teamName(m->team));
+
+    printViolationTableHeader();
+
+    int start = currentPage * ROWS_PER_PAGE;
+    int end = start + ROWS_PER_PAGE;
+    if (end > found) end = found;
+
+    for (int i = start; i < end; i++) {
+      printViolationRow(m, &db->violations[matchIdx[i]]);
+    }
+
+    printf(COLOR_CYAN "  " LINE_BL);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 18; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 15; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_BR "\n" COLOR_RESET);
+
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
+           COLOR_BOLD "%d" COLOR_RESET " vi pham\n",
+           currentPage + 1, totalPages, found);
+
+    if (totalPages > 1) {
+      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET " > ");
+      char buf[10];
+      readString(buf, sizeof(buf));
+      char c = buf[0];
+      if (c == 'q' || c == 'Q') break;
+      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
+      else if ((c == 'p' || c == 'P') && currentPage > 0) currentPage--;
+    } else {
+      break;
+    }
+  }
+}
+
+/* ============================================================
  * Story 4.4 - Search Violations by Date Range
  * ============================================================ */
 

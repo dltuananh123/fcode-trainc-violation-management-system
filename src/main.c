@@ -14,6 +14,9 @@
 /* Global database state */
 static AppDatabase gDb;
 
+/* Menu content width (fits standard terminal) */
+#define MENU_CONTENT_W 68
+
 /* ============================================================
  * MENU FUNCTIONS
  * ============================================================ */
@@ -25,7 +28,7 @@ static void memberMenu(void) {
     uiClear();
     /* Top border */
     printf(COLOR_BLUE BOX_TL);
-    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
       printf(BOX_H);
     }
     printf(BOX_TR COLOR_RESET "\n");
@@ -33,14 +36,14 @@ static void memberMenu(void) {
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM " MENU THANH VIEN ");
     int _breadcrumbLen = (int)strlen(" MENU THANH VIEN ");
-    for (int i = _breadcrumbLen; i < UI_TERM_WIDTH - 2; i++) {
+    for (int i = _breadcrumbLen; i < MENU_CONTENT_W; i++) {
       printf(" ");
     }
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
     /* Separator under title */
     printf(COLOR_BLUE "\xE2\x95\xA0");
-    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
       printf(BOX_H);
     }
     printf("\xE2\x95\xA3" COLOR_RESET "\n");
@@ -76,7 +79,11 @@ static void memberMenu(void) {
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-    uiDrawSeparator();
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 5);
 
@@ -116,7 +123,7 @@ static void adminMenu(void) {
     uiClear();
     /* Top border */
     printf(COLOR_BLUE BOX_TL);
-    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
       printf(BOX_H);
     }
     printf(BOX_TR COLOR_RESET "\n");
@@ -124,14 +131,14 @@ static void adminMenu(void) {
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM " MENU BAN CHU NHIEM ");
     int _breadcrumbLen = (int)strlen(" MENU BAN CHU NHIEM ");
-    for (int i = _breadcrumbLen; i < UI_TERM_WIDTH - 2; i++) {
+    for (int i = _breadcrumbLen; i < MENU_CONTENT_W; i++) {
       printf(" ");
     }
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
     /* Separator under title */
     printf(COLOR_BLUE "\xE2\x95\xA0");
-    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
       printf(BOX_H);
     }
     printf("\xE2\x95\xA3" COLOR_RESET "\n");
@@ -202,8 +209,8 @@ static void adminMenu(void) {
 
     /* Row 9 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "17" COLOR_RESET ". Quan ly kho luu tru");
-    printf("         ");
+    printf("  " COLOR_GREEN "17" COLOR_RESET ". Xem lich su VP theo MSSV");
+    printf("    ");
     printf(COLOR_GREEN "18" COLOR_RESET ". Kick/Khoi phuc TV   ");
     printf("          ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -223,7 +230,11 @@ static void adminMenu(void) {
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-    uiDrawSeparator();
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 20);
 
@@ -289,7 +300,7 @@ static void adminMenu(void) {
       reportDashboard(&gDb);
       break;
     case 17:
-      memberViewArchive(&gDb);
+      violationViewByMSSV(&gDb);
       break;
     case 18:
       memberKickOrRestore(&gDb);
