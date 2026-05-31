@@ -452,99 +452,153 @@ int memberEdit(AppDatabase *db) {
 }
 
 /* ============================================================
- * DELETE MEMBER — with soft delete + confirmation
+ * STORY 2.3 — SEARCH AND VIEW MEMBER DETAILS
  * ============================================================ */
 
-int memberDelete(AppDatabase *db) {
+int memberSearchDetails(AppDatabase *db) {
   if (db == NULL) {
     return -1;
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xoa thanh vien");
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem & Xem chi tiet thanh vien");
 
-  /* Find member */
-  char studentId[MAX_MSSV_LEN];
+  char input[100];
   int memberIndex = -1;
+
   while (1) {
-    printf(COLOR_CYAN "  Nhap MSSV can xoa (0 de quay lai): " COLOR_RESET);
-    readString(studentId, MAX_MSSV_LEN);
-    trimSpaces(studentId);
-    mssvAutoUpper(studentId);
-    if (strcmp(studentId, "0") == 0) {
+    printf(COLOR_CYAN "  Nhap MSSV hoac Ten can tim (0 de quay lai): " COLOR_RESET);
+    readString(input, sizeof(input));
+    trimSpaces(input);
+    if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
       return 0;
     }
-    if (validateNotEmpty(studentId)) {
-      memberIndex = memberFindById(db, studentId);
+
+    if (validateNotEmpty(input)) {
+      /* First check if it's a valid MSSV */
+      char upperInput[MAX_MSSV_LEN];
+      strncpy(upperInput, input, MAX_MSSV_LEN);
+      upperInput[MAX_MSSV_LEN - 1] = '\0';
+      trimSpaces(upperInput);
+      mssvAutoUpper(upperInput);
+
+      memberIndex = memberFindById(db, upperInput);
       if (memberIndex != -1) {
         break;
       }
-      printf(ERR_LOI "Khong tim thay thanh vien voi MSSV: %s!\n",
-             studentId);
+
+      /* If not found by MSSV, search by Name (fuzzy) */
+      int indices[MAX_MEMBERS];
+      int count = memberSearchByName(db, input, indices, MAX_MEMBERS);
+
+      if (count == 0) {
+        printf(ERR_LOI "Khong tim thay thanh vien nao phu hop!\n");
+      } else if (count == 1) {
+        memberIndex = indices[0];
+        break;
+      } else {
+        /* Multiple found, display list and prompt to choose */
+        printf("\n  Tim thay %d thanh vien phu hop:\n", count);
+        for (int i = 0; i < count; i++) {
+          Member *temp = &db->members[indices[i]];
+          printf("  %d. %s (%s) - %s\n", i + 1, temp->fullName, temp->studentId, teamName(temp->team));
+        }
+        int choice = readMenuChoice(COLOR_CYAN "  Chon STT thanh vien muon xem (0 de quay lai): " COLOR_RESET, 0, count);
+        if (choice == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n");
+          return 0;
+        }
+        memberIndex = indices[choice - 1];
+        break;
+      }
     }
   }
 
   Member *m = &db->members[memberIndex];
 
-  /* Prevent self-deletion */
-  Account *session = authGetSession();
-  if (session != NULL && strcmp(session->studentId, studentId) == 0) {
-    printf(ERR_LOI "Khong the xoa tai khoan cua chinh ban!\n");
-    return -1;
-  }
+  /* Display member details in a premium card */
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem > Chi tiet thanh vien");
 
-  /* Check for unpaid violations */
-  int unpaidCount = 0;
+  printf("\n");
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 70; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_BLUE "%-69s" COLOR_RESET, "THONG TIN CHI TIET THANH VIEN");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
+  for (int i = 0; i < 70; i++) printf(LINE_H);
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+  #define PRINT_DETAIL_ROW(label, value, val_color) do { \
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET); \
+    printf(" %-20s %s%-48s" COLOR_RESET, label, val_color, value); \
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n"); \
+  } while(0)
+
+  PRINT_DETAIL_ROW("Ho va ten:", m->fullName, COLOR_BOLD);
+  PRINT_DETAIL_ROW("MSSV:", m->studentId, COLOR_CYAN);
+  PRINT_DETAIL_ROW("Email:", m->email, "");
+  PRINT_DETAIL_ROW("So dien thoai:", m->phone, "");
+  PRINT_DETAIL_ROW("Ban hoat dong:", teamName(m->team), COLOR_GREEN);
+  PRINT_DETAIL_ROW("Chuc vu:", memberRoleName(m->role), COLOR_YELLOW);
+
+  char statusStr[50];
+  const char *statusColor = COLOR_GREEN;
+  if (m->isActive) {
+    strcpy(statusStr, "Dang hoat dong");
+  } else {
+    strcpy(statusStr, "Da Out CLB (Kicked)");
+    statusColor = COLOR_RED;
+  }
+  PRINT_DETAIL_ROW("Trang thai:", statusStr, statusColor);
+
+  char absStr[20];
+  sprintf(absStr, "%d lan", m->consecutiveAbsences);
+  PRINT_DETAIL_ROW("Vang lien tiep:", absStr, m->consecutiveAbsences >= 3 ? COLOR_RED : "");
+
+  char vpStr[20];
+  sprintf(vpStr, "%d lan", m->violationCount);
+  PRINT_DETAIL_ROW("So lan vi pham:", vpStr, m->violationCount > 0 ? COLOR_RED : COLOR_GREEN);
+
+  char fineStr[50];
+  sprintf(fineStr, "%.0f VND", m->totalFine);
+  PRINT_DETAIL_ROW("Tong tien phat:", fineStr, m->totalFine > 0 ? COLOR_PURPLE : COLOR_GREEN);
+
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 70; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  /* Show recent violations */
+  printf("\n  " COLOR_BOLD "DANH SACH VI PHAM CUA THANH VIEN:" COLOR_RESET "\n");
+  int vCount = 0;
   for (int i = 0; i < db->violationCount; i++) {
-    if (strcmp(db->violations[i].studentId, studentId) == 0 &&
-        !db->violations[i].isPaid) {
-      unpaidCount++;
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, m->studentId) == 0) {
+      char timeBuf[30];
+      formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
+      printf("  %d. [%s] Ly do: %s | Phat: %.0f VND | %s\n", 
+             ++vCount, timeBuf, reasonName(v->reason), v->fine, 
+             v->isPaid ? COLOR_GREEN "Da dong" COLOR_RESET : COLOR_RED "Chua dong" COLOR_RESET);
+      if (strlen(v->note) > 0) {
+        printf("     " COLOR_DIM "Ghi chu: %s" COLOR_RESET "\n", v->note);
+      }
     }
   }
-  if (unpaidCount > 0) {
-    printf(ERR_LOI "Thanh vien con %d vi pham chua dong phat! "
-           "Khong the xoa.\n", unpaidCount);
-    return -1;
+
+  if (vCount == 0) {
+    printf("  " COLOR_GREEN "Thanh vien nay hien khong co vi pham nao." COLOR_RESET "\n");
   }
 
-  /* Show member info */
-  printf("\n");
-  printf(COLOR_BOLD "  THONG TIN THANH VIEN:\n" COLOR_RESET);
-  printf("  Ho ten:      %s\n", m->fullName);
-  printf("  MSSV:        %s\n", m->studentId);
-  printf("  Email:       %s\n", m->email);
-  printf("  SDT:         %s\n", m->phone);
-  printf("  Ban:         %s\n", teamName(m->team));
-  printf("  Chuc vu:     %s\n", memberRoleName(m->role));
-  printf("  Trang thai:  %s\n",
-         m->isActive ? "Hoat dong" : "Out CLB");
-  printf("  So lan VP:   %d\n", m->violationCount);
-  printf("  Tong phat:   %.0f VND\n", m->totalFine);
+  printf("\n  An bat ky phim nao de quay lai... ");
+  char dummy[10];
+  readString(dummy, sizeof(dummy));
 
-  /* Confirm */
-  printf("\n");
-  printf(ERR_CANH_BAO "Ban sap xoa thanh vien \"%s\" (%s) "
-         "va toan bo du lieu lien quan!\n", m->fullName, m->studentId);
-  int confirm = readMenuChoice(
-      COLOR_RED "  Xac nhan xoa? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
-  if (confirm != 1) {
-    printf(ERR_INFO "Da huy xoa thanh vien.\n");
-    return 0;
-  }
-
-  /* Soft delete: mark as deleted */
-  m->isDeleted = 1;
-  m->deletedAt = time(NULL);
-
-  /* Save */
-  if (fileioSaveMembers(db) != 0) {
-    printf(ERR_LOI "Khong the luu du lieu!\n");
-    return -1;
-  }
-
-  printf(ERR_OK "Xoa thanh vien thanh cong! (Du lieu da duoc an)\n");
-  logSystemAction(session->studentId, "Xoa thanh vien", studentId);
+  #undef PRINT_DETAIL_ROW
   return 0;
 }
 

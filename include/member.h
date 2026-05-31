@@ -73,19 +73,19 @@ int memberValidateInput(const Member *m, const AppDatabase *db);
 int memberEdit(AppDatabase *db);
 
 /* ============================================================
- * Story 2.3 — Delete Member
+ * Story 2.3 — Search and View Member Details
  * ============================================================ */
 
 /**
- * @brief Delete a member and all associated data.
+ * @brief Search for a member by Name or MSSV and display their complete details.
  *
- * Cascades: member, violations, account records.
- * Requires BCN confirmation before deletion.
+ * Provides a detailed summary including contact info, role, active status,
+ * consecutive absences, violation statistics, and recent violations history.
  *
  * @param db Pointer to the AppDatabase
  * @return 0 on success, -1 on failure
  */
-int memberDelete(AppDatabase *db);
+int memberSearchDetails(AppDatabase *db);
 
 /* ============================================================
  * Story 2.4 — View Member List

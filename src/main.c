@@ -152,7 +152,7 @@ static void adminMenu(void) {
 
     printf(COLOR_GREEN); PRINT_MENU_ROW(1, "Them thanh vien moi", 9, "Sap xep theo so lan VP");
     printf(COLOR_GREEN); PRINT_MENU_ROW(2, "Sua thong tin TV", 10, "Xuat bao cao");
-    printf(COLOR_GREEN); PRINT_MENU_ROW(3, "Xoa thanh vien", 11, "Tim kiem theo ngay");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(3, "Tim kiem & xem CT TV", 11, "Tim kiem theo ngay");
     printf(COLOR_GREEN); PRINT_MENU_ROW(4, "Ghi nhan vi pham", 12, "Xem profile ca nhan");
     printf(COLOR_GREEN); PRINT_MENU_ROW(5, "Danh dau da thu tien", 13, "Xem DS TV dang hoat dong");
     printf(COLOR_GREEN); PRINT_MENU_ROW(6, "Xem DS vi pham", 14, "Doi mat khau");
@@ -182,7 +182,7 @@ static void adminMenu(void) {
       memberEdit(&gDb);
       break;
     case 3:
-      memberDelete(&gDb);
+      memberSearchDetails(&gDb);
       break;
     case 4:
       violationRecord(&gDb);
