@@ -236,7 +236,7 @@ void violationViewAllFiltered(AppDatabase *db) {
   int filterType;
   int filterValue = 0;
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  XEM DANH SACH VI PHAM TOAN CLB");
@@ -367,7 +367,7 @@ int violationRecord(AppDatabase *db) {
     return -1;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  GHI NHAN VI PHAM");
@@ -1032,7 +1032,7 @@ void violationSearchByDate(AppDatabase *db) {
   time_t start;
   time_t end;
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  TIM KIEM VI PHAM THEO KHOANG NGAY");

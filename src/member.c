@@ -116,7 +116,7 @@ int memberAdd(AppDatabase *db) {
     return -1;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  THEM THANH VIEN MOI");
@@ -289,7 +289,7 @@ int memberEdit(AppDatabase *db) {
     return -1;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  CHINH SUA THONG TIN THANH VIEN");
@@ -423,7 +423,7 @@ int memberDelete(AppDatabase *db) {
     return -1;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_RED "  XOA THANH VIEN");
@@ -535,7 +535,7 @@ void memberViewProfile(AppDatabase *db) {
 
   Member *m = &db->members[idx];
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  THONG TIN CA NHAN");
@@ -616,9 +616,13 @@ void memberListAll(AppDatabase *db) {
     return;
   }
 
-  printf("\n");
-  printf(COLOR_BOLD "  DANH SACH THANH VIEN DANG HOAT DONG (%d)\n" COLOR_RESET,
-         activeCount);
+  uiClear();
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DANG HOAT DONG (%d)", activeCount);
+  for (int i = 44; i < 68; i++) printf(" ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 12; i++) printf(LINE_H);
   printf(LINE_cross);
@@ -697,7 +701,7 @@ void memberViewArchive(AppDatabase *db) {
     return;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DA LUU TRU");
@@ -837,7 +841,7 @@ void memberKickOrRestore(AppDatabase *db) {
     return;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  KICK / KHOI PHUC THANH VIEN");
@@ -1090,7 +1094,7 @@ void memberViewKicked(AppDatabase *db) {
     return;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DA KICK");

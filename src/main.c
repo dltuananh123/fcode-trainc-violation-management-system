@@ -22,7 +22,7 @@ static AppDatabase gDb;
 static void memberMenu(void) {
   int choice;
   do {
-    printf("\n");
+    uiClear();
     uiDrawSeparator();
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_BOLD COLOR_CYAN "  MENU THANH VIEN");
@@ -95,7 +95,7 @@ static void memberMenu(void) {
 static void adminMenu(void) {
   int choice;
   do {
-    printf("\n");
+    uiClear();
     uiDrawSeparator();
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_BOLD COLOR_CYAN "  MENU BAN CHU NHIEM");
@@ -188,10 +188,8 @@ static void adminMenu(void) {
 
     /* Row 11 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_DIM "                           ");
-    printf("                    ");
-    printf(COLOR_RESET COLOR_GREEN "20" COLOR_RESET ". Xem nhat ky he thong       ");
-    printf("     ");
+    printf(COLOR_RESET COLOR_GREEN "  20" COLOR_RESET ". Xem nhat ky he thong");
+    printf("                                          ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     uiDrawSeparator();

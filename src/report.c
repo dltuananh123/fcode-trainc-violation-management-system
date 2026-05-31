@@ -94,8 +94,13 @@ void reportTeamStats(const AppDatabase *db) {
   double outstanding[4] = {0.0, 0.0, 0.0, 0.0};
   aggregateTeamTotals(db, collected, outstanding);
 
-  printf("\n");
-  printf(COLOR_BOLD "  THONG KE TIEN PHAT THEO BAN\n" COLOR_RESET);
+  uiClear();
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  THONG KE TIEN PHAT THEO BAN");
+  for (int i = 40; i < 68; i++) printf(" ");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) printf(LINE_H);
   printf(LINE_cross);
@@ -187,7 +192,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   }
 
   int choice;
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  SAP XEP THEO SO LAN VI PHAM");
@@ -383,7 +388,7 @@ void reportDashboard(const AppDatabase *db) {
     return;
   }
 
-  printf("\n");
+  uiClear();
   uiDrawSeparator();
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD COLOR_CYAN "  DASHBOARD THONG KE KY LUAT CLB");
