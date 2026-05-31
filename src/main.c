@@ -321,7 +321,8 @@ int main(void) {
   uiInit();
   srand((unsigned int)time(NULL));
 
-  printf(COLOR_BOLD COLOR_BLUE "\n  F-CODE VIOLATION MANAGEMENT SYSTEM v2.0\n" COLOR_RESET);
+  /* Display FCODE Firebird logo on startup */
+  uiDrawLogo();
 
   /* Load data from files */
   if (fileioLoadAll(&gDb) != 0) {

@@ -262,3 +262,53 @@ void uiPause(void) {
     /* wait for Enter */
   }
 }
+
+/* ============================================================
+ * LOGO DISPLAY
+ * ============================================================ */
+
+void uiDrawLogo(void) {
+  printf("\n");
+  printf("\n");
+
+  /* Firebird Phoenix ASCII Art */
+  /* g4 = darkest green */
+  printf("                                    " COLOR_GREEN "--" COLOR_RESET "\n");
+  printf("                              " COLOR_GREEN "======" COLOR_GRAY "--" COLOR_RESET "\n");
+  /* g3 = dark green */
+  printf("                         " COLOR_GREEN "===========-" COLOR_RESET "\n");
+  printf("                    " COLOR_GREEN "=================" COLOR_RESET "\n");
+  /* g2 = green */
+  printf("                " COLOR_GREEN "++++================" COLOR_RESET "\n");
+  printf("               " COLOR_GREEN "+++++===========" COLOR_RESET "\n");
+  /* g1 = light green, p1 = pale green */
+  printf("               " COLOR_GREEN "+++++++====" COLOR_RESET "     " COLOR_GREEN "****" COLOR_RESET "\n");
+  printf("               " COLOR_GREEN "++++++" COLOR_RESET "     " COLOR_GREEN "********" COLOR_RESET "\n");
+  printf("              " COLOR_GREEN "++" COLOR_RESET "     " COLOR_GREEN "***********" COLOR_RESET COLOR_GREEN "+" COLOR_RESET "\n");
+  /* p1 = pale green, yl = yellow light */
+  printf("                " COLOR_GREEN "**********" COLOR_RESET COLOR_YELLOW "+++++++" COLOR_RESET "\n");
+  printf("               " COLOR_GREEN "*****" COLOR_RESET COLOR_YELLOW "+++++++++++" COLOR_RESET "\n");
+  /* yl = yellow light */
+  printf("               " COLOR_YELLOW "*++++++++++" COLOR_RESET "\n");
+  /* yl = yellow light, yd = orange */
+  printf("              " COLOR_YELLOW "++++++" COLOR_RESET COLOR_ORANGE "====" COLOR_RESET "\n");
+  printf("             " COLOR_ORANGE "+==-----------" COLOR_RESET "\n");
+  /* d = dark (use GRAY for visibility) */
+  printf("               " COLOR_GRAY "---------------" COLOR_RESET "\n");
+  printf("                  " COLOR_GRAY "-------------" COLOR_RESET "\n");
+  printf("                     " COLOR_GRAY "-----" COLOR_RESET "\n");
+  printf("\n");
+  printf("\n");
+
+  /* FCODE text */
+  printf("              " COLOR_BOLD COLOR_GREEN "███████╗       ██████╗ ██████╗ ██████╗ ███████╗" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN "██╔════╝      ██╔════╝██╔═══██╗██╔══██╗██╔════╝" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN "█████╗  ───── ██║     ██║   ██║██║  ██║█████╗  " COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN "██╔══╝        ██║     ██║   ██║██║  ██║██╔══╝  " COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN "██╗           ╚██████╗╚██████╔╝██████╔╝███████╗" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN "╚═╝            ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝" COLOR_RESET "\n");
+  printf("\n");
+  printf("                 " COLOR_DIM COLOR_GREEN " C o d e   t h e   d r e a m" COLOR_RESET "\n");
+  printf("\n");
+  printf("\n");
+}

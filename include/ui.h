@@ -160,4 +160,10 @@ void uiPrintCentered(const char *text, int width);
  */
 void uiGetCurrentTime(char *buffer, int bufSize);
 
+/**
+ * @brief Draw the FCODE Firebird ASCII art logo on startup screen.
+ * Displays a colorful firebird phoenix with "FCODE" text and "Code the dream" subtitle.
+ */
+void uiDrawLogo(void);
+
 #endif /* UI_H */
