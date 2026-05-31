@@ -26,39 +26,39 @@ static void memberMenu(void) {
     uiDrawSeparator();
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_BOLD COLOR_CYAN "  MENU THANH VIEN");
-    printf("                              ");
+    printf("                                                   ");
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
     uiDrawSeparator();
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  1. Xem profile ca nhan");
-    printf("                            ");
+    printf("                                            ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  2. Xem lich su vi pham");
-    printf("                          ");
+    printf("                                            ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  3. Xem tong tien phat con no");
-    printf("                       ");
+    printf("                                       ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  4. Xem danh sach thanh vien");
-    printf("                        ");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  5. Doi mat khau");
+    printf("  4. Xem DS thanh vien dang hoat dong");
     printf("                                 ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  5. Doi mat khau");
+    printf("                                                   ");
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM "  0. Dang xuat");
-    printf("                                   ");
+    printf("                                                      ");
     printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
@@ -142,8 +142,8 @@ static void adminMenu(void) {
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  " COLOR_GREEN "5" COLOR_RESET ". Danh dau da thu tien");
     printf("         ");
-    printf(COLOR_GREEN "13" COLOR_RESET ". Xem DS thanh vien");
-    printf("             ");
+    printf(COLOR_GREEN "13" COLOR_RESET ". Xem DS TV dang hoat dong");
+    printf("      ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     /* Row 6 */

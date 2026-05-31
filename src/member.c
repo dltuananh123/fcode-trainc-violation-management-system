@@ -593,76 +593,56 @@ void memberListAll(AppDatabase *db) {
     return;
   }
 
-  /* Count active (non-deleted) members */
+  /* Count active (non-deleted and STATUS_ACTIVE) members */
   int activeCount = 0;
   for (int i = 0; i < db->memberCount; i++) {
-    if (!db->members[i].isDeleted) {
+    if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_ACTIVE) {
       activeCount++;
     }
   }
 
   if (activeCount == 0) {
-    printf(ERR_INFO "Chua co thanh vien nao trong du lieu.\n");
+    printf(ERR_INFO "Chua co thanh vien dang hoat dong nao trong du lieu.\n");
     return;
   }
 
   printf("\n");
-  printf(COLOR_BOLD "  DANH SACH THANH VIEN (%d)\n" COLOR_RESET,
+  printf(COLOR_BOLD "  DANH SACH THANH VIEN DANG HOAT DONG (%d)\n" COLOR_RESET,
          activeCount);
-  printf(COLOR_CYAN
-         "  " LINE_TL LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_TR "\n" COLOR_RESET);
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 34; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET
          " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-         " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-         " Ban          " COLOR_CYAN LINE_V COLOR_RESET
-         " Trang thai " COLOR_CYAN LINE_V COLOR_RESET "\n");
-  printf(COLOR_CYAN
-         "  " LINE_TL LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_TR "\n" COLOR_RESET);
+         " Ho va ten                        " COLOR_CYAN LINE_V COLOR_RESET
+         " Ban          " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
-  int active = 0, outClb = 0;
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 34; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
   int displayed = 0;
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
-    if (m->isDeleted) {
+    if (m->isDeleted || m->isActive != STATUS_ACTIVE) {
       continue;
-    }
-
-    if (m->isActive) {
-      active++;
-    } else {
-      outClb++;
     }
 
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
     printf(" %-10s ", m->studentId);
     printf(COLOR_CYAN LINE_V COLOR_RESET);
-    printf(" %-20s ", m->fullName);
+    printf(" %-32s ", m->fullName);
     printf(COLOR_CYAN LINE_V COLOR_RESET);
     printf(" %-12s ", teamName(m->team));
-    printf(COLOR_CYAN LINE_V COLOR_RESET);
-    if (m->isActive) {
-      printf(COLOR_GREEN " Hoat dong  " COLOR_RESET);
-    } else {
-      printf(COLOR_RED " Out CLB    " COLOR_RESET);
-    }
     printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
     displayed++;
@@ -676,21 +656,16 @@ void memberListAll(AppDatabase *db) {
     }
   }
 
-  printf(COLOR_CYAN
-         "  " LINE_BL LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_cross LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_H LINE_H LINE_H LINE_H LINE_H LINE_H
-         LINE_BR "\n" COLOR_RESET);
-  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET
-         " thanh vien (" COLOR_GREEN "Hoat dong: %d" COLOR_RESET
-         " | " COLOR_RED "Out CLB: %d" COLOR_RESET ")\n\n",
-         activeCount, active, outClb);
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 34; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 14; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
+  
+  printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien dang hoat dong.\n\n",
+         activeCount);
 }
 
 /* ============================================================
