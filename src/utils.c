@@ -523,7 +523,7 @@ void viewSystemLogs(void) {
 
     if (lineCount % pageSize == 0) {
       printf("\n" COLOR_DIM "  -- Nhan Enter de xem tiep (hoac 'q' + Enter de thoat) --" COLOR_RESET);
-      char ch = getchar();
+      int ch = getchar();
       if (ch == 'q' || ch == 'Q') {
         break;
       }

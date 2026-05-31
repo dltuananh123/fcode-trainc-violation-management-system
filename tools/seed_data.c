@@ -346,9 +346,6 @@ int main(int argc, char *argv[]) {
     }
     printf("[OK] Encrypted seed files copied to bin/data/\n");
 
-    printf("\nSecure demo data seeded successfully!\n");
-    printf("- Admin default account:   SE203055 | Phuc@2006 (BCN role)\n");
-    printf("- Legacy fallback account:  admin    | admin     (BCN role)\n");
-    printf("- Regular members passwords:  123456            (Change on first login forced)\n");
+    printf("\n[OK] Du lieu Seed da duoc tao thanh cong.\n");
     return 0;
 }
