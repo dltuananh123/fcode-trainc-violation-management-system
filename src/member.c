@@ -1086,3 +1086,116 @@ void memberKickOrRestore(AppDatabase *db) {
            m->fullName);
   }
 }
+
+void memberViewKicked(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
+    return;
+  }
+  if (session->role != ACCOUNT_ROLE_BCN) {
+    printf(ERR_LOI "Chi BCN moi co quyen xem danh sach thanh vien da kick!\n");
+    return;
+  }
+
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BOLD COLOR_CYAN "  DANH SACH THANH VIEN DA KICK");
+  for (int i = 30; i < 68; i++) {
+    printf(" ");
+  }
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawSeparator();
+
+  int kickedIndices[MAX_MEMBERS];
+  int kickedCount = 0;
+
+  for (int i = 0; i < db->memberCount; i++) {
+    if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_OUT_CLB) {
+      kickedIndices[kickedCount++] = i;
+    }
+  }
+
+  if (kickedCount == 0) {
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf("  Khong co thanh vien nao trong danh sach da kick.         ");
+    for (int i = 56; i < 68; i++) {
+      printf(" ");
+    }
+    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawSeparator();
+    return;
+  }
+
+  /* Render beautiful UTF-8 table with column padding */
+  /* Columns: STT (6), MSSV (12), Ho va ten (20), Ban (12), Ly do kick (18) */
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 6; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 20; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
+         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+         " Ho va ten          " COLOR_CYAN LINE_V COLOR_RESET
+         " Ban        " COLOR_CYAN LINE_V COLOR_RESET
+         " Ly do kick        " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 6; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 20; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  for (int i = 0; i < kickedCount; i++) {
+    Member *m = &db->members[kickedIndices[i]];
+    
+    /* Cross-reference violations to find kick reason persistently logged in note */
+    const char *reason = "Khong ro ly do";
+    for (int j = 0; j < db->violationCount; j++) {
+      if (strcmp(db->violations[j].studentId, m->studentId) == 0 &&
+          db->violations[j].penalty == PENALTY_OUT_CLB) {
+        reason = db->violations[j].note;
+        break;
+      }
+    }
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", i + 1);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", m->studentId);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-18.18s ", m->fullName);
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", teamName(m->team));
+    printf(COLOR_CYAN LINE_V COLOR_RESET " %-16.16s ", reason);
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+  }
+
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 6; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 20; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien da bi kick khoi CLB.\n\n", kickedCount);
+}

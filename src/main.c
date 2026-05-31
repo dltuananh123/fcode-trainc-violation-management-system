@@ -181,15 +181,14 @@ static void adminMenu(void) {
     /* Row 10 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM "  0. Dang xuat");
-    for (int i = 14; i < 68; i++) {
-      printf(" ");
-    }
-    printf(COLOR_RESET);
+    printf("                    ");
+    printf(COLOR_RESET COLOR_GREEN "19" COLOR_RESET ". Xem DS thanh vien da kick");
+    printf("     ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     uiDrawSeparator();
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 18);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 19);
 
     switch (choice) {
     case 1:
@@ -250,6 +249,9 @@ static void adminMenu(void) {
       break;
     case 18:
       memberKickOrRestore(&gDb);
+      break;
+    case 19:
+      memberViewKicked(&gDb);
       break;
     case 0:
       authLogout(&gDb);

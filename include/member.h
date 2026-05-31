@@ -126,4 +126,11 @@ void memberViewArchive(AppDatabase *db);
  */
 void memberKickOrRestore(AppDatabase *db);
 
+/**
+ * @brief View the list of all kicked (Out CLB) members with reasons.
+ *
+ * @param db Pointer to the AppDatabase.
+ */
+void memberViewKicked(AppDatabase *db);
+
 #endif /* MEMBER_H */
