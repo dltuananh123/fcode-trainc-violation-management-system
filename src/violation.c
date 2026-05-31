@@ -967,7 +967,7 @@ int violationMarkPaid(AppDatabase *db) {
   printf(LINE_TR "\n" COLOR_RESET);
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
          " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
-         " Ly do                    " COLOR_CYAN LINE_V COLOR_RESET
+         " Ly do                   " COLOR_CYAN LINE_V COLOR_RESET
          " Tien phat (VND) " COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
   for (int i = 0; i < 6; i++) printf(LINE_H);
