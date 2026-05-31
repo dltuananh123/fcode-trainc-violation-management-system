@@ -143,75 +143,23 @@ static void adminMenu(void) {
     }
     printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
-    /* Row 1 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "1" COLOR_RESET ". %-26s", "Them thanh vien moi");
-    printf("  ");
-    printf(COLOR_GREEN "9" COLOR_RESET ". %-28s", "Sap xep theo so lan VP");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    /* Menu rows helper - build content then print with borders */
+    char row[128];
+    #define PRINT_MENU_ROW(n1, t1, n2, t2) do { \
+      sprintf(row, "  %2s. %-27s  %2s. %-29s", #n1, t1, #n2, t2); \
+      printf(COLOR_BLUE BOX_V COLOR_RESET "%s" COLOR_BLUE BOX_V COLOR_RESET "\n", row); \
+    } while(0)
 
-    /* Row 2 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "2" COLOR_RESET ". %-26s", "Sua thong tin TV");
-    printf("  ");
-    printf(COLOR_GREEN "10" COLOR_RESET ". %-28s", "Xuat bao cao");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 3 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "3" COLOR_RESET ". %-26s", "Xoa thanh vien");
-    printf("  ");
-    printf(COLOR_GREEN "11" COLOR_RESET ". %-28s", "Tim kiem theo ngay");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 4 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "4" COLOR_RESET ". %-26s", "Ghi nhan vi pham");
-    printf("  ");
-    printf(COLOR_GREEN "12" COLOR_RESET ". %-28s", "Xem profile ca nhan");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 5 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "5" COLOR_RESET ". %-26s", "Danh dau da thu tien");
-    printf("  ");
-    printf(COLOR_GREEN "13" COLOR_RESET ". %-28s", "Xem DS TV dang hoat dong");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 6 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "6" COLOR_RESET ". %-26s", "Xem DS vi pham");
-    printf("  ");
-    printf(COLOR_GREEN "14" COLOR_RESET ". %-28s", "Doi mat khau");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 7 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "7" COLOR_RESET ". %-24s", "Thong ke tien phat theo ban");
-    printf("  ");
-    printf(COLOR_GREEN "15" COLOR_RESET ". %-28s", "Reset mat khau TV");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 8 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "8" COLOR_RESET ". %-24s", "Kiem tra nguong Out CLB");
-    printf("  ");
-    printf(COLOR_GREEN "16" COLOR_RESET ". %-28s", "Xem Dashboard ky luat");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 9 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "17" COLOR_RESET ". %-24s", "Xem lich su VP theo MSSV");
-    printf("  ");
-    printf(COLOR_GREEN "18" COLOR_RESET ". %-28s", "Kick/Khoi phuc TV");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    /* Row 10 */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  " COLOR_GREEN "19" COLOR_RESET ". %-24s", "Xem DS thanh vien da kick");
-    printf("  ");
-    printf(COLOR_GREEN "20" COLOR_RESET ". %-28s", "Xem nhat ky he thong");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(1, "Them thanh vien moi", 9, "Sap xep theo so lan VP");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(2, "Sua thong tin TV", 10, "Xuat bao cao");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(3, "Xoa thanh vien", 11, "Tim kiem theo ngay");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(4, "Ghi nhan vi pham", 12, "Xem profile ca nhan");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(5, "Danh dau da thu tien", 13, "Xem DS TV dang hoat dong");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(6, "Xem DS vi pham", 14, "Doi mat khau");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(7, "Thong ke tien phat theo ban", 15, "Reset mat khau TV");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(8, "Kiem tra nguong Out CLB", 16, "Xem Dashboard ky luat");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(17, "Xem lich su VP theo MSSV", 18, "Kick/Khoi phuc TV");
+    printf(COLOR_GREEN); PRINT_MENU_ROW(19, "Xem DS thanh vien da kick", 20, "Xem nhat ky he thong");
 
     /* Row 11 - Thoat */
     printf(COLOR_BLUE BOX_V COLOR_RESET);

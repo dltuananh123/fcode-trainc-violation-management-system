@@ -572,34 +572,37 @@ void memberViewProfile(AppDatabase *db) {
   Member *m = &db->members[idx];
 
   uiClear();
-  uiDrawBreadcrumb("MENU > Thong tin ca nhan");
 
+  //tu ve breadcrum
+  /* Top border */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-54s", "MSSV:", m->studentId);
+  for (int i = 0; i < 68; i++) printf(BOX_H);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
+  /* Title row */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-54s", "Ho va ten:", m->fullName);
+  printf(COLOR_DIM " %-67s" COLOR_RESET, "MENU > Thong tin ca nhan");
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-54s", "Email:", m->email);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  /* Separator */
+  printf(COLOR_BLUE "\xE2\x95\xA0");
+  for (int i = 0; i < 68; i++) printf(BOX_H);
+  printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-54s", "SDT:", m->phone);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  /* Helper to print a row with borders */
+  #define PRINT_PROFILE_ROW(label, value, color) do { \
+    printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET color "%-54s" COLOR_RESET, label, value); \
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n"); \
+  } while(0)
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-54s", "Ban:", teamName(m->team));
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  PRINT_PROFILE_ROW("MSSV:", m->studentId, "");
+  PRINT_PROFILE_ROW("Ho va ten:", m->fullName, "");
+  PRINT_PROFILE_ROW("Email:", m->email, "");
+  PRINT_PROFILE_ROW("SDT:", m->phone, "");
+  PRINT_PROFILE_ROW("Ban:", teamName(m->team), "");
+  PRINT_PROFILE_ROW("Chuc vu:", memberRoleName(m->role), "");
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-54s", "Chuc vu:", memberRoleName(m->role));
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET, "Trang thai:");
+  printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET, "Trang thai:");
   if (m->isActive) {
     printf(COLOR_GREEN "%-54s" COLOR_RESET, "Hoat dong");
   } else {
@@ -607,14 +610,18 @@ void memberViewProfile(AppDatabase *db) {
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-12s" COLOR_RESET "%-5d", "So lan VP:", m->violationCount);
-  printf("     ");
-  printf("Tong phat: " COLOR_PURPLE "%-14.0f", m->totalFine);
-  printf(COLOR_RESET "%-19s", "");
+  /* Last row with two fields */
+  char fineStr[32];
+  sprintf(fineStr, "%.0f", m->totalFine);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET "%-5d     Tong phat: " COLOR_PURPLE "%-33s" COLOR_RESET,
+         "So lan VP:", m->violationCount, fineStr);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-  uiDrawSeparator();
+   /* Separator */
+  printf(COLOR_BLUE "\xE2\x95\xA0");
+  for (int i = 0; i < 68; i++) printf(BOX_H);
+  printf("\xE2\x95\xA3" COLOR_RESET "\n");
+  
   printf("\n");
 }
 
