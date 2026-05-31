@@ -1,11 +1,13 @@
 /**
- * Standalone seed-data generator.
- * Writes members.dat, violations.dat, accounts.dat with realistic demo data.
- * Compile: gcc -std=c17 -m64 -Iinclude src/seed_data.c -o bin/seed_data.exe
+ * Standalone seed-data generator (v2.1 upgraded).
+ * Writes members.dat, violations.dat, accounts.dat with realistic demo data,
+ * using the secure magic signature (FCE1) and salted password hashing.
+ * Compile: gcc -std=c17 -m64 -Iinclude tools/seed_data.c -o bin/seed_data.exe
  * Run:     bin/seed_data.exe
  */
 #include "types.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -15,7 +17,90 @@
 #include <sys/stat.h>
 #endif
 
-/* ---- clear: write empty .dat files ---- */
+/* Password security keys & prime numbers */
+#define FNV_PRIME 0x00000100000001B3ULL
+#define FNV_OFFSET_BASIS 0xCBF29CE484222325ULL
+
+static void hashPassword(const char *password, const char *salt, char *outHashHex) {
+    char temp[256];
+    snprintf(temp, sizeof(temp), "%s%s", password, salt);
+
+    unsigned long long hash = FNV_OFFSET_BASIS;
+    for (int iter = 0; iter < 1000; iter++) {
+        for (int i = 0; temp[i] != '\0'; i++) {
+            hash ^= (unsigned char)temp[i];
+            hash *= FNV_PRIME;
+        }
+        snprintf(temp, sizeof(temp), "%016llx%s", hash, salt);
+    }
+
+    unsigned long long hash2 = FNV_OFFSET_BASIS;
+    for (int i = 0; temp[i] != '\0'; i++) {
+        hash2 ^= (unsigned char)temp[i];
+        hash2 *= FNV_PRIME;
+    }
+
+    snprintf(outHashHex, 32, "%015llx%016llx", hash & 0xFFFFFFFFFFFFFFFULL, hash2);
+}
+
+static void generateSalt(char *salt, size_t size) {
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    if (size == 0) {
+        return;
+    }
+    for (size_t n = 0; n < size - 1; n++) {
+        int key = rand() % (int)(sizeof(charset) - 1);
+        salt[n] = charset[key];
+    }
+    salt[size - 1] = '\0';
+}
+
+/* Encrypted File writing */
+static int writeFileEncrypted(const char *path, const void *data, size_t itemSize, int count) {
+    FILE *fp = fopen(path, "wb");
+    if (!fp) {
+        printf("[LOI] Khong the ghi %s\n", path);
+        return -1;
+    }
+    /* Write magic header "FCE1" */
+    fwrite("FCE1", 1, 4, fp);
+    /* Write count */
+    fwrite(&count, sizeof(int), 1, fp);
+    /* Encrypt data copy in heap to prevent altering RAM array, then write */
+    if (count > 0) {
+        size_t totalSize = itemSize * (size_t)count;
+        unsigned char *encrypted = (unsigned char *)malloc(totalSize);
+        if (!encrypted) {
+            printf("[LOI] Het bo nho heap khi ghi file!\n");
+            fclose(fp);
+            return -1;
+        }
+        memcpy(encrypted, data, totalSize);
+        
+        static const unsigned char XOR_KEY[] = "FCodeTrainC2026_SecureKey!";
+        size_t keyLen = strlen((const char *)XOR_KEY);
+        for (size_t i = 0; i < totalSize; i++) {
+            encrypted[i] ^= XOR_KEY[i % keyLen];
+        }
+        fwrite(encrypted, itemSize, (size_t)count, fp);
+        free(encrypted);
+    }
+    fclose(fp);
+    return 0;
+}
+
+static int writeEmptyFile(const char *path) {
+    FILE *fp = fopen(path, "wb");
+    if (!fp) {
+        printf("[LOI] Khong the ghi %s\n", path);
+        return -1;
+    }
+    int zero = 0;
+    fwrite("FCE1", 1, 4, fp);
+    fwrite(&zero, sizeof(int), 1, fp);
+    fclose(fp);
+    return 0;
+}
 
 /* ---- helpers ---- */
 
@@ -30,18 +115,11 @@ static void makeMember(Member *m, const char *id, const char *name,
     m->team = team;
     m->role = role;
     m->isActive = STATUS_ACTIVE;
+    m->isDeleted = 0;
+    m->deletedAt = 0;
     m->totalFine = totalFine;
     m->consecutiveAbsences = consecAbs;
     m->violationCount = violCount;
-}
-
-static void makeAccount(Account *a, const char *id, const char *pass, int role) {
-    memset(a, 0, sizeof(Account));
-    strncpy(a->studentId, id, MAX_MSSV_LEN - 1);
-    strncpy(a->password, pass, MAX_PASS_LEN - 1);
-    a->role = role;
-    a->isLocked = 0;
-    a->failCount = 0;
 }
 
 static time_t dateSec(int y, int m, int d) {
@@ -55,8 +133,8 @@ static time_t dateSec(int y, int m, int d) {
 }
 
 static void makeViolation(Violation *v, const char *id, time_t t,
-                          int reason, double fine, int isPaid, int penalty,
-                          const char *note) {
+                           int reason, double fine, int isPaid, int penalty,
+                           const char *note) {
     memset(v, 0, sizeof(Violation));
     strncpy(v->studentId, id, MAX_MSSV_LEN - 1);
     v->violationTime = t;
@@ -65,15 +143,6 @@ static void makeViolation(Violation *v, const char *id, time_t t,
     v->isPaid  = isPaid;
     v->penalty = penalty;
     strncpy(v->note, note, MAX_NOTE_LEN - 1);
-}
-
-static int writeFile(const char *path, const void *data, size_t itemSize, int count) {
-    FILE *fp = fopen(path, "wb");
-    if (!fp) { printf("[LOI] Khong the ghi %s\n", path); return -1; }
-    fwrite(&count, sizeof(int), 1, fp);
-    if (count > 0) fwrite(data, itemSize, (size_t)count, fp);
-    fclose(fp);
-    return 0;
 }
 
 static void ensureDir(const char *dir) {
@@ -95,33 +164,31 @@ static int clearData(void) {
 
     for (int i = 0; i < 3; i++) {
         snprintf(path, sizeof(path), "data%s%s.dat", sep, files[i]);
-        if (writeFile(path, NULL, 0, 0) != 0) return 1;
-        printf("[OK] Cleared %s\n", path);
+        if (writeEmptyFile(path) != 0) return 1;
+        printf("[OK] Cleared %s (Wrote empty encrypted file)\n", path);
         snprintf(path, sizeof(path), "bin%sdata%s%s.dat", sep, sep, files[i]);
-        writeFile(path, NULL, 0, 0);
+        writeEmptyFile(path);
     }
 
-    printf("\nData cleared. Next run will create default ADMIN account.\n");
+    printf("\nData cleared. Next run of system will initialize a default administrator account.\n");
     return 0;
 }
 
 int main(int argc, char *argv[]) {
+    srand((unsigned int)time(NULL));
+
     if (argc > 1 && strcmp(argv[1], "clear") == 0) {
         return clearData();
     }
 
     static const char *files[] = {"members", "violations", "accounts"};
 
-    Member   members[15];
-    Account  accounts[15];
+    Member   members[20];
+    Account  accounts[20];
     Violation violations[25];
     int mc = 0, ac = 0, vc = 0;
 
-    /* === ADMIN account === */
-    makeAccount(&accounts[ac++], "ADMIN", "ADMIN", ACCOUNT_ROLE_BCN);
-
-    /* === Members (4 teams, ~3 per team) === */
-    /* totalFine = CHUA THU only (tinh tu violations phia duoi) */
+    /* === Seed beautiful members profiles === */
     /* Hoc thuat (0) */
     makeMember(&members[mc], "SV0001", "Nguyen Van An",     TEAM_ACADEMIC, MEMBER_ROLE_LEADER, 0,     0, 1); mc++;
     makeMember(&members[mc], "SV0002", "Tran Thi Bich",     TEAM_ACADEMIC, MEMBER_ROLE_MEMBER, 20000, 2, 3); mc++;
@@ -142,19 +209,50 @@ int main(int argc, char *argv[]) {
     makeMember(&members[mc], "SV0011", "Dang Thi Ngoc",     TEAM_MEDIA, MEMBER_ROLE_MEMBER, 40000, 4, 4); mc++;
     makeMember(&members[mc], "SV0012", "Cao Van Phu",       TEAM_MEDIA, MEMBER_ROLE_MEMBER, 0,     0, 0); mc++;
 
-    /* BCN members */
+    /* BCN members (including custom new defaults) */
+    makeMember(&members[mc], "admin", "Administrator", TEAM_ACADEMIC, MEMBER_ROLE_BCN, 0, 0, 0); mc++;
+    makeMember(&members[mc], "SE203055", "Le Phuc BCN", TEAM_PLANNING, MEMBER_ROLE_BCN, 0, 0, 0); mc++;
     makeMember(&members[mc], "BCN001", "Tran Quoc Bao",     TEAM_ACADEMIC, MEMBER_ROLE_BCN, 0, 0, 0); mc++;
     makeMember(&members[mc], "BCN002", "Pham Thi Cuc",      TEAM_PLANNING, MEMBER_ROLE_BCN, 0, 0, 0); mc++;
 
-    /* === Accounts for all members === */
+    /* === Seed Accounts securely with Salted stretched hashes === */
+    /* 1. SE203055: Phuc@2006 */
+    strcpy(accounts[ac].studentId, "SE203055");
+    generateSalt(accounts[ac].salt, sizeof(accounts[ac].salt));
+    hashPassword("Phuc@2006", accounts[ac].salt, accounts[ac].password);
+    accounts[ac].role = ACCOUNT_ROLE_BCN;
+    accounts[ac].isLocked = 0;
+    accounts[ac].failCount = 0;
+    accounts[ac].isDefaultPassword = 0;
+    ac++;
+
+    /* 2. admin: admin */
+    strcpy(accounts[ac].studentId, "admin");
+    generateSalt(accounts[ac].salt, sizeof(accounts[ac].salt));
+    hashPassword("admin", accounts[ac].salt, accounts[ac].password);
+    accounts[ac].role = ACCOUNT_ROLE_BCN;
+    accounts[ac].isLocked = 0;
+    accounts[ac].failCount = 0;
+    accounts[ac].isDefaultPassword = 0;
+    ac++;
+
+    /* 3. accounts for all remaining members (password 123456) */
     for (int i = 0; i < mc; i++) {
-        makeAccount(&accounts[ac], members[i].studentId, "123456",
-                    (members[i].role == MEMBER_ROLE_BCN) ? ACCOUNT_ROLE_BCN
-                                                         : ACCOUNT_ROLE_MEMBER);
+        if (strcmp(members[i].studentId, "admin") == 0 ||
+            strcmp(members[i].studentId, "SE203055") == 0) {
+            continue;
+        }
+        strcpy(accounts[ac].studentId, members[i].studentId);
+        generateSalt(accounts[ac].salt, sizeof(accounts[ac].salt));
+        hashPassword("123456", accounts[ac].salt, accounts[ac].password);
+        accounts[ac].role = (members[i].role == MEMBER_ROLE_BCN) ? ACCOUNT_ROLE_BCN : ACCOUNT_ROLE_MEMBER;
+        accounts[ac].isLocked = 0;
+        accounts[ac].failCount = 0;
+        accounts[ac].isDefaultPassword = (members[i].role == MEMBER_ROLE_BCN) ? 0 : 1;
         ac++;
     }
 
-    /* === Violations === */
+    /* === Seed Violations === */
     /* SV0001 - 1 violation, paid */
     makeViolation(&violations[vc++], "SV0001", dateSec(2026,3,10),
                   REASON_NO_JACKET, 20000, 1, PENALTY_FINE, "Lan dau");
@@ -205,7 +303,7 @@ int main(int argc, char *argv[]) {
     makeViolation(&violations[vc++], "SV0011", dateSec(2026,4,25),
                   REASON_ABSENT, 20000, 0, PENALTY_FINE, "Vang 4 lan LT");
 
-    /* === Write files to data/ === */
+    /* === Write encrypted files to data/ === */
     char path[256];
 
 #ifdef _WIN32
@@ -219,16 +317,16 @@ int main(int argc, char *argv[]) {
     ensureDir(path);
 
     snprintf(path, sizeof(path), "data%smembers.dat", sep);
-    if (writeFile(path, members, sizeof(Member), mc) != 0) return 1;
-    printf("[OK] %d members -> %s\n", mc, path);
+    if (writeFileEncrypted(path, members, sizeof(Member), mc) != 0) return 1;
+    printf("[OK] %d members -> %s (ENCRYPTED)\n", mc, path);
 
     snprintf(path, sizeof(path), "data%sviolations.dat", sep);
-    if (writeFile(path, violations, sizeof(Violation), vc) != 0) return 1;
-    printf("[OK] %d violations -> %s\n", vc, path);
+    if (writeFileEncrypted(path, violations, sizeof(Violation), vc) != 0) return 1;
+    printf("[OK] %d violations -> %s (ENCRYPTED)\n", vc, path);
 
     snprintf(path, sizeof(path), "data%saccounts.dat", sep);
-    if (writeFile(path, accounts, sizeof(Account), ac) != 0) return 1;
-    printf("[OK] %d accounts -> %s\n", ac, path);
+    if (writeFileEncrypted(path, accounts, sizeof(Account), ac) != 0) return 1;
+    printf("[OK] %d accounts -> %s (ENCRYPTED)\n", ac, path);
 
     /* Also copy to bin/data/ so the app can read it */
     for (int i = 0; i < 3; i++) {
@@ -246,8 +344,11 @@ int main(int argc, char *argv[]) {
             fclose(fin);
         }
     }
-    printf("[OK] Copied to bin/data/\n");
+    printf("[OK] Encrypted seed files copied to bin/data/\n");
 
-    printf("\nDemo data ready. All passwords: 123456 | Admin: ADMIN/ADMIN\n");
+    printf("\nSecure demo data seeded successfully!\n");
+    printf("- Admin default account:   SE203055 | Phuc@2006 (BCN role)\n");
+    printf("- Legacy fallback account:  admin    | admin     (BCN role)\n");
+    printf("- Regular members passwords:  123456            (Change on first login forced)\n");
     return 0;
 }
