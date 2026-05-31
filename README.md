@@ -8,7 +8,7 @@ Dự án giải quyết bài toán theo dõi thành viên CLB F-Code vi phạm n
 
 **Chức năng chính:**
 - Đăng nhập, đăng xuất, đổi/reset mật khẩu (Salted FNV-1a key stretching)
-- Quản lý thành viên: thêm, sửa, xóa (soft-delete), kick/khôi phục, xem danh sách (phân trang)
+- Quản lý thành viên: thêm, sửa, tìm kiếm & xem chi tiết, kick/khôi phục, xem danh sách (phân trang)
 - Ghi nhận vi phạm và tính mức phạt theo vai trò (member: 20k, leader: 50k)
 - Thu tiền phạt (đơn lẻ hoặc bulk), theo dõi công nợ
 - Cảnh báo và tự động Out CLB khi vắng >= 4 buổi liên tiếp
@@ -161,7 +161,7 @@ Trong đó 3 thành viên đã bị kick (SE210946, SE210117, SE203367).
 |--------|---------|
 | `main` | Điều hướng menu chính |
 | `auth` | Đăng nhập, đổi/reset mật khẩu, session |
-| `member` | CRUD, kick/restore, danh sách (phân trang) |
+| `member` | Thêm, sửa, tìm kiếm chi tiết, kick/restore, danh sách (phân trang) |
 | `violation` | Ghi nhận vi phạm, thu tiền, Out CLB, xem DS (phân trang) |
 | `fileio` | Đọc/ghi file `.dat` mã hóa XOR |
 | `report` | Thống kê ban, sort, discipline dashboard, xuất báo cáo |

@@ -585,7 +585,7 @@ src/main.c                   (includes all headers)
 | 1.4 View member list | src/member.c | `member_list_all()` | Chỉ hiện: họ tên, MSSV, ban, chức vụ. Ẩn SĐT, email, vi phạm |
 | 2.1 Add member | src/member.c | `member_add()` | BCN nhập: họ tên, MSSV, email, SĐT, **ban (team)**, chức vụ, mật khẩu mặc định. Validate MSSV không trùng, email hợp lệ. Tự tạo Account (mật khẩu=MSSV) |
 | 2.2 Edit member | src/member.c | `member_edit()` | Sửa được tất cả **trừ MSSV**. Nếu đổi role → quét violations[] recalculate fine cho tất cả isPaid==0, cập nhật totalFine |
-| 2.3 Delete member | src/member.c | `member_delete()` | Cascade: xóa thành viên + vi phạm + tài khoản. **Yêu cầu xác nhận** trước khi xóa |
+| 2.3 Search & view details | src/member.c | `memberSearchDetails()` | Cho phép tìm kiếm thành viên theo MSSV hoặc tên và xem chi tiết hồ sơ & lịch sử vi phạm |
 | 2.4 Record violation | src/violation.c | `violation_record()` | Tự ghi thời gian, tính tiền phạt theo Member.role. **Bạo lực**: fine=0, penalty=OUT_CLB, cảnh báo + confirm Out CLB ngay |
 | 2.5 Mark paid | src/violation.c | `violation_mark_paid()` | Chọn từng vi phạm → isPaid=1. **Cập nhật totalFine ngay lập tức** |
 | 2.6 View all violations | src/violation.c | `violation_list_all()` | Hiển thị toàn bộ vi phạm. **Lọc theo**: ban (team), lý do vi phạm (reason), trạng thái thu tiền (isPaid). User chọn bộ lọc từ sub-menu trước khi hiện danh sách |
