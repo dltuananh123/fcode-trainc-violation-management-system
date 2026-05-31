@@ -197,6 +197,7 @@ int memberAdd(AppDatabase *db) {
   }
   newAccount.isLocked = 0;
   newAccount.failCount = 0;
+  newAccount.isDefaultPassword = 1;
   db->accounts[db->accountCount++] = newAccount;
 
   /* Save to files */

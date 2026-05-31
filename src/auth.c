@@ -213,6 +213,7 @@ int authResetPassword(AppDatabase *db, const char *targetStudentId) {
   db->accounts[idx].password[MAX_PASS_LEN - 1] = '\0';
   db->accounts[idx].failCount = 0;
   db->accounts[idx].isLocked = 0;
+  db->accounts[idx].isDefaultPassword = 1;
 
   /* Save */
   if (fileioSaveAccounts(db) != 0) {

@@ -260,13 +260,14 @@ static int loadAccounts(AppDatabase *db) {
 
   /* First-run: create default admin account */
   if (db->accountCount == 0) {
-    printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan ADMIN "
-           "mac dinh...\n");
-    strcpy(db->accounts[0].studentId, "ADMIN");
-    strcpy(db->accounts[0].password, "ADMIN");
+    printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan "
+           "admin mac dinh...\n");
+    strcpy(db->accounts[0].studentId, "SE203055");
+    strcpy(db->accounts[0].password, "Phuc@2006");
     db->accounts[0].role = ACCOUNT_ROLE_BCN;
     db->accounts[0].isLocked = 0;
     db->accounts[0].failCount = 0;
+    db->accounts[0].isDefaultPassword = 0;
     db->accountCount = 1;
     if (fileioSaveAccounts(db) != 0) {
       return -1;

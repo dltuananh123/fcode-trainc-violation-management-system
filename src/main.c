@@ -3,6 +3,7 @@
 #include "member.h"
 #include "report.h"
 #include "types.h"
+#include "ui.h"
 #include "utils.h"
 #include "violation.h"
 #include <stdio.h>
@@ -159,6 +160,9 @@ static void adminMenu(void) {
  * ============================================================ */
 
 int main(void) {
+  /* Initialize UI (enable ANSI colors on Windows, set UTF-8) */
+  uiInit();
+
   printf("  F-CODE VIOLATION MANAGEMENT SYSTEM\n");
   /* Load data from files */
   if (fileioLoadAll(&gDb) != 0) {

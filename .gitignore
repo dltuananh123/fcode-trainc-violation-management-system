@@ -33,3 +33,9 @@ pdf docs/
 # Claude Code / Cursor local config
 .claude/
 .cursor/
+
+
+.agents/
+.agent/
+_bmad/
+_bmad-output/
