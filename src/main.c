@@ -339,6 +339,8 @@ int main(void) {
       break;
     }
 
+    uiClear();
+
     Account *session = authGetSession();
     if (session != NULL) {
       if (session->role == ACCOUNT_ROLE_BCN) {

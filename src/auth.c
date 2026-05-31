@@ -169,6 +169,7 @@ void authLogout(AppDatabase *db) {
   sessionActive = 0;
   memset(&currentSession, 0, sizeof(Account));
   printf(ERR_OK "Da dang xuat!\n");
+  uiClear();
 }
 
 Account *authGetSession(void) {
