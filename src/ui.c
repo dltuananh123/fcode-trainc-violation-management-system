@@ -9,6 +9,7 @@
 #include "ui.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -43,7 +44,13 @@ void uiInit(void) {
  * SCREEN OPERATIONS
  * ============================================================ */
 
-void uiClear(void) { printf("\033[2J\033[H"); }
+void uiClear(void) {
+#ifdef _WIN32
+  system("cls");
+#else
+  printf("\033[2J\033[H\033[3J");
+#endif
+}
 
 /* ============================================================
  * DRAWING FUNCTIONS
