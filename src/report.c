@@ -365,8 +365,9 @@ void reportExportTxt(const AppDatabase *db) {
   }
 
   fprintf(fp, "\nTHANH VIEN CON NO TIEN PHAT\n");
-  fprintf(fp, "%-20s | %-10s | %-15s\n", "Ho va ten", "MSSV", "Con no (VND)");
-  fprintf(fp, "---------------------------------------------------\n");
+  fprintf(fp, "%-20s | %-10s | %-25s | %-12s | %-15s\n", "Ho va ten", "MSSV", "Email", "SDT", "Con no (VND)");
+  fprintf(fp, "--------------------------------------------------------------"
+              "------------------\n");
 
   int foundOutstanding = 0;
   for (int i = 0; i < db->memberCount; i++) {
@@ -384,8 +385,12 @@ void reportExportTxt(const AppDatabase *db) {
     }
 
     if (totalOwed > 0.0) {
-      fprintf(fp, "%-20.20s | %-10.10s | %15.0f\n", db->members[i].fullName,
-              db->members[i].studentId, totalOwed);
+      fprintf(fp, "%-20.20s | %-10.10s | %-25.25s | %-12.12s | %15.0f\n",
+              db->members[i].fullName,
+              db->members[i].studentId,
+              db->members[i].email,
+              db->members[i].phone,
+              totalOwed);
       foundOutstanding++;
     }
   }
