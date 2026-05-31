@@ -469,6 +469,17 @@ int memberSearchDetails(AppDatabase *db) {
   while (1) {
     printf(COLOR_CYAN "  Nhap MSSV hoac Ten can tim (0 de quay lai): " COLOR_RESET);
     readString(input, sizeof(input));
+    
+    /* Sanitize input: strip out control characters to prevent ANSI terminal injection */
+    int writeIdx = 0;
+    for (int i = 0; input[i] != '\0'; i++) {
+      unsigned char c = (unsigned char)input[i];
+      if (c >= 32 && c != 127) {
+        input[writeIdx++] = (char)c;
+      }
+    }
+    input[writeIdx] = '\0';
+
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
@@ -476,21 +487,17 @@ int memberSearchDetails(AppDatabase *db) {
     }
 
     if (validateNotEmpty(input)) {
-      /* First check if it's a valid MSSV */
-      char upperInput[MAX_MSSV_LEN];
-      strncpy(upperInput, input, MAX_MSSV_LEN);
-      upperInput[MAX_MSSV_LEN - 1] = '\0';
-      trimSpaces(upperInput);
-      mssvAutoUpper(upperInput);
-
-      memberIndex = memberFindById(db, upperInput);
-      if (memberIndex != -1) {
-        break;
-      }
-
-      /* If not found by MSSV, search by Name (fuzzy) */
+      /* Unified search: case-insensitive substring match on both Name and MSSV */
       int indices[MAX_MEMBERS];
-      int count = memberSearchByName(db, input, indices, MAX_MEMBERS);
+      int count = 0;
+
+      for (int i = 0; i < db->memberCount && count < MAX_MEMBERS; i++) {
+        if (!db->members[i].isDeleted &&
+            (containsIgnoreCase(db->members[i].fullName, input) ||
+             containsIgnoreCase(db->members[i].studentId, input))) {
+          indices[count++] = i;
+        }
+      }
 
       if (count == 0) {
         printf(ERR_LOI "Khong tim thay thanh vien nao phu hop!\n");
