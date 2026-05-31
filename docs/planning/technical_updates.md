@@ -126,4 +126,63 @@ Hệ thống tuân thủ nguyên tắc lập trình hướng cấu trúc modular
 | **`fileio`** | Tầng tương tác ổ đĩa | Auto magic-header check; Stream XOR Encryption; Heap-safe buffering; Ghi tệp đệm `.tmp` phòng chống crash máy. |
 | **`auth`** | Tầng điều phối xác thực | Auto-migration tài khoản cũ; Force-change mặc định password; Khóa tài khoản chống Brute-force. |
 | **`violation`** | Tầng nghiệp vụ vi phạm | Fuzzy search theo tên kết hợp chỉ mục số; Tính phạt phân cấp; Kiểm tra ngưỡng Out CLB tự động. |
-| **`report`** | Tầng phân tích số liệu | Tổng hợp tiền phạt động theo cấu trúc cây; Thuật toán sắp xếp con trỏ trung gian không thay đổi mảng gốc. |
+| **`report`** | Tầng phân tích số liệu | Tổng hợp tiền phạt động theo cấu trúc cây; Thuật toán sắp xếp con trỏ trung gian không thay đổi mảng gốc; Biểu đồ thanh tiến trình UTF-8. |
+
+---
+
+## 5. Nâng cấp Nghiệp vụ Quản trị Cao cấp & Lọc Thành viên (v2.1 Upgrades)
+
+Trong đợt nâng cấp v2.1, hệ thống đã tích hợp thêm các mô hình nghiệp vụ hành chính cao cấp, cơ chế lọc dữ liệu tinh gọn và giao dịch dữ liệu an toàn.
+
+### 5.1. Cơ chế Kick & Khôi phục Liên kết An ninh (Security-linked Kick & Restore)
+Để thay thế hoàn toàn tính năng "Đóng băng tài khoản" thô sơ ban đầu, hệ thống đã triển khai một quy trình Kick & Khôi phục toàn diện và bảo mật:
+* **Tự động Khóa tài khoản (`isLocked = 1`)**: Khi một thành viên bị Kick khỏi CLB, cờ hoạt động `isActive` được chuyển sang trạng thái `STATUS_OUT_CLB` (0), đồng thời hệ thống tự động khóa tài khoản đăng nhập của họ trên tệp dữ liệu `accounts.dat`. Điều này ngăn chặn việc đăng nhập vào hệ thống ngay lập tức.
+* **Reset số buổi vắng liên tiếp**: Reset cờ `consecutiveAbsences = 0` trên cả hai thao tác Kick và Khôi phục. Khi khôi phục, thành viên sẽ bắt đầu lại từ đầu với trạng thái hoạt động sạch sẽ mà không lo vừa kích hoạt đã nằm lại ở ngưỡng bị cảnh báo.
+* **Audit Trail (Lưu vết lý do bắt buộc)**: Để lưu trữ lý do kick mà không làm vỡ cấu trúc nhị phân của `Member`, hệ thống tự động sinh một bản ghi vi phạm kỷ luật đặc biệt trong `violations.dat` với:
+  - `penalty = PENALTY_OUT_CLB`
+  - `fine = 0.0`
+  - `isPaid = 1`
+  - `reason = REASON_VIOLENCE`
+  - `note` = Lý do kick (BCN bắt buộc phải nhập và không được để trống).
+  Lý do này sẽ được trích xuất vĩnh viễn và hiển thị chi tiết khi BCN tra cứu **Option 19 (Xem danh sách thành viên đã kick)**.
+* **Xác thực 2 bước chống ấn nhầm**: 
+  - *Bước 1*: Xác nhận qua menu chọn `1=Co, 0=Khong`.
+  - *Bước 2*: BCN bắt buộc phải gõ lại chính xác mã MSSV của thành viên để hoàn tất. Hệ thống tự động chuẩn hóa chữ hoa/thường để so khớp an toàn.
+* **Luật bảo vệ BCN thường**:
+  - Không cho phép tự kick chính mình.
+  - Ngăn chặn tài khoản BCN thường kick các thành viên khác có chức vụ BCN. Chỉ có tài khoản Super Admin (`admin` hoặc `SE203055`) mới có quyền thực hiện thao tác này.
+
+### 5.2. Cơ chế Thu tiền phạt gộp (Bulk Payment Transaction)
+Tại giao diện thu tiền phạt (Option 5), thay vì phải chọn thủ công từng vi phạm rất tốn thời gian, BCN có thể nhập mã đặc biệt **`99`** để kích hoạt thanh toán gộp:
+* **Giao dịch nguyên tử (Atomic Transaction)**: Hệ thống gom toàn bộ các vi phạm có trạng thái chưa thanh toán (`isPaid == 0` và `fine > 0`) của thành viên đó vào một mảng giao dịch tạm thời trên RAM và chuyển trạng thái của chúng sang đã nộp.
+* **Cơ chế Rollback an toàn**: Nếu quá trình ghi dữ liệu nhị phân xuống ổ đĩa (`fileioSaveViolations` hoặc `fileioSaveMembers`) gặp sự cố lỗi đĩa hoặc mất quyền ghi, hệ thống sẽ tự động rollback (hoàn tác) toàn bộ trạng thái RAM về ban đầu để đảm bảo số liệu công nợ không bao giờ bị sai lệch.
+
+### 5.3. Bộ lọc Thành viên Hoạt động Tinh gọn & Cân bằng Menu
+* **Hiển thị tinh gọn (`memberListAll`)**:
+  - Tự động loại bỏ hoàn toàn các thành viên đã bị Kick hoặc Soft-deleted khỏi danh sách chung.
+  - Loại bỏ hoàn toàn cột `"Trang thai"` khỏi bảng danh sách (vì toàn bộ thành viên hiển thị đều đang hoạt động bình thường).
+  - Mở rộng cột `"Ho va ten"` lên 34 ký tự để hiển thị trọn vẹn và đẹp mắt các họ tên tiếng Việt có độ dài lớn.
+  - Tiêu đề in đậm hiển thị rõ ràng: `DANH SACH THANH VIEN DANG HOAT DONG (%d)`.
+* **Cân bằng giao diện Menu (Menu Alignment)**:
+  - Cập nhật nhãn của phím số 4 (Menu Thành viên) và phím số 13 (Menu BCN) thành `"Xem DS thanh vien dang hoat dong"` và `"Xem DS TV dang hoat dong"`.
+  - Thiết kế lại các ký tự khoảng trắng đệm (padding spaces) ở phía sau nhãn để đảm bảo độ rộng hàng in ra luôn luôn bằng **đúng 68 ký tự**, tạo nên các viền khung đôi `║` dọc thẳng hàng, chuẩn mỹ thuật TUI.
+* **Tinh lọc số liệu báo cáo (`report.c`)**:
+  - **Sắp xếp theo số lần vi phạm (`reportSortMembersByViolations`)**: Tự động lọc bỏ các thành viên đã bị kick hoặc đã bị xóa để tránh làm nhiễu danh sách xếp hạng kỷ luật của các thành viên đang hoạt động.
+  - **Báo cáo xuất file text (`reportExportTxt`)**: Tự động loại bỏ các thành viên đã xóa khỏi danh sách công nợ phạt, giúp ban chủ nhiệm có báo cáo tài chính sạch sẽ.
+
+### 5.4. Dashboard Kỷ luật & Biểu đồ tiến trình (Discipline Dashboard)
+BCN có một công cụ theo dõi trực quan cao cấp (Option 16) bao gồm:
+* **Top 5 vi phạm**: Sắp xếp nhanh danh sách thành viên hoạt động vi phạm nhiều nhất mà không thay đổi thứ tự mảng gốc trên RAM bằng mảng con trỏ trung gian.
+* **Tỷ lệ vi phạm**: Phân tích phần trăm lý do vi phạm chi tiết (Vắng họp, Không mặc áo CLB, Bạo lực...).
+* **Thanh tiến trình thu phạt (Progress Bar)**:
+  - Hệ thống tự động tính tỷ lệ thu tiền phạt: $\text{ratio} = \frac{\text{Đã thu}}{\text{Tổng phát}} \times 100$.
+  - Biểu diễn trực quan bằng thanh tiến trình gồm 10 ký tự khối UTF-8 (`█` cho phần đã hoàn thành, `░` cho phần chưa hoàn thành). Ví dụ: `[██████░░░░] 60.5%`.
+  - Tích hợp cờ bảo vệ chống chia cho 0 (`NaN` protection) khi hệ thống chưa ghi nhận bất kỳ khoản phạt nào.
+
+### 5.5. Công cụ Seeding dữ liệu bảo mật (`seed_data.c`)
+Để đảm bảo môi trường phát triển (Dev) đồng bộ tuyệt đối với các tiêu chuẩn an toàn mới, công cụ gieo hạt dữ liệu mẫu `tools/seed_data.c` đã được thiết kế lại hoàn toàn:
+* Không ghi dữ liệu dạng text/nhị phân thuần túy nữa.
+* Tích hợp thuật toán mã hóa đối xứng XOR và Magic Header `FCE1` để sinh ra các file `.dat` đã mã hóa gốc.
+* Sinh muối ngẫu nhiên (Salt) và tự động băm mật khẩu qua thuật toán kéo giãn khóa 1000 rounds FNV-1a cho tất cả tài khoản mẫu (ví dụ: Super Admin `SE203055` / `Phuc@2006` và Legacy Super Admin `admin` / `admin`).
+* Giúp dự án khởi chạy lần đầu tiên là có ngay cơ sở dữ liệu siêu bảo mật, đồng bộ 100% với ứng dụng chính.
+
