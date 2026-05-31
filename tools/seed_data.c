@@ -283,19 +283,32 @@ int main(int argc, char *argv[]) {
         mc++;
     }
 
-    /* === Kick some chronic violators === */
-    /* SE210946 - Nguyen Vu Hao (academic) */
-    members[6].isDeleted = 1;
-    members[6].isActive = 0;
-    members[6].deletedAt = dateSec(2026, 5, 1);
-    /* SE210117 - Nguyen Hung Hien (planning) */
-    members[24].isDeleted = 1;
-    members[24].isActive = 0;
-    members[24].deletedAt = dateSec(2026, 4, 15);
-    /* SE203367 - Trinh Thi Minh Tam (media) */
-    members[53].isDeleted = 1;
-    members[53].isActive = 0;
-    members[53].deletedAt = dateSec(2026, 5, 10);
+    /* === Kick some chronic violators (isActive=0, isDeleted=0) === */
+    /* SE210946 - Nguyen Vu Hao (academic, index 5) - Vang qua 3 buoi */
+    members[5].isActive = STATUS_OUT_CLB;
+    members[5].isDeleted = 0;
+    members[5].consecutiveAbsences = 0;
+    members[5].violationCount = 3;
+    /* SE210117 - Nguyen Hung Hien (planning, index 23) - VP nhieu lan */
+    members[23].isActive = STATUS_OUT_CLB;
+    members[23].isDeleted = 0;
+    members[23].consecutiveAbsences = 0;
+    members[23].violationCount = 2;
+    /* SE203367 - Trinh Thi Minh Tam (media, index 52) - Vang 4 buoi LT */
+    members[52].isActive = STATUS_OUT_CLB;
+    members[52].isDeleted = 0;
+    members[52].consecutiveAbsences = 0;
+    members[52].violationCount = 5;
+    /* SE200516 - Tran Vu Hai Duy (academic, index 7) - Bao luc */
+    members[7].isActive = STATUS_OUT_CLB;
+    members[7].isDeleted = 0;
+    members[7].consecutiveAbsences = 0;
+
+    /* Lock accounts for kicked members */
+    accounts[5].isLocked = 1;   /* SE210946 */
+    accounts[23].isLocked = 1;  /* SE210117 */
+    accounts[52].isLocked = 1;  /* SE203367 */
+    accounts[7].isLocked = 1;   /* SE200516 */
 
     /* === Seed Accounts securely with Salted stretched hashes === */
     for (int i = 0; i < mc; i++) {
@@ -474,9 +487,15 @@ int main(int argc, char *argv[]) {
     makeViolation(&violations[vc++], "SE212030", dateSec(2026,2,10),
                   REASON_NO_JACKET, 20000, 1, PENALTY_FINE, "Lan dau");
 
-    /* === Violation with penalty OUT_CLB === */
+    /* === Violations with penalty OUT_CLB (kick reasons) === */
+    makeViolation(&violations[vc++], "SE210946", dateSec(2026,5,1),
+                  REASON_ABSENT, 0, 1, PENALTY_OUT_CLB, "Vang qua 3 buoi lien tiep");
+    makeViolation(&violations[vc++], "SE210117", dateSec(2026,4,15),
+                  REASON_ABSENT, 0, 1, PENALTY_OUT_CLB, "Vi pham qua nhieu lan");
+    makeViolation(&violations[vc++], "SE203367", dateSec(2026,5,10),
+                  REASON_ABSENT, 0, 1, PENALTY_OUT_CLB, "Vang 4 buoi lien tiep");
     makeViolation(&violations[vc++], "SE200516", dateSec(2026,5,15),
-                  REASON_VIOLENCE, 0, 0, PENALTY_OUT_CLB, "Danh nhau trong CLB");
+                  REASON_VIOLENCE, 0, 1, PENALTY_OUT_CLB, "Danh nhau trong CLB");
 
     /* === Write encrypted files to data/ === */
     char path[256];

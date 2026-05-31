@@ -662,6 +662,8 @@ void memberListAll(AppDatabase *db) {
     for (int i = 0; i < 14; i++) printf(LINE_H);
     printf(LINE_T_DOWN);
     for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 10; i++) printf(LINE_H);
     printf(LINE_TR "\n" COLOR_RESET);
 
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -669,7 +671,8 @@ void memberListAll(AppDatabase *db) {
     printf(" %-20s " COLOR_CYAN LINE_V COLOR_RESET, "Ho va ten");
     printf(" %-24s " COLOR_CYAN LINE_V COLOR_RESET, "Email");
     printf(" %-12s " COLOR_CYAN LINE_V COLOR_RESET, "SDT");
-    printf(" %-10s " COLOR_CYAN LINE_V COLOR_RESET "\n", "Ban");
+    printf(" %-10s " COLOR_CYAN LINE_V COLOR_RESET, "Ban");
+    printf(" %-8s " COLOR_CYAN LINE_V COLOR_RESET "\n", "Vai tro");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
     for (int i = 0; i < 12; i++) printf(LINE_H);
@@ -681,6 +684,8 @@ void memberListAll(AppDatabase *db) {
     for (int i = 0; i < 14; i++) printf(LINE_H);
     printf(LINE_T_DOWN);
     for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 10; i++) printf(LINE_H);
     printf(LINE_T_LEFT "\n" COLOR_RESET);
 
     int start = currentPage * ROWS_PER_PAGE;
@@ -705,6 +710,8 @@ void memberListAll(AppDatabase *db) {
       printf(" %-12.12s ", m->phone);
       printf(COLOR_CYAN LINE_V COLOR_RESET);
       printf(" %-10.10s ", teamName(m->team));
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-8.8s ", memberRoleName(m->role));
       printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
       row++;
     }
@@ -719,6 +726,8 @@ void memberListAll(AppDatabase *db) {
     for (int i = 0; i < 14; i++) printf(LINE_H);
     printf(LINE_T_UP);
     for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 10; i++) printf(LINE_H);
     printf(LINE_BR "\n" COLOR_RESET);
 
     printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
@@ -1152,35 +1161,41 @@ void memberViewKicked(AppDatabase *db) {
     return;
   }
 
-  /* Columns: STT (6), MSSV (12), Ho va ten (20), Ban (12), Ly do kick (18) */
+  /* Columns: STT (4), MSSV (10), Ho va ten (18), Ban (12), Ly do kick (24) */
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 6; i++) printf(LINE_H);
+  for (int i = 0; i < 4; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 20; i++) printf(LINE_H);
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 10; i++) printf(LINE_H);
   printf(LINE_T_DOWN);
   for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 24; i++) printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
 
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
-         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-         " Ho va ten          " COLOR_CYAN LINE_V COLOR_RESET
-         " Ban        " COLOR_CYAN LINE_V COLOR_RESET
-         " Ly do kick        " COLOR_CYAN LINE_V COLOR_RESET "\n");
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf("%-4s", "STT");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-10s", "MSSV");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-18s", "Ho va ten");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-12s", "Ban");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf("%-24s", "Ly do kick");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 6; i++) printf(LINE_H);
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 20; i++) printf(LINE_H);
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_T_DOWN);
+  for (int i = 0; i < 4; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 10; i++) printf(LINE_H);
+  printf(LINE_cross);
   for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_cross);
+  for (int i = 0; i < 24; i++) printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < kickedCount; i++) {
@@ -1196,24 +1211,51 @@ void memberViewKicked(AppDatabase *db) {
       }
     }
 
-    printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", i + 1);
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", m->studentId);
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-18.18s ", m->fullName);
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", teamName(m->team));
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-16.16s ", reason);
-    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+    /* Word wrap for reason column (24 chars per line) */
+    int len = (int)strlen(reason);
+    int chunk = 24;
+    int lines = (len + chunk - 1) / chunk;
+
+    for (int line = 0; line < lines; line++) {
+      char buf[25] = {0};
+      strncpy(buf, reason + line * chunk, chunk);
+
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+      if (line == 0) {
+        printf("%-4d", i + 1);
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-10.10s", m->studentId);
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-18.18s", m->fullName);
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-12.12s", teamName(m->team));
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-24.24s", buf);
+      } else {
+        printf("%-4s", "");
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-10.10s", "");
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-18.18s", "");
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-12.12s", "");
+        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        printf("%-24.24s", buf);
+      }
+      printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+    }
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 6; i++) printf(LINE_H);
+  for (int i = 0; i < 4; i++) printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
-  printf(LINE_T_UP);
-  for (int i = 0; i < 20; i++) printf(LINE_H);
-  printf(LINE_T_UP);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 10; i++) printf(LINE_H);
   printf(LINE_T_UP);
   for (int i = 0; i < 18; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 12; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 24; i++) printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
   printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien da bi kick khoi CLB.\n\n", kickedCount);
