@@ -23,7 +23,27 @@ static void memberMenu(void) {
   int choice;
   do {
     uiClear();
-    uiDrawBreadcrumb("MENU THANH VIEN");
+    /* Top border */
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+    /* Title */
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM " MENU THANH VIEN ");
+    int _breadcrumbLen = (int)strlen(" MENU THANH VIEN ");
+    for (int i = _breadcrumbLen; i < UI_TERM_WIDTH - 2; i++) {
+      printf(" ");
+    }
+    printf(COLOR_RESET);
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    /* Separator under title */
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  1. Xem profile ca nhan");
@@ -37,12 +57,12 @@ static void memberMenu(void) {
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  3. Xem tong tien phat con no");
-    printf("                                       ");
+    printf("                                      ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf("  4. Xem DS thanh vien dang hoat dong");
-    printf("                                 ");
+    printf("                               ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     printf(COLOR_BLUE BOX_V COLOR_RESET);
@@ -82,6 +102,10 @@ static void memberMenu(void) {
     default:
       break;
     }
+
+    if (choice != 0) {
+      uiPause();
+    }
   } while (choice != 0);
 }
 
@@ -90,7 +114,27 @@ static void adminMenu(void) {
   int choice;
   do {
     uiClear();
-    uiDrawBreadcrumb("MENU BAN CHU NHIEM");
+    /* Top border */
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+    /* Title */
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM " MENU BAN CHU NHIEM ");
+    int _breadcrumbLen = (int)strlen(" MENU BAN CHU NHIEM ");
+    for (int i = _breadcrumbLen; i < UI_TERM_WIDTH - 2; i++) {
+      printf(" ");
+    }
+    printf(COLOR_RESET);
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    /* Separator under title */
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
     /* Row 1 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
@@ -166,16 +210,17 @@ static void adminMenu(void) {
 
     /* Row 10 */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_DIM "  0. Dang xuat");
-    printf("                    ");
-    printf(COLOR_RESET COLOR_GREEN "19" COLOR_RESET ". Xem DS thanh vien da kick");
-    printf("     ");
+    printf("  " COLOR_GREEN "19" COLOR_RESET ". Xem DS thanh vien da kick");
+    printf("   ");
+    printf(COLOR_GREEN "20" COLOR_RESET ". Xem nhat ky he thong");
+    printf("          ");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-    /* Row 11 */
+    /* Row 11 - Thoat */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_RESET COLOR_GREEN "  20" COLOR_RESET ". Xem nhat ky he thong");
-    printf("                                          ");
+    printf(COLOR_DIM "  0. Dang xuat");
+    printf("                                                      ");
+    printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
     uiDrawSeparator();
@@ -258,6 +303,10 @@ static void adminMenu(void) {
       break;
     default:
       break;
+    }
+
+    if (choice != 0) {
+      uiPause();
     }
   } while (choice != 0);
 }

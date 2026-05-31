@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <time.h>
 
 #ifdef _WIN32
@@ -18,8 +19,6 @@
 #endif
 
 /* Terminal width used for centering */
-#define UI_TERM_WIDTH 70
-
 /* ============================================================
  * INITIALIZATION
  * ============================================================ */
@@ -217,4 +216,49 @@ void uiGetCurrentTime(char *buffer, int bufSize) {
   snprintf(buffer, (size_t)bufSize, "%02d/%02d/%04d %02d:%02d",
            t->tm_mday, t->tm_mon + 1, t->tm_year + 1900,
            t->tm_hour, t->tm_min);
+}
+
+static int uiVisibleLen(const char *s) {
+  int len = 0;
+  while (*s) {
+    if (*s == '\033') {
+      s++;
+      if (*s == '[') {
+        s++;
+        while (*s && *s != 'm') s++;
+        if (*s) s++;
+      }
+    } else {
+      len++;
+      s++;
+    }
+  }
+  return len;
+}
+
+void uiDrawMenuRow(const char *text) {
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  int visible = uiVisibleLen(text);
+  printf("%s", text);
+  for (int i = visible; i < UI_TERM_WIDTH - 2; i++) {
+    printf(" ");
+  }
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+}
+
+void uiDrawMenuRowFmt(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  char buf[256];
+  vsnprintf(buf, sizeof(buf), fmt, args);
+  va_end(args);
+  uiDrawMenuRow(buf);
+}
+
+void uiPause(void) {
+  printf(COLOR_CYAN "\n  Nhan Enter de tiep tuc..." COLOR_RESET);
+  fflush(stdout);
+  while (getchar() != '\n') {
+    /* wait for Enter */
+  }
 }

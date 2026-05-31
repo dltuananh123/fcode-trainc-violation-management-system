@@ -524,45 +524,43 @@ void memberViewProfile(AppDatabase *db) {
   uiDrawBreadcrumb("MENU > Thong tin ca nhan");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  MSSV:       " COLOR_RESET "%-39s",
+  printf(COLOR_BOLD "  MSSV:       " COLOR_RESET "%-54s",
          m->studentId);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  Ho va ten:  " COLOR_RESET "%-39s",
+  printf(COLOR_BOLD "  Ho va ten:  " COLOR_RESET "%-54s",
          m->fullName);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  Email:      " COLOR_RESET "%-39s",
+  printf(COLOR_BOLD "  Email:      " COLOR_RESET "%-54s",
          m->email);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  SDT:        " COLOR_RESET "%-39s",
+  printf(COLOR_BOLD "  SDT:        " COLOR_RESET "%-54s",
          m->phone);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  Ban:        " COLOR_RESET "%-39s",
+  printf(COLOR_BOLD "  Ban:        " COLOR_RESET "%-54s",
          teamName(m->team));
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD "  Chuc vu:    " COLOR_RESET "%-39s",
+  printf(COLOR_BOLD "  Chuc vu:    " COLOR_RESET "%-54s",
          memberRoleName(m->role));
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD "  Trang thai: " COLOR_RESET);
   if (m->isActive) {
-    printf(COLOR_GREEN "Hoat dong");
-    printf("                                  ");
-    printf(COLOR_RESET);
+    printf(COLOR_GREEN "Hoat dong" COLOR_RESET);
+    printf("                                             ");
   } else {
-    printf(COLOR_RED "Da Out CLB");
-    printf("                                    ");
-    printf(COLOR_RESET);
+    printf(COLOR_RED "Da Out CLB" COLOR_RESET);
+    printf("                                           ");
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
@@ -690,12 +688,7 @@ void memberViewArchive(AppDatabase *db) {
   }
 
   if (archivedCount == 0) {
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  Kho luu tru hien tai trong.                         ");
-    for (int i = 54; i < 68; i++) {
-      printf(" ");
-    }
-    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  Kho luu tru hien tai trong.");
     uiDrawSeparator();
     return;
   }
@@ -1069,12 +1062,7 @@ void memberViewKicked(AppDatabase *db) {
   }
 
   if (kickedCount == 0) {
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  Khong co thanh vien nao trong danh sach da kick.         ");
-    for (int i = 56; i < 68; i++) {
-      printf(" ");
-    }
-    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  Khong co thanh vien nao trong danh sach da kick.");
     uiDrawSeparator();
     return;
   }

@@ -227,8 +227,9 @@ int authChangePassword(AppDatabase *db) {
     return -1;
   }
 
-  /* New password with validation loop */
+  /* New password with confirmation loop */
   char newPass[MAX_PASS_LEN];
+  char confirmPass[MAX_PASS_LEN];
   while (1) {
     printf(COLOR_CYAN "  Nhap mat khau moi: " COLOR_RESET);
     readPassword(newPass, sizeof(newPass));
@@ -242,23 +243,12 @@ int authChangePassword(AppDatabase *db) {
       continue;
     }
 
-    break;
-  }
-
-  /* Confirm password with re-prompt */
-  char confirmPass[MAX_PASS_LEN];
-  while (1) {
     printf(COLOR_CYAN "  Xac nhan mat khau moi: " COLOR_RESET);
     readPassword(confirmPass, sizeof(confirmPass));
 
-    if (strlen(confirmPass) == 0) {
-      printf(ERR_LOI "Vui long xac nhan mat khau!\n");
-      continue;
-    }
-
     if (strcmp(newPass, confirmPass) != 0) {
       printf(ERR_LOI "Mat khau xac nhan khong khop! "
-             "Vui long thu lai.\n");
+             "Vui long nhap lai mat khau moi.\n");
       continue;
     }
 

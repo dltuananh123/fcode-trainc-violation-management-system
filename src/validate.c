@@ -592,8 +592,8 @@ int validatePassword(const char *password) {
 
   int len = (int)strlen(password);
 
-  if (len < 6) {
-    printf(ERR_LOI "Mat khau phai co it nhat 6 ky tu!\n");
+  if (len < 8) {
+    printf(ERR_LOI "Mat khau phai co it nhat 8 ky tu!\n");
     return 0;
   }
 
@@ -602,17 +602,29 @@ int validatePassword(const char *password) {
     return 0;
   }
 
-  /* Must contain at least 1 letter */
-  int hasLetter = 0;
+  /* Must contain at least 1 uppercase letter */
+  int hasUpper = 0;
   for (int i = 0; i < len; i++) {
-    if ((password[i] >= 'a' && password[i] <= 'z') ||
-        (password[i] >= 'A' && password[i] <= 'Z')) {
-      hasLetter = 1;
+    if (password[i] >= 'A' && password[i] <= 'Z') {
+      hasUpper = 1;
       break;
     }
   }
-  if (!hasLetter) {
-    printf(ERR_LOI "Mat khau phai chua it nhat 1 chu cai!\n");
+  if (!hasUpper) {
+    printf(ERR_LOI "Mat khau phai chua it nhat 1 chu hoa!\n");
+    return 0;
+  }
+
+  /* Must contain at least 1 lowercase letter */
+  int hasLower = 0;
+  for (int i = 0; i < len; i++) {
+    if (password[i] >= 'a' && password[i] <= 'z') {
+      hasLower = 1;
+      break;
+    }
+  }
+  if (!hasLower) {
+    printf(ERR_LOI "Mat khau phai chua it nhat 1 chu thuong!\n");
     return 0;
   }
 
@@ -626,6 +638,22 @@ int validatePassword(const char *password) {
   }
   if (!hasDigit) {
     printf(ERR_LOI "Mat khau phai chua it nhat 1 chu so!\n");
+    return 0;
+  }
+
+  /* Must contain at least 1 special character */
+  int hasSpecial = 0;
+  for (int i = 0; i < len; i++) {
+    if ((password[i] >= 33 && password[i] <= 47) ||
+        (password[i] >= 58 && password[i] <= 64) ||
+        (password[i] >= 91 && password[i] <= 96) ||
+        (password[i] >= 123 && password[i] <= 126)) {
+      hasSpecial = 1;
+      break;
+    }
+  }
+  if (!hasSpecial) {
+    printf(ERR_LOI "Mat khau phai chua it nhat 1 ky tu dac biet (@, $, !, %%, *, ?, &, ...)!\n");
     return 0;
   }
 

@@ -189,9 +189,9 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   int choice;
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Tang dan                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Giam dan                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  0. Quay lai                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawMenuRow("  1. Tang dan");
+  uiDrawMenuRow("  2. Giam dan");
+  uiDrawMenuRow("  0. Quay lai");
   uiDrawSeparator();
 
   choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 2);
@@ -411,33 +411,27 @@ void reportDashboard(const AppDatabase *db) {
 
   sortMemberPointersByViolationCount(db, sorted, activeCount, 0); /* descending */
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_YELLOW "  [TOP 5 THANH VIEN VI PHAM NHIEU NHAT]                     " COLOR_RESET);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawMenuRow(COLOR_BOLD COLOR_YELLOW "  [TOP 5 THANH VIEN VI PHAM NHIEU NHAT]" COLOR_RESET);
 
   int showCount = activeCount < 5 ? activeCount : 5;
   if (showCount == 0) {
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  - Khong co du lieu thanh vien hoat dong.            " COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  - Khong co du lieu thanh vien hoat dong.");
   } else {
     for (int i = 0; i < showCount; i++) {
       int count = countMemberViolations(db, sorted[i]->studentId);
       char temp[128];
       snprintf(temp, sizeof(temp), "    %d. %s (%s) - %d lan", i + 1, sorted[i]->fullName, sorted[i]->studentId, count);
-      printf(COLOR_BLUE BOX_V COLOR_RESET);
-      printf("  %-62.62s", temp);
-      printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+      uiDrawMenuRowFmt("  %-66.66s", temp);
     }
   }
 
   uiDrawSeparator();
 
   /* 3. Reason Breakdown */
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_YELLOW "  [PHAN TICH LY DO VI PHAM]                               " COLOR_RESET);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawMenuRow(COLOR_BOLD COLOR_YELLOW "  [PHAN TICH LY DO VI PHAM]" COLOR_RESET);
 
   if (totalViolations == 0) {
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  - Khong co vi pham nao ghi nhan.                    " COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  - Khong co vi pham nao ghi nhan.");
   } else {
     double pJacket = ((double)jacketCount / totalViolations) * 100.0;
     double pAbsent = ((double)absentCount / totalViolations) * 100.0;
@@ -450,25 +444,21 @@ void reportDashboard(const AppDatabase *db) {
     snprintf(temp3, sizeof(temp3), "    + Khong tham gia HD:     %3d lan (%5.1f%%)", activityCount, pActivity);
     snprintf(temp4, sizeof(temp4), "    + Bao luc (Out CLB):     %3d lan (%5.1f%%)", violenceCount, pViolence);
 
-    printf(COLOR_BLUE BOX_V COLOR_RESET); printf("  %-62.62s", temp1); printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET); printf("  %-62.62s", temp2); printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET); printf("  %-62.62s", temp3); printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET); printf("  %-62.62s", temp4); printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRowFmt("  %-66.66s", temp1);
+    uiDrawMenuRowFmt("  %-66.66s", temp2);
+    uiDrawMenuRowFmt("  %-66.66s", temp3);
+    uiDrawMenuRowFmt("  %-66.66s", temp4);
   }
 
   uiDrawSeparator();
 
   /* 4. Fine Collection Progress */
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_BOLD COLOR_YELLOW "  [TIEN DO THU TIEN PHAT]                                  " COLOR_RESET);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawMenuRow(COLOR_BOLD COLOR_YELLOW "  [TIEN DO THU TIEN PHAT]" COLOR_RESET);
 
   char issuedStr[128];
   snprintf(issuedStr, sizeof(issuedStr), "    - Tong tien phat da phat: %.0f VND", totalIssued);
 
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("  %-62.62s", issuedStr);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawMenuRowFmt("  %-66.66s", issuedStr);
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf("    - Tong tien phat da thu:  ");
@@ -477,7 +467,7 @@ void reportDashboard(const AppDatabase *db) {
   char digits[32];
   snprintf(digits, sizeof(digits), "%.0f", totalPaid);
   int printedLen = 30 + (int)strlen(digits) + 4;
-  for (int i = printedLen; i < 66; i++) {
+  for (int i = printedLen; i < 68; i++) {
     printf(" ");
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -503,9 +493,9 @@ void reportDashboard(const AppDatabase *db) {
   printf(COLOR_RESET);
   printf("] %5.1f%%", progress);
   
-  int printedBarLen = 14 + 20 + 2 + 5;
+  int printedBarLen = 14 + 20 + 2 + 6;
   if (progress >= 100.0) printedBarLen++;
-  for (int i = printedBarLen; i < 66; i++) {
+  for (int i = printedBarLen; i < 68; i++) {
     printf(" ");
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");

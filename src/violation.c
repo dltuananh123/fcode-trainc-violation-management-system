@@ -238,11 +238,11 @@ void violationViewAllFiltered(AppDatabase *db) {
 
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Loc theo ban                                            " COLOR_BLUE BOX_V COLOR_RESET "\n");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Loc theo ly do vi pham                                  " COLOR_BLUE BOX_V COLOR_RESET "\n");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  3. Loc theo trang thai thu tien                            " COLOR_BLUE BOX_V COLOR_RESET "\n");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  4. Xem tat ca, khong loc                                   " COLOR_BLUE BOX_V COLOR_RESET "\n");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  0. Quay lai                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
+  uiDrawMenuRow("  1. Loc theo ban");
+  uiDrawMenuRow("  2. Loc theo ly do vi pham");
+  uiDrawMenuRow("  3. Loc theo trang thai thu tien");
+  uiDrawMenuRow("  4. Xem tat ca, khong loc");
+  uiDrawMenuRow("  0. Quay lai");
   uiDrawSeparator();
 
   filterType = readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, 0, 4);
@@ -254,26 +254,26 @@ void violationViewAllFiltered(AppDatabase *db) {
   if (filterType == 1) {
     uiClear();
     uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ban");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Academic                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Planning                                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  3. HR                                                      " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  4. Media                                                   " COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  1. Academic");
+    uiDrawMenuRow("  2. Planning");
+    uiDrawMenuRow("  3. HR");
+    uiDrawMenuRow("  4. Media");
     uiDrawSeparator();
     filterValue = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 1, 4) - 1;
   } else if (filterType == 2) {
     uiClear();
     uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ly do");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Khong mac ao CLB                                        " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Vang hop/Train-C                                        " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  3. Khong tham gia hoat dong                                " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  4. Bao luc (Out CLB)                                       " COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  1. Khong mac ao CLB");
+    uiDrawMenuRow("  2. Vang hop/Train-C");
+    uiDrawMenuRow("  3. Khong tham gia hoat dong");
+    uiDrawMenuRow("  4. Bao luc (Out CLB)");
     uiDrawSeparator();
     filterValue = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 1, 4) - 1;
   } else if (filterType == 3) {
     uiClear();
     uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon trang thai");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  1. Chua thu tien                                           " COLOR_BLUE BOX_V COLOR_RESET "\n");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  2. Da thu tien                                             " COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRow("  1. Chua thu tien");
+    uiDrawMenuRow("  2. Da thu tien");
     uiDrawSeparator();
     filterValue = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 1, 2) - 1;
   }

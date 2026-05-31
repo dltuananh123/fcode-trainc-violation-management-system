@@ -39,6 +39,12 @@
 #define ERR_INFO COLOR_CYAN "[INFO] " COLOR_RESET
 
 /* ============================================================
+ * LAYOUT CONSTANTS
+ * ============================================================ */
+
+#define UI_TERM_WIDTH 70
+
+/* ============================================================
  * BOX DRAWING CHARACTERS (UTF-8 encoded)
  * ============================================================ */
 
@@ -103,6 +109,23 @@ void uiDrawBreadcrumb(const char *path);
  * @brief Draw a horizontal separator line across the terminal.
  */
 void uiDrawSeparator(void);
+
+/**
+ * @brief Draw a single menu row inside the box (left-aligned, padded to full width).
+ * @param text The menu item text (must NOT include leading/trailing spaces padding).
+ */
+void uiDrawMenuRow(const char *text);
+
+/**
+ * @brief Formatted version of uiDrawMenuRow.
+ * @param fmt printf-style format string.
+ */
+void uiDrawMenuRowFmt(const char *fmt, ...);
+
+/**
+ * @brief Wait for Enter key press ("Press any key to continue").
+ */
+void uiPause(void);
 
 /**
  * @brief Draw a single-line box (for sub-panels).

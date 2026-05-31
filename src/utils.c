@@ -533,7 +533,4 @@ void viewSystemLogs(void) {
   } else {
     printf("\n" COLOR_GREEN "  Tong cong: %d dong nhat ky." COLOR_RESET "\n", lineCount);
   }
-
-  printf("\n" COLOR_CYAN "  Nhan Enter de quay lai..." COLOR_RESET);
-  while (getchar() != '\n');
 }

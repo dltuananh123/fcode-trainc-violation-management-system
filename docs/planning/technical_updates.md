@@ -234,3 +234,60 @@ Log format:
 | Khai báo | `include/utils.h:197` | `viewSystemLogs()` |
 | Menu entry | `src/main.c:269-271` | `case 20: viewSystemLogs()` |
 
+---
+
+## 7. Nâng cấp Giao diện & Xác thực (v2.2 UI & Validation Enhancements)
+
+### 7.1. Chuẩn hóa Alignment Toàn bộ Menu (UI Alignment Overhaul)
+
+Toàn bộ các menu con trong hệ thống trước đây dùng chuỗi hardcode với số lượng khoảng trắng thủ công, dẫn đến lỗi lệch viền khung (`║`) ở nhiều màn hình. Đã triển khai giải pháp động:
+
+* **Thêm hàm `uiDrawMenuRow()`** (`src/ui.c`) — tự động padding khoảng trắng để nội dung giữa hai viền `║` luôn đúng **68 ký tự** (`UI_TERM_WIDTH - 2`):
+  ```c
+  void uiDrawMenuRow(const char *text);
+  void uiDrawMenuRowFmt(const char *fmt, ...);
+  ```
+* **Hỗ trợ ANSI Color**: Hàm `uiVisibleLen()` bỏ qua mã màu ANSI (`\033[...m`) khi tính độ dài hiển thị, đảm bảo padding chính xác cho các dòng có tô màu.
+* **Các file được sửa**:
+
+| File | Số dòng sửa | Mô tả |
+|---|---|---|
+| `src/violation.c` | 15 menu items | Thay hardcode bằng `uiDrawMenuRow()` |
+| `src/report.c` | ~20 dòng | Sort menu, dashboard headers, format `%-62s`→`%-66s`, pad target 66→68 |
+| `src/member.c` | ~15 dòng | Profile `%-39s`→`%-54s`, status line, archive/kicked empty message |
+| `src/main.c` | 4 dòng | Member menu rows 3,4 và admin menu row 10 |
+
+* **Hằng số `UI_TERM_WIDTH`**: Di chuyển từ `src/ui.c` sang `include/ui.h` để các file khác có thể sử dụng.
+
+### 7.2. Cơ chế Pause trước khi về Menu (Post-Action Pause)
+
+Trước đây, sau khi thực hiện một tác vụ (thêm thành viên, xem danh sách,...), kết quả hiển thị bị xóa ngay lập tức khi menu chính được vẽ lại, gây khó chịu cho người dùng.
+
+* **Thêm hàm `uiPause()`** (`src/ui.c`): Hiển thị `"Nhan Enter de tiep tuc..."` và chờ người dùng nhấn Enter.
+* **Tích hợp vào menu chính**: Gọi `uiPause()` sau mỗi `switch (choice)` nếu `choice != 0` — áp dụng cho cả `memberMenu()` và `adminMenu()`.
+* **Gỡ pause dư thừa**: Xóa `"Nhan Enter de quay lai..."` khỏi `viewSystemLogs()` để tránh nhắc đúp.
+
+### 7.3. Nâng cấp Validate Mật khẩu (Password Validation Enhancement)
+
+Cập nhật hàm `validatePassword()` trong `src/validate.c` với các tiêu chuẩn bảo mật cao hơn, tương ứng regex "Thông dụng" (`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`):
+
+| Tiêu chí | Cũ | Mới |
+|---|---|---|
+| Độ dài tối thiểu | 6 ký tự | **8 ký tự** |
+| Chữ hoa | ❌ Không kiểm tra | ✅ **Phải có 1 chữ hoa** |
+| Chữ thường | ✅ Phải có | ✅ Giữ nguyên |
+| Chữ số | ✅ Phải có | ✅ Giữ nguyên |
+| Ký tự đặc biệt | ❌ Không kiểm tra | ✅ **Phải có 1 ký tự đặc biệt** (@, $, !, %, *, ?, &, ...) |
+| Khoảng trắng | ✅ Không được chứa | ✅ Giữ nguyên |
+
+Mỗi điều kiện có thông báo lỗi riêng bằng tiếng Việt, dễ hiểu cho người dùng cuối.
+
+### 7.4. Cải tiến Flow Đổi Mật khẩu (Password Change Flow Fix)
+
+Khi người dùng xác nhận mật khẩu mới không khớp, thay vì chỉ yêu cầu nhập lại xác nhận (dễ gây nhầm lẫn), flow mới yêu cầu nhập lại toàn bộ từ bước **"Nhap mat khau moi"**:
+
+* Trước: `Nhap mat khau moi` → `Xac nhan` (sai) → `Xac nhan` (sai) → `Xac nhan`...
+* Sau: `Nhap mat khau moi` → `Xac nhan` (sai) → `Nhap mat khau moi` → `Xac nhan`...
+
+Số lần nhập mật khẩu có thể tăng, nhưng giảm thiểu rủi ro người dùng không nhận ra mình đã gõ sai từ bước đầu. Lược bỏ bước kiểm tra `confirmPass == ""` vì đã có `validatePassword()` ở bước trước.|---
+
