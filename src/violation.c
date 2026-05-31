@@ -1274,10 +1274,10 @@ date_input:
         printf(ERR_INFO "Da huy thao tac.\n");
         return;
       }
-      if (parseDate(startBuf, &start, 0) == 1) {
+      if (validateDate(startBuf)) {
+        parseDate(startBuf, &start, 0);
         break;
       }
-      printf(ERR_LOI "Dinh dang ngay khong hop le! Vui long nhap lai.\n");
     }
 
     while (1) {
@@ -1288,10 +1288,10 @@ date_input:
         printf(ERR_INFO "Da huy thao tac.\n");
         return;
       }
-      if (parseDate(endBuf, &end, 1) == 1) {
+      if (validateDate(endBuf)) {
+        parseDate(endBuf, &end, 1);
         break;
       }
-      printf(ERR_LOI "Dinh dang ngay khong hop le! Vui long nhap lai.\n");
     }
 
     if (start <= end) break;
