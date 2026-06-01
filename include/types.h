@@ -58,6 +58,22 @@
 #define MEMBER_ROLE_BCN 2
 
 /* ============================================================
+ * ERROR CODES
+ * ============================================================ */
+
+typedef enum {
+  RC_OK = 0,             /* Thanh cong */
+  RC_ERR_NULL = -1,      /* Tham so NULL */
+  RC_ERR_NOT_FOUND = -2, /* Khong tim thay */
+  RC_ERR_DUPLICATE = -3, /* Da ton tai */
+  RC_ERR_INVALID = -4,   /* Du lieu khong hop le */
+  RC_ERR_FULL = -5,      /* Da day */
+  RC_ERR_IO = -6,        /* Loi doc/ghi file */
+  RC_ERR_AUTH = -7,      /* Khong co quyen */
+  RC_ERR_CANCELLED = -8  /* Nguoi dung huy */
+} ResultCode;
+
+/* ============================================================
  * STRUCT DEFINITIONS
  * ============================================================ */
 
