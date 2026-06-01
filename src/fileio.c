@@ -420,6 +420,14 @@ static int loadViolations(AppDatabase *db) {
       return -1;
     }
   }
+
+  db->nextViolationId = 1;
+  for (int i = 0; i < db->violationCount; i++) {
+    if (db->violations[i].id >= db->nextViolationId) {
+      db->nextViolationId = db->violations[i].id + 1;
+    }
+  }
+
   return 0;
 }
 
@@ -446,5 +454,6 @@ int fileioLoadAll(AppDatabase *db) {
     return -1;
   }
   memberRebuildIndex(db);
+  memberPurgeExpired(db, 90);
   return 0;
 }

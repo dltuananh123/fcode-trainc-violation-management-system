@@ -257,7 +257,11 @@ void uiDrawMenuRowFmt(const char *fmt, ...) {
 
 void uiDrawDualMenuRow(int n1, const char *t1, int n2, const char *t2) {
   char row[128];
-  snprintf(row, sizeof(row), "  %2d. %-27s  %2d. %-29s", n1, t1, n2, t2);
+  if (n2 > 0) {
+    snprintf(row, sizeof(row), "  %2d. %-27s  %2d. %-29s", n1, t1, n2, t2);
+  } else {
+    snprintf(row, sizeof(row), "  %2d. %-27s  %-33s", n1, t1, t2);
+  }
   printf(COLOR_BLUE BOX_V COLOR_RESET "%s" COLOR_BLUE BOX_V COLOR_RESET "\n",
          row);
 }

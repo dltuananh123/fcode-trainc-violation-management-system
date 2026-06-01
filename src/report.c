@@ -17,6 +17,9 @@ static void aggregateTeamTotals(const AppDatabase *db, double collected[],
 
   for (int i = 0; i < db->violationCount; i++) {
     const Violation *v = &db->violations[i];
+    if (v->isVoided) {
+      continue;
+    }
     int team = -1;
 
     int memberIdx = memberFindById(db, v->studentId);
@@ -41,7 +44,8 @@ static int countMemberViolations(const AppDatabase *db, const char *studentId) {
   int count = 0;
 
   for (int i = 0; i < db->violationCount; i++) {
-    if (strcmp(db->violations[i].studentId, studentId) == 0) {
+    if (strcmp(db->violations[i].studentId, studentId) == 0 &&
+        db->violations[i].isVoided == 0) {
       count++;
     }
   }
@@ -400,6 +404,9 @@ void reportExportTxt(const AppDatabase *db) {
 
     for (int j = 0; j < db->violationCount; j++) {
       const Violation *v = &db->violations[j];
+      if (v->isVoided) {
+        continue;
+      }
       if (strcmp(v->studentId, db->members[i].studentId) == 0 &&
           v->isPaid == 0 && v->fine > 0) {
         totalOwed += v->fine;
@@ -431,7 +438,7 @@ void reportDashboard(const AppDatabase *db) {
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Dashboard thong ke ky luat CLB");
 
   /* 1. Calculate general stats */
-  int totalViolations = db->violationCount;
+  int totalViolations = 0;
   int jacketCount = 0;
   int absentCount = 0;
   int activityCount = 0;
@@ -441,6 +448,10 @@ void reportDashboard(const AppDatabase *db) {
 
   for (int i = 0; i < db->violationCount; i++) {
     const Violation *v = &db->violations[i];
+    if (v->isVoided) {
+      continue;
+    }
+    totalViolations++;
     totalIssued += v->fine;
     if (v->isPaid) {
       totalPaid += v->fine;

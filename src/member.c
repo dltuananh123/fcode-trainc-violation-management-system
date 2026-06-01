@@ -463,13 +463,18 @@ int memberEdit(AppDatabase *db) {
     m->totalFine = 0.0;
     for (int i = 0; i < db->violationCount; i++) {
       Violation *v = &db->violations[i];
-      if (strcmp(v->studentId, m->studentId) != 0 || v->isPaid != 0) {
+      if (strcmp(v->studentId, m->studentId) != 0) {
         continue;
       }
-      if (v->reason != REASON_VIOLENCE) {
+      if (v->isVoided) {
+        continue;
+      }
+      if (v->reason != REASON_VIOLENCE && v->penalty != PENALTY_OUT_CLB) {
         v->fine = newFineRate;
       }
-      m->totalFine += v->fine;
+      if (!v->isPaid) {
+        m->totalFine += v->fine;
+      }
     }
     printf(ERR_INFO "Da tinh lai tien phat do thay doi chuc vu.\n");
   }
@@ -1500,7 +1505,7 @@ void memberViewKicked(AppDatabase *db) {
     return;
   }
 
-  /* Columns: STT (4), MSSV (10), Ho va ten (18), Ban (12), Ly do kick (24) */
+  /* Columns: STT (4), MSSV (10), Ho va ten (18), Ban (12), Ly do kick (40) */
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 4; i++) {
     printf(LINE_H);
@@ -1518,7 +1523,7 @@ void memberViewKicked(AppDatabase *db) {
     printf(LINE_H);
   }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 24; i++) {
+  for (int i = 0; i < 40; i++) {
     printf(LINE_H);
   }
   printf(LINE_TR "\n" COLOR_RESET);
@@ -1532,7 +1537,7 @@ void memberViewKicked(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET);
   printf("%-12s", "Ban");
   printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf("%-24s", "Ly do kick");
+  printf("%-40s", "Ly do kick");
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
@@ -1552,7 +1557,7 @@ void memberViewKicked(AppDatabase *db) {
     printf(LINE_H);
   }
   printf(LINE_CROSS);
-  for (int i = 0; i < 24; i++) {
+  for (int i = 0; i < 40; i++) {
     printf(LINE_H);
   }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
@@ -1571,13 +1576,13 @@ void memberViewKicked(AppDatabase *db) {
       }
     }
 
-    /* Word wrap for reason column (24 chars per line) */
+    /* Word wrap for reason column (40 chars per line) */
     int len = (int)strlen(reason);
-    int chunk = 24;
+    int chunk = 40;
     int lines = (len + chunk - 1) / chunk;
 
     for (int line = 0; line < lines; line++) {
-      char buf[25] = {0};
+      char buf[41] = {0};
       strncpy(buf, reason + (ptrdiff_t)(line * chunk), (size_t)chunk);
 
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -1590,7 +1595,7 @@ void memberViewKicked(AppDatabase *db) {
         printf(COLOR_CYAN LINE_V COLOR_RESET);
         printf("%-12.12s", teamName(m->team));
         printf(COLOR_CYAN LINE_V COLOR_RESET);
-        printf("%-24.24s", buf);
+        printf("%-40.40s", buf);
       } else {
         printf("%-4s", "");
         printf(COLOR_CYAN LINE_V COLOR_RESET);
@@ -1600,7 +1605,7 @@ void memberViewKicked(AppDatabase *db) {
         printf(COLOR_CYAN LINE_V COLOR_RESET);
         printf("%-12.12s", "");
         printf(COLOR_CYAN LINE_V COLOR_RESET);
-        printf("%-24.24s", buf);
+        printf("%-40.40s", buf);
       }
       printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
     }
@@ -1623,7 +1628,7 @@ void memberViewKicked(AppDatabase *db) {
     printf(LINE_H);
   }
   printf(LINE_T_UP);
-  for (int i = 0; i < 24; i++) {
+  for (int i = 0; i < 40; i++) {
     printf(LINE_H);
   }
   printf(LINE_BR "\n" COLOR_RESET);
@@ -1631,4 +1636,51 @@ void memberViewKicked(AppDatabase *db) {
   printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET
          " thanh vien da bi kick khoi CLB.\n\n",
          kickedCount);
+}
+
+void memberPurgeExpired(AppDatabase *db, int retentionDays) {
+  if (db == NULL) {
+    return;
+  }
+  time_t now = time(NULL);
+  int writeIdx = 0;
+  int purgedCount = 0;
+
+  for (int i = 0; i < db->memberCount; i++) {
+    Member *m = &db->members[i];
+    if (m->isDeleted && (now - m->deletedAt > (time_t)retentionDays * 86400)) {
+      /* Purge corresponding accounts as well */
+      int accIdx = -1;
+      for (int a = 0; a < db->accountCount; a++) {
+        if (strcmp(db->accounts[a].studentId, m->studentId) == 0) {
+          accIdx = a;
+          break;
+        }
+      }
+      if (accIdx != -1) {
+        /* Shift accounts array */
+        for (int a = accIdx; a < db->accountCount - 1; a++) {
+          db->accounts[a] = db->accounts[a + 1];
+        }
+        db->accountCount--;
+      }
+      purgedCount++;
+      continue;
+    }
+
+    if (writeIdx != i) {
+      db->members[writeIdx] = db->members[i];
+    }
+    writeIdx++;
+  }
+
+  if (purgedCount > 0) {
+    db->memberCount = writeIdx;
+    memberRebuildIndex(db);
+    (void)fileioSaveMembers(db);
+    (void)fileioSaveAccounts(db);
+    printf(ERR_INFO
+           "Da xoa vinh vien %d thanh vien het han luu tru (> %d ngay).\n",
+           purgedCount, retentionDays);
+  }
 }

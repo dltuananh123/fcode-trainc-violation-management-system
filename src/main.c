@@ -158,8 +158,9 @@ static void adminMenu(void) {
     uiDrawDualMenuRow(17, "Xem lich su VP theo MSSV", 18, "Kick/Khoi phuc TV");
     uiDrawDualMenuRow(19, "Xem DS thanh vien da kick", 20,
                       "Xem nhat ky he thong");
+    uiDrawDualMenuRow(21, "Huy vi pham (Void)", 0, "");
 
-    /* Row 11 - Thoat */
+    /* Row 12 - Thoat */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM "  %-66s" COLOR_RESET, "0. Dang xuat");
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -170,7 +171,7 @@ static void adminMenu(void) {
     }
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 20);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 21);
 
     switch (choice) {
     case 1:
@@ -244,6 +245,9 @@ static void adminMenu(void) {
       break;
     case 20:
       viewSystemLogs();
+      break;
+    case 21:
+      violationVoid(&gDb);
       break;
     case 0:
       authLogout(&gDb);
