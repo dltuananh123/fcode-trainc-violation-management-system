@@ -7,6 +7,7 @@
  */
 
 #include "validate.h"
+#include "types.h"
 #include "ui.h"
 
 #include <ctype.h>

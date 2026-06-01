@@ -8,11 +8,17 @@
 
 #include "ui.h"
 
+#include <handleapi.h>
+#include <minwindef.h>
+#include <processenv.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <wincon.h>
+#include <winnls.h>
+#include <winnt.h>
 
 #ifdef _WIN32
 #include <windows.h>
