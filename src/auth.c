@@ -31,7 +31,7 @@ static void printLoginBanner(void) {
   printf("\n");
   printf(COLOR_BLUE COLOR_BOLD);
   printf("  " BOX_TL);
-  for (int i = 0; i < 42; i++) {
+  for (int i = 0; i < LOGIN_BOX_W; i++) {
     printf(BOX_H);
   }
   printf(BOX_TR "\n");
@@ -40,7 +40,7 @@ static void printLoginBanner(void) {
   printf("  " BOX_V "    Quan ly Vi pham TrainC CLB            " BOX_V "\n");
   printf("  " BOX_V "                                          " BOX_V "\n");
   printf("  " BOX_BL);
-  for (int i = 0; i < 42; i++) {
+  for (int i = 0; i < LOGIN_BOX_W; i++) {
     printf(BOX_H);
   }
   printf(BOX_BR "\n");

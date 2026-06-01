@@ -45,6 +45,11 @@
 #define UI_TERM_WIDTH 100
 #define ROWS_PER_PAGE 15
 
+#define MENU_CONTENT_W 68
+#define DETAIL_CARD_W 70
+#define LOGIN_BOX_W 42
+#define TABLE_DEFAULT_W 100
+
 /* ============================================================
  * BOX DRAWING CHARACTERS (UTF-8 encoded)
  * ============================================================ */

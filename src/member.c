@@ -546,18 +546,18 @@ int memberSearchDetails(AppDatabase *db) {
 
   printf("\n");
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 70; i++) {
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
     printf(LINE_H);
   }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-  printf(" " COLOR_BOLD COLOR_BLUE "%-69s" COLOR_RESET,
+  printf(" " COLOR_BOLD COLOR_BLUE "%-*s" COLOR_RESET, DETAIL_CARD_W - 1,
          "THONG TIN CHI TIET THANH VIEN");
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 70; i++) {
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
     printf(LINE_H);
   }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
@@ -602,7 +602,7 @@ int memberSearchDetails(AppDatabase *db) {
                    m->totalFine > 0 ? COLOR_PURPLE : COLOR_GREEN);
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 70; i++) {
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
     printf(LINE_H);
   }
   printf(LINE_BR "\n" COLOR_RESET);
@@ -777,19 +777,19 @@ void memberViewStats(AppDatabase *db) {
     }
   }
 
-  /* Display summary card */
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 70; i++) {
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
     printf(LINE_H);
   }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-  printf(" " COLOR_BOLD "%-67s" COLOR_RESET, "THONG KE TONG QUAN ");
+  printf(" " COLOR_BOLD "%-*s" COLOR_RESET, DETAIL_CARD_W - 3,
+         "THONG KE TONG QUAN ");
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 70; i++) {
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
     printf(LINE_H);
   }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
@@ -825,7 +825,7 @@ void memberViewStats(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 70; i++) {
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
     printf(LINE_H);
   }
   printf(LINE_BR "\n" COLOR_RESET);
