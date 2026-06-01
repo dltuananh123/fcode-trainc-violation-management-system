@@ -587,17 +587,17 @@ int memberSearchDetails(AppDatabase *db) {
   PRINT_DETAIL_ROW("Trang thai:", statusStr, statusColor);
 
   char absStr[20];
-  sprintf(absStr, "%d lan", m->consecutiveAbsences);
+  snprintf(absStr, sizeof(absStr), "%d lan", m->consecutiveAbsences);
   PRINT_DETAIL_ROW("Vang lien tiep:", absStr,
                    m->consecutiveAbsences >= 3 ? COLOR_RED : "");
 
   char vpStr[20];
-  sprintf(vpStr, "%d lan", m->violationCount);
+  snprintf(vpStr, sizeof(vpStr), "%d lan", m->violationCount);
   PRINT_DETAIL_ROW("So lan vi pham:", vpStr,
                    m->violationCount > 0 ? COLOR_RED : COLOR_GREEN);
 
   char fineStr[50];
-  sprintf(fineStr, "%.0f VND", m->totalFine);
+  snprintf(fineStr, sizeof(fineStr), "%.0f VND", m->totalFine);
   PRINT_DETAIL_ROW("Tong tien phat:", fineStr,
                    m->totalFine > 0 ? COLOR_PURPLE : COLOR_GREEN);
 
@@ -710,7 +710,7 @@ void memberViewProfile(AppDatabase *db) {
 
   /* Last row with two fields */
   char fineStr[32];
-  sprintf(fineStr, "%.0f", m->totalFine);
+  snprintf(fineStr, sizeof(fineStr), "%.0f", m->totalFine);
   printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET
                                       "%-5d     Tong phat: " COLOR_PURPLE
                                       "%-33s" COLOR_RESET,
