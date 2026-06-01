@@ -335,6 +335,8 @@ void reportExportTxt(const AppDatabase *db) {
   char timestampForFile[32];
   char timestampDisplay[32];
   time_t now = time(NULL);
+  /* Note: localtime is not thread-safe but this application is
+     single-threaded. */
   struct tm *timeInfo = localtime(&now);
 
   if (timeInfo == NULL) {

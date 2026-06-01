@@ -253,6 +253,8 @@ void uiPrintCentered(const char *text, int width) {
 
 void uiGetCurrentTime(char *buffer, int bufSize) {
   time_t now = time(NULL);
+  /* Note: localtime is not thread-safe but this application is
+     single-threaded. */
   struct tm *t = localtime(&now);
   if (t != NULL) {
     snprintf(buffer, (size_t)bufSize, "%02d/%02d/%04d %02d:%02d", t->tm_mday,

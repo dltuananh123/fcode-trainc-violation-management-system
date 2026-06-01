@@ -975,6 +975,8 @@ int validateDate(const char *date) {
 
   /* Get current time for dynamic year validation */
   time_t now = time(NULL);
+  /* Note: localtime is not thread-safe but this application is
+     single-threaded. */
   struct tm *t = localtime(&now);
   int todayDay = 1;
   int todayMonth = 1;
