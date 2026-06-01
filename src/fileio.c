@@ -9,12 +9,51 @@
 #define FILE_MAGIC "FCE1"
 #define MAGIC_LEN 4
 
-static const unsigned char XOR_KEY[] = "FCodeTrainC2026_SecureKey!";
-#define XOR_KEY_LEN (sizeof(XOR_KEY) - 1)
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+static unsigned char gXorKey[32];
+#define XOR_KEY_LEN 32
+static int gXorKeyDerived = 0;
+
+static void deriveXorKey(unsigned char *key, size_t keyLen) {
+  char seed[1024] = {0};
+  char exeDir[512] = {0};
+  getExeDir(exeDir, sizeof(exeDir));
+
+  /* Combine: exe path + computer name */
+  snprintf(seed, sizeof(seed), "%s", exeDir);
+
+#ifdef _WIN32
+  char compName[256] = {0};
+  DWORD size = sizeof(compName);
+  if (GetComputerNameA(compName, &size)) {
+    strncat(seed, compName, sizeof(seed) - strlen(seed) - 1);
+  }
+#endif
+
+  /* FNV-1a hash the seed to fill key buffer */
+  unsigned long long h = 0xCBF29CE484222325ULL;
+  for (int i = 0; seed[i] != '\0'; i++) {
+    h ^= (unsigned char)seed[i];
+    h *= 0x00000100000001B3ULL;
+  }
+  for (size_t i = 0; i < keyLen; i++) {
+    key[i] = (unsigned char)((h >> ((i % 8) * 8)) & 0xFF);
+    if (i % 8 == 7) {
+      h *= 0x00000100000001B3ULL;
+    }
+  }
+}
 
 static void xorBuffer(unsigned char *data, size_t size) {
+  if (!gXorKeyDerived) {
+    deriveXorKey(gXorKey, XOR_KEY_LEN);
+    gXorKeyDerived = 1;
+  }
   for (size_t i = 0; i < size; i++) {
-    data[i] ^= XOR_KEY[i % XOR_KEY_LEN];
+    data[i] ^= gXorKey[i % XOR_KEY_LEN];
   }
 }
 
@@ -327,11 +366,52 @@ static int loadAccounts(AppDatabase *db) {
   if (db->accountCount == 0) {
     strcpy(db->accounts[0].studentId, "SE203055");
     generateSalt(db->accounts[0].salt, sizeof(db->accounts[0].salt));
-    hashPassword("Phuc@2006", db->accounts[0].salt, db->accounts[0].password);
+
+    char defaultPass[9];
+    char lower[] = "abcdefghijklmnopqrstuvwxyz";
+    char upper[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    char digits[] = "0123456789";
+    char special[] = "@$!%*?&";
+
+    defaultPass[0] = lower[(size_t)rand() % (sizeof(lower) - 1)];
+    defaultPass[1] = lower[(size_t)rand() % (sizeof(lower) - 1)];
+    defaultPass[2] = upper[(size_t)rand() % (sizeof(upper) - 1)];
+    defaultPass[3] = upper[(size_t)rand() % (sizeof(upper) - 1)];
+    defaultPass[4] = digits[(size_t)rand() % (sizeof(digits) - 1)];
+    defaultPass[5] = digits[(size_t)rand() % (sizeof(digits) - 1)];
+    defaultPass[6] = special[(size_t)rand() % (sizeof(special) - 1)];
+    defaultPass[7] = special[(size_t)rand() % (sizeof(special) - 1)];
+    defaultPass[8] = '\0';
+
+    for (int i = 0; i < 8; i++) {
+      int target = rand() % 8;
+      char temp = defaultPass[i];
+      defaultPass[i] = defaultPass[target];
+      defaultPass[target] = temp;
+    }
+
+    hashPassword(defaultPass, db->accounts[0].salt, db->accounts[0].password);
+
+    printf("\n");
+    printf("==================================================================="
+           "===\n");
+    printf("[CANH BAO] Khong tim thay co so du lieu tai khoan.\n");
+    printf("He thong da tao tai khoan Ban Chu Nhiem mac dinh:\n");
+    printf("  MSSV: SE203055\n");
+    printf("  Mat khau tam thoi: %s\n", defaultPass);
+    printf("LUU Y: Vui long ghi lai mat khau nay. Ban se bi bat buoc doi mat "
+           "khau\n");
+    printf("ngay trong lan dang nhap dau tien de bao mat he thong.\n");
+    printf("==================================================================="
+           "===\n");
+    printf("\n");
+
+    secureZero(defaultPass, sizeof(defaultPass));
+
     db->accounts[0].role = ACCOUNT_ROLE_BCN;
     db->accounts[0].isLocked = 0;
     db->accounts[0].failCount = 0;
-    db->accounts[0].isDefaultPassword = 0;
+    db->accounts[0].isDefaultPassword = 1;
     db->accountCount = 1;
     if (fileioSaveAccounts(db) != 0) {
       return -1;

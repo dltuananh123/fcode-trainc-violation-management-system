@@ -181,6 +181,15 @@ void hashPassword(const char *password, const char *salt, char *outHashHex);
 void generateSalt(char *salt, size_t size);
 
 /**
+ * @brief Safely zeroes out memory containing sensitive information like
+ * passwords.
+ *
+ * @param ptr Pointer to the memory block.
+ * @param len Size of the memory block in bytes.
+ */
+void secureZero(void *ptr, size_t len);
+
+/**
  * @brief Logs an administrative action to data/system_audit.log and triggers a
  * simulated webhook to data/simulated_webhooks.log.
  *

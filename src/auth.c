@@ -79,12 +79,14 @@ int authLogin(AppDatabase *db) {
 
     if (strlen(password) == 0) {
       printf(ERR_LOI "Mat khau khong duoc de trong!\n");
+      secureZero(password, sizeof(password));
       continue;
     }
 
     int idx = findAccountIndex(db, studentId);
     if (idx == -1) {
       printf(ERR_LOI "Tai khoan khong ton tai!\n");
+      secureZero(password, sizeof(password));
       continue;
     }
 
@@ -93,10 +95,11 @@ int authLogin(AppDatabase *db) {
     if (acc->isLocked) {
       printf(ERR_LOI "Tai khoan da bi khoa! "
                      "Vui long lien he BCN de mo khoa.\n");
+      secureZero(password, sizeof(password));
       continue;
     }
 
-    char inputHashed[32];
+    char inputHashed[MAX_PASS_LEN];
     /* Backward-compatible migration: If legacy account has no salt, generate
      * one and hash password in-place */
     if (strlen(acc->salt) == 0) {
@@ -118,11 +121,13 @@ int authLogin(AppDatabase *db) {
         printf(ERR_CANH_BAO "Tai khoan da bi khoa sau 3 lan nhap sai! "
                             "Lien he BCN de mo khoa.\n");
         (void)fileioSaveAccounts(db);
+        secureZero(password, sizeof(password));
         return -1;
       }
 
       (void)fileioSaveAccounts(db);
       printf(ERR_INFO "Con %d lan thu.\n", 3 - acc->failCount);
+      secureZero(password, sizeof(password));
       continue;
     }
 
@@ -161,6 +166,7 @@ int authLogin(AppDatabase *db) {
       }
     }
 
+    secureZero(password, sizeof(password));
     return 0;
   }
 }
@@ -213,10 +219,11 @@ int authChangePassword(AppDatabase *db) {
     }
     if (strcmp(oldPass, "0") == 0) {
       printf(ERR_INFO "Huy doi mat khau.\n");
+      secureZero(oldPass, sizeof(oldPass));
       return -1;
     }
 
-    char oldHashed[32];
+    char oldHashed[MAX_PASS_LEN];
     /* If legacy account has no salt, generate one and hash it */
     if (strlen(db->accounts[idx].salt) == 0) {
       generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
@@ -230,9 +237,11 @@ int authChangePassword(AppDatabase *db) {
 
     hashPassword(oldPass, db->accounts[idx].salt, oldHashed);
     if (strcmp(db->accounts[idx].password, oldHashed) == 0) {
+      secureZero(oldHashed, sizeof(oldHashed));
       break;
     }
     printf(ERR_LOI "Mat khau cu khong dung!\n");
+    secureZero(oldHashed, sizeof(oldHashed));
   }
 
   /* New password with confirmation loop */
@@ -249,6 +258,8 @@ int authChangePassword(AppDatabase *db) {
 
     if (strcmp(newPass, "0") == 0) {
       printf(ERR_INFO "Huy doi mat khau.\n");
+      secureZero(oldPass, sizeof(oldPass));
+      secureZero(newPass, sizeof(newPass));
       return -1;
     }
 
@@ -266,6 +277,9 @@ int authChangePassword(AppDatabase *db) {
 
     if (strcmp(confirmPass, "0") == 0) {
       printf(ERR_INFO "Huy doi mat khau.\n");
+      secureZero(oldPass, sizeof(oldPass));
+      secureZero(newPass, sizeof(newPass));
+      secureZero(confirmPass, sizeof(confirmPass));
       return -1;
     }
 
@@ -291,6 +305,10 @@ int authChangePassword(AppDatabase *db) {
   session->salt[MAX_SALT_LEN - 1] = '\0';
   strncpy(session->password, db->accounts[idx].password, MAX_PASS_LEN - 1);
   session->password[MAX_PASS_LEN - 1] = '\0';
+
+  secureZero(oldPass, sizeof(oldPass));
+  secureZero(newPass, sizeof(newPass));
+  secureZero(confirmPass, sizeof(confirmPass));
 
   if (fileioSaveAccounts(db) != 0) {
     printf(ERR_LOI "Khong the luu mat khau moi!\n");

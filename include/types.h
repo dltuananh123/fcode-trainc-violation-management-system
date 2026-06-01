@@ -26,7 +26,7 @@
 #define MAX_EMAIL_LEN 100
 #define MAX_PHONE_LEN 15
 #define MAX_NOTE_LEN 256
-#define MAX_PASS_LEN 32
+#define MAX_PASS_LEN 65
 #define MAX_SALT_LEN 17
 #define HASH_LEN 65
 
