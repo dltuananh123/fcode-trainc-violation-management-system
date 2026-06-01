@@ -68,13 +68,13 @@ static int compareDescending(const void *a, const void *b) {
 }
 
 static void sortMemberPointersByViolationCount(const AppDatabase *db, const Member *sorted[], int count, int ascending) {
-  MemberViolationCount *mvc = malloc(count * sizeof(MemberViolationCount));
+  MemberViolationCount *mvc = malloc((size_t)count * sizeof(MemberViolationCount));
   if (!mvc) return;
   for (int i = 0; i < count; i++) {
     mvc[i].member = sorted[i];
     mvc[i].violationCount = countMemberViolations(db, sorted[i]->studentId);
   }
-  qsort(mvc, count, sizeof(MemberViolationCount), ascending ? compareAscending : compareDescending);
+  qsort(mvc, (size_t)count, sizeof(MemberViolationCount), ascending ? compareAscending : compareDescending);
   for (int i = 0; i < count; i++) {
     sorted[i] = mvc[i].member;
   }
