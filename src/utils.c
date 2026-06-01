@@ -1,10 +1,10 @@
 #ifndef _WIN32
 #define _POSIX_C_SOURCE 200809L
 #endif
-#include "ui.h"
 #include "utils.h"
-#include "validate.h"
 #include "types.h"
+#include "ui.h"
+#include "validate.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,7 +108,7 @@ int readMenuChoice(const char *prompt, int min, int max) {
         return choice;
       }
       printf(ERR_LOI "Lua chon khong hop le! "
-             "Vui long chon tu %d-%d!\n",
+                     "Vui long chon tu %d-%d!\n",
              min, max);
     } else {
       printf(ERR_LOI "Vui long nhap so!\n");
@@ -379,8 +379,8 @@ void getExeDir(char *buffer, size_t size) {
 }
 
 void hashPassword(const char *password, const char *salt, char *outHashHex) {
-  #define FNV_PRIME 0x00000100000001B3ULL
-  #define FNV_OFFSET_BASIS 0xCBF29CE484222325ULL
+#define FNV_PRIME 0x00000100000001B3ULL
+#define FNV_OFFSET_BASIS 0xCBF29CE484222325ULL
 
   char temp[256];
   snprintf(temp, sizeof(temp), "%s%s", password, salt);
@@ -402,11 +402,13 @@ void hashPassword(const char *password, const char *salt, char *outHashHex) {
     hash2 *= FNV_PRIME;
   }
 
-  snprintf(outHashHex, 32, "%015llx%016llx", hash & 0xFFFFFFFFFFFFFFFULL, hash2);
+  snprintf(outHashHex, 32, "%015llx%016llx", hash & 0xFFFFFFFFFFFFFFFULL,
+           hash2);
 }
 
 void generateSalt(char *salt, size_t size) {
-  const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const char charset[] =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   if (size == 0) {
     return;
   }
@@ -417,7 +419,8 @@ void generateSalt(char *salt, size_t size) {
   salt[size - 1] = '\0';
 }
 
-void logSystemAction(const char *actor, const char *action, const char *target) {
+void logSystemAction(const char *actor, const char *action,
+                     const char *target) {
   char exeDir[512];
   char auditPath[1024];
   char webhookPath[1024];
@@ -426,10 +429,12 @@ void logSystemAction(const char *actor, const char *action, const char *target) 
 
 #ifdef _WIN32
   snprintf(auditPath, sizeof(auditPath), "%s\\data\\system_audit.log", exeDir);
-  snprintf(webhookPath, sizeof(webhookPath), "%s\\data\\simulated_webhooks.log", exeDir);
+  snprintf(webhookPath, sizeof(webhookPath), "%s\\data\\simulated_webhooks.log",
+           exeDir);
 #else
   snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
-  snprintf(webhookPath, sizeof(webhookPath), "%s/data/simulated_webhooks.log", exeDir);
+  snprintf(webhookPath, sizeof(webhookPath), "%s/data/simulated_webhooks.log",
+           exeDir);
 #endif
 
   time_t now = time(NULL);
@@ -444,14 +449,17 @@ void logSystemAction(const char *actor, const char *action, const char *target) 
   /* 1. Append to audit log */
   FILE *fa = fopen(auditPath, "a");
   if (fa != NULL) {
-    fprintf(fa, "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor, action, target);
+    fprintf(fa, "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor,
+            action, target);
     fclose(fa);
   }
 
   /* 2. Append to simulated webhook log */
   FILE *fw = fopen(webhookPath, "a");
   if (fw != NULL) {
-    fprintf(fw, "[WEBHOOK TRIGGER] [%s] Event: %s | Payload: { actor: \"%s\", target: \"%s\" }\n",
+    fprintf(fw,
+            "[WEBHOOK TRIGGER] [%s] Event: %s | Payload: { actor: \"%s\", "
+            "target: \"%s\" }\n",
             timeBuf, action, actor, target);
     fclose(fw);
   }
@@ -484,7 +492,8 @@ void viewSystemLogs(void) {
 
   while (fgets(line, sizeof(line), f) != NULL) {
     size_t len = strlen(line);
-    if (len > 0 && line[len - 1] == '\n') line[len - 1] = '\0';
+    if (len > 0 && line[len - 1] == '\n')
+      line[len - 1] = '\0';
 
     lineCount++;
 
@@ -500,8 +509,9 @@ void viewSystemLogs(void) {
     actionPart[0] = '\0';
     targetPart[0] = '\0';
 
-    int parsed = sscanf(line, "[%63[^]]] [%63[^]]] ACTION: %63[^|]| TARGET: %255[^\n]",
-                        timePart, actorPart, actionPart, targetPart);
+    int parsed =
+        sscanf(line, "[%63[^]]] [%63[^]]] ACTION: %63[^|]| TARGET: %255[^\n]",
+               timePart, actorPart, actionPart, targetPart);
 
     if (parsed == 4) {
       printf(COLOR_DIM "[%s]" COLOR_RESET " ", timePart);
@@ -516,12 +526,14 @@ void viewSystemLogs(void) {
     printf("\n" COLOR_RESET);
 
     if (lineCount % pageSize == 0) {
-      printf("\n" COLOR_DIM "  -- Nhan Enter de xem tiep (hoac 'q' + Enter de thoat) --" COLOR_RESET);
+      printf("\n" COLOR_DIM "  -- Nhan Enter de xem tiep (hoac 'q' + Enter de "
+                            "thoat) --" COLOR_RESET);
       int ch = getchar();
       if (ch == 'q' || ch == 'Q') {
         break;
       }
-      while (getchar() != '\n');
+      while (getchar() != '\n')
+        ;
       uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong (tiep)");
     }
   }
@@ -531,6 +543,7 @@ void viewSystemLogs(void) {
   if (lineCount == 0) {
     printf("  " COLOR_DIM "(Trong)" COLOR_RESET "\n");
   } else {
-    printf("\n" COLOR_GREEN "  Tong cong: %d dong nhat ky." COLOR_RESET "\n", lineCount);
+    printf("\n" COLOR_GREEN "  Tong cong: %d dong nhat ky." COLOR_RESET "\n",
+           lineCount);
   }
 }

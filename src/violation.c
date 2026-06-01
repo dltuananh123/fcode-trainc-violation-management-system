@@ -6,11 +6,11 @@
 #include "ui.h"
 #include "utils.h"
 #include "validate.h"
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>
-#include <stdlib.h>
 
 /* ============================================================
  * Private helpers
@@ -31,7 +31,7 @@ static int selectViolationReason(int *reason) {
   printf("  2. Khong tham gia hoat dong\n");
   printf("  " COLOR_RED "3. Bao luc\n" COLOR_RESET);
   *reason = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET,
-                            REASON_NO_JACKET, REASON_VIOLENCE);
+                           REASON_NO_JACKET, REASON_VIOLENCE);
   return 0;
 }
 
@@ -78,8 +78,8 @@ static void handleAbsent(AppDatabase *db, Member *member, Violation *v) {
 
   member->consecutiveAbsences++;
 
-  printf(ERR_INFO "So buoi vang lien tiep cua %s: %d\n",
-         member->fullName, member->consecutiveAbsences);
+  printf(ERR_INFO "So buoi vang lien tiep cua %s: %d\n", member->fullName,
+         member->consecutiveAbsences);
 
   violationCheckOutThreshold(db, member);
 }
@@ -93,55 +93,69 @@ static const Member *findMemberForViolation(const AppDatabase *db,
   return &db->members[memberIdx];
 }
 
-
-
 static void printViolationTableHeader(void) {
   printf("\n");
   printf(COLOR_BOLD "  DANH SACH VI PHAM\n" COLOR_RESET);
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 12; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) printf(LINE_H);
+  for (int i = 0; i < 22; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++) printf(LINE_H);
+  for (int i = 0; i < 14; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) printf(LINE_H);
+  for (int i = 0; i < 22; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 12; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 12; i++)
+    printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET
-         " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-         " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-         " Ban          " COLOR_CYAN LINE_V COLOR_RESET
-         " Ly do                " COLOR_CYAN LINE_V COLOR_RESET
-         " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
-         " Tien phat  " COLOR_CYAN LINE_V COLOR_RESET
-         " Cho dong phat " COLOR_CYAN LINE_V COLOR_RESET
-         " Trang thai " COLOR_CYAN LINE_V COLOR_RESET "\n");
+                    " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+                    " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
+                    " Ban          " COLOR_CYAN LINE_V COLOR_RESET
+                    " Ly do                " COLOR_CYAN LINE_V COLOR_RESET
+                    " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
+                    " Tien phat  " COLOR_CYAN LINE_V COLOR_RESET
+                    " Cho dong phat " COLOR_CYAN LINE_V COLOR_RESET
+                    " Trang thai " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 12; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) printf(LINE_H);
+  for (int i = 0; i < 22; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++) printf(LINE_H);
+  for (int i = 0; i < 14; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) printf(LINE_H);
+  for (int i = 0; i < 22; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 12; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) printf(LINE_H);
+  for (int i = 0; i < 12; i++)
+    printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 }
 
@@ -163,8 +177,9 @@ static void printViolationRow(const Member *member, const Violation *v) {
   } else {
     time_t now = time(NULL);
     time_t diff = now - v->violationTime;
-    if (diff < 0) diff = 0;
-    
+    if (diff < 0)
+      diff = 0;
+
     if (diff < 3600) {
       long long minutes = diff / 60;
       snprintf(pendingBuf, sizeof(pendingBuf), "%lld phut", minutes);
@@ -192,7 +207,7 @@ static void printViolationRow(const Member *member, const Violation *v) {
   printf(COLOR_CYAN LINE_V COLOR_RESET);
   printf(" %-13s ", pendingBuf);
   printf(COLOR_CYAN LINE_V COLOR_RESET);
-  
+
   if (v->penalty == PENALTY_OUT_CLB) {
     printf(COLOR_RED " OUT CLB    " COLOR_RESET);
   } else if (v->isPaid) {
@@ -249,10 +264,14 @@ filter_selection:
     uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
     uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
     uiDrawSeparator();
-    filterType = readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, -1, 4);
-    if (filterType == -1) return;
-    if (filterType == 0) return;
-    if (filterType == 4) break;
+    filterType =
+        readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, -1, 4);
+    if (filterType == -1)
+      return;
+    if (filterType == 0)
+      return;
+    if (filterType == 4)
+      break;
 
     int subChoice;
     if (filterType == 1) {
@@ -265,10 +284,12 @@ filter_selection:
       uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
       uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
       uiDrawSeparator();
-      subChoice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
+      subChoice =
+          readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
     } else if (filterType == 2) {
       uiClear();
-      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ly do");
+      uiDrawBreadcrumb(
+          "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ly do");
       uiDrawMenuRow("  1. Khong mac ao CLB");
       uiDrawMenuRow("  2. Vang hop/Train-C");
       uiDrawMenuRow("  3. Khong tham gia hoat dong");
@@ -276,20 +297,25 @@ filter_selection:
       uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
       uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
       uiDrawSeparator();
-      subChoice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
+      subChoice =
+          readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
     } else {
       uiClear();
-      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon trang thai");
+      uiDrawBreadcrumb(
+          "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon trang thai");
       uiDrawMenuRow("  1. Chua thu tien");
       uiDrawMenuRow("  2. Da thu tien");
       uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
       uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
       uiDrawSeparator();
-      subChoice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 2);
+      subChoice =
+          readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 2);
     }
 
-    if (subChoice == -1) return;
-    if (subChoice == 0) continue;
+    if (subChoice == -1)
+      return;
+    if (subChoice == 0)
+      continue;
     filterValue = subChoice - 1;
     break;
   }
@@ -301,13 +327,23 @@ filter_selection:
     const Violation *v = &db->violations[i];
     int match = 0;
     switch (filterType) {
-    case 4: match = 1; break;
-    case 1: match = violationMatchesTeam(db, v, filterValue); break;
-    case 2: match = violationMatchesReason(v, filterValue); break;
-    case 3: match = violationMatchesPayment(v, filterValue); break;
-    default: break;
+    case 4:
+      match = 1;
+      break;
+    case 1:
+      match = violationMatchesTeam(db, v, filterValue);
+      break;
+    case 2:
+      match = violationMatchesReason(v, filterValue);
+      break;
+    case 3:
+      match = violationMatchesPayment(v, filterValue);
+      break;
+    default:
+      break;
     }
-    if (match) matchIdx[found++] = i;
+    if (match)
+      matchIdx[found++] = i;
   }
 
   if (found == 0) {
@@ -324,7 +360,8 @@ filter_selection:
 
     int start = currentPage * ROWS_PER_PAGE;
     int end = start + ROWS_PER_PAGE;
-    if (end > found) end = found;
+    if (end > found)
+      end = found;
 
     for (int i = start; i < end; i++) {
       const Violation *v = &db->violations[matchIdx[i]];
@@ -332,38 +369,51 @@ filter_selection:
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++) printf(LINE_H);
+    for (int i = 0; i < 14; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 18; i++) printf(LINE_H);
+    for (int i = 0; i < 18; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 15; i++) printf(LINE_H);
+    for (int i = 0; i < 15; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_BR "\n" COLOR_RESET);
 
-    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
-           COLOR_BOLD "%d" COLOR_RESET " vi pham\n",
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
+           "%d" COLOR_RESET " vi pham\n",
            currentPage + 1, totalPages, found);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET " > ");
+      printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET
+                       " > ");
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') goto filter_selection;
-      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
-      else if ((c == 'm' || c == 'M') && currentPage > 0) currentPage--;
+      if (c == 'q' || c == 'Q')
+        goto filter_selection;
+      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1)
+        currentPage++;
+      else if ((c == 'm' || c == 'M') && currentPage > 0)
+        currentPage--;
     } else {
       printf("\n  Nhan Enter de tiep tuc...");
-      while (getchar() != '\n' && getchar() != EOF);
+      while (getchar() != '\n' && getchar() != EOF)
+        ;
       goto filter_selection;
     }
   }
@@ -390,7 +440,8 @@ int violationRecord(AppDatabase *db) {
   char input[MAX_NAME_LEN];
   int memberIdx = -1;
   while (1) {
-    printf(COLOR_CYAN "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
+    printf(COLOR_CYAN
+           "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
     readString(input, sizeof(input));
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
@@ -420,15 +471,16 @@ int violationRecord(AppDatabase *db) {
       if (count == 1) {
         memberIdx = indices[0];
       } else {
-        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET, count);
+        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET,
+               count);
         for (int i = 0; i < count; i++) {
           Member *m = &db->members[indices[i]];
-          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId,
-                 m->fullName, teamName(m->team));
+          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
+                 teamName(m->team));
         }
         memberIdx = -1;
-        int choice = readMenuChoice(
-            COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice =
+            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
         memberIdx = indices[choice - 1];
       }
     }
@@ -450,8 +502,8 @@ int violationRecord(AppDatabase *db) {
 
   /* Show member info */
   printf("\n");
-  printf(COLOR_BOLD "  Thanh vien: " COLOR_RESET "%s (%s)\n",
-         member->fullName, member->studentId);
+  printf(COLOR_BOLD "  Thanh vien: " COLOR_RESET "%s (%s)\n", member->fullName,
+         member->studentId);
   printf(COLOR_BOLD "  Ban:        " COLOR_RESET "%s\n",
          teamName(member->team));
   printf(COLOR_BOLD "  Chuc vu:    " COLOR_RESET "%s\n",
@@ -587,8 +639,10 @@ int violationCheckOutThreshold(AppDatabase *db, Member *member) {
   }
 
   if (member->consecutiveAbsences >= 4) {
-    printf("\n" ERR_CANH_BAO "Thanh vien %s da vang qua 3 buoi lien tiep -> Out "
-           "CLB!\n", member->fullName);
+    printf("\n" ERR_CANH_BAO
+           "Thanh vien %s da vang qua 3 buoi lien tiep -> Out "
+           "CLB!\n",
+           member->fullName);
     printf("  So buoi vang lien tiep: %d\n", member->consecutiveAbsences);
 
     if (confirmOutClb(member->fullName)) {
@@ -667,13 +721,17 @@ void violationViewOwn(AppDatabase *db) {
   uiClear();
   uiDrawBreadcrumb("MENU THANH VIEN > Danh sach vi pham cua ban");
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 10; i++) printf(LINE_H);
+  for (int i = 0; i < 10; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 13; i++) printf(LINE_H);
+  for (int i = 0; i < 13; i++)
+    printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
   printf("%-16s", "Thoi gian");
@@ -685,13 +743,17 @@ void violationViewOwn(AppDatabase *db) {
   printf("%-13s", "Trang thai");
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 10; i++) printf(LINE_H);
+  for (int i = 0; i < 10; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 13; i++) printf(LINE_H);
+  for (int i = 0; i < 13; i++)
+    printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   int found = 0;
@@ -720,13 +782,17 @@ void violationViewOwn(AppDatabase *db) {
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 10; i++) printf(LINE_H);
+  for (int i = 0; i < 10; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 13; i++) printf(LINE_H);
+  for (int i = 0; i < 13; i++)
+    printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
   if (found == 0) {
@@ -750,11 +816,14 @@ void violationViewFines(AppDatabase *db) {
   uiClear();
   uiDrawBreadcrumb("MENU THANH VIEN > Cac khoan phat chua dong");
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
   printf("%-16s", "Thoi gian");
@@ -764,11 +833,14 @@ void violationViewFines(AppDatabase *db) {
   printf("%-15s", "So tien (VND)");
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   double total = 0.0;
@@ -792,18 +864,25 @@ void violationViewFines(AppDatabase *db) {
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
   if (found == 0) {
     printf(ERR_OK "Tuyet voi! Ban khong no khoan phat nao.\n\n");
   } else {
-    printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET " khoan phat chua dong.\n", found);
-    printf("  TONG SO TIEN CAN DONG: " COLOR_BOLD COLOR_PURPLE "%.0f VND" COLOR_RESET "\n\n", total);
+    printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET
+           " khoan phat chua dong.\n",
+           found);
+    printf("  TONG SO TIEN CAN DONG: " COLOR_BOLD COLOR_PURPLE
+           "%.0f VND" COLOR_RESET "\n\n",
+           total);
   }
 }
 
@@ -822,11 +901,14 @@ void violationViewPaymentHistory(AppDatabase *db) {
   uiDrawBreadcrumb("MENU THANH VIEN > Lich su nop tien phat");
 
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 20; i++) printf(LINE_H);
+  for (int i = 0; i < 20; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -838,11 +920,14 @@ void violationViewPaymentHistory(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_cross);
-  for (int i = 0; i < 20; i++) printf(LINE_H);
+  for (int i = 0; i < 20; i++)
+    printf(LINE_H);
   printf(LINE_cross);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   double totalPaid = 0.0;
@@ -866,18 +951,23 @@ void violationViewPaymentHistory(AppDatabase *db) {
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 16; i++) printf(LINE_H);
+  for (int i = 0; i < 16; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 20; i++) printf(LINE_H);
+  for (int i = 0; i < 20; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 15; i++) printf(LINE_H);
+  for (int i = 0; i < 15; i++)
+    printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
   if (found == 0) {
     printf(ERR_INFO "Ban chua nop khoan phat nao.\n");
   } else {
     printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET " lan nop.\n", found);
-    printf("  TONG SO TIEN DA NOP: " COLOR_BOLD COLOR_GREEN "%.0f VND" COLOR_RESET "\n\n", totalPaid);
+    printf("  TONG SO TIEN DA NOP: " COLOR_BOLD COLOR_GREEN
+           "%.0f VND" COLOR_RESET "\n\n",
+           totalPaid);
   }
 }
 
@@ -903,7 +993,8 @@ int violationMarkPaid(AppDatabase *db) {
   char input[MAX_NAME_LEN];
   int memberIdx = -1;
   while (1) {
-    printf(COLOR_CYAN "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
+    printf(COLOR_CYAN
+           "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
     readString(input, sizeof(input));
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
@@ -933,15 +1024,16 @@ int violationMarkPaid(AppDatabase *db) {
       if (count == 1) {
         memberIdx = indices[0];
       } else {
-        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET, count);
+        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET,
+               count);
         for (int i = 0; i < count; i++) {
           Member *m = &db->members[indices[i]];
-          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId,
-                 m->fullName, teamName(m->team));
+          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
+                 teamName(m->team));
         }
         memberIdx = -1;
-        int choice = readMenuChoice(
-            COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice =
+            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
         memberIdx = indices[choice - 1];
       }
     }
@@ -955,28 +1047,38 @@ int violationMarkPaid(AppDatabase *db) {
   int unpaidCount = 0;
 
   printf("\n");
-  printf(COLOR_BOLD "  Danh sach vi pham chua dong phat cua %s:\n" COLOR_RESET, m->fullName);
+  printf(COLOR_BOLD "  Danh sach vi pham chua dong phat cua %s:\n" COLOR_RESET,
+         m->fullName);
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 6; i++) printf(LINE_H);
+  for (int i = 0; i < 6; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++) printf(LINE_H);
+  for (int i = 0; i < 17; i++)
+    printf(LINE_H);
   printf(LINE_TR "\n" COLOR_RESET);
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
-         " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
-         " Ly do                   " COLOR_CYAN LINE_V COLOR_RESET
-         " Tien phat (VND) " COLOR_CYAN LINE_V COLOR_RESET "\n");
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+                    " STT  " COLOR_CYAN LINE_V COLOR_RESET
+                    " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
+                    " Ly do                   " COLOR_CYAN LINE_V COLOR_RESET
+                    " Tien phat (VND) " COLOR_CYAN LINE_V COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 6; i++) printf(LINE_H);
+  for (int i = 0; i < 6; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++) printf(LINE_H);
+  for (int i = 0; i < 17; i++)
+    printf(LINE_H);
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < db->violationCount; i++) {
@@ -989,19 +1091,26 @@ int violationMarkPaid(AppDatabase *db) {
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", unpaidCount + 1);
       printf(COLOR_CYAN LINE_V COLOR_RESET " %-16s ", timeBuf);
       printf(COLOR_CYAN LINE_V COLOR_RESET " %-23s ", reasonName(v->reason));
-      printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-15.0f" COLOR_RESET " " COLOR_CYAN LINE_V COLOR_RESET "\n", v->fine);
+      printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-15.0f" COLOR_RESET
+                                           " " COLOR_CYAN LINE_V COLOR_RESET
+                                           "\n",
+             v->fine);
       unpaidCount++;
     }
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 6; i++) printf(LINE_H);
+  for (int i = 0; i < 6; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 18; i++) printf(LINE_H);
+  for (int i = 0; i < 18; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 25; i++) printf(LINE_H);
+  for (int i = 0; i < 25; i++)
+    printf(LINE_H);
   printf(LINE_T_UP);
-  for (int i = 0; i < 17; i++) printf(LINE_H);
+  for (int i = 0; i < 17; i++)
+    printf(LINE_H);
   printf(LINE_BR "\n" COLOR_RESET);
 
   if (unpaidCount == 0) {
@@ -1014,7 +1123,8 @@ int violationMarkPaid(AppDatabase *db) {
   int selectedCount = 0;
 
   while (1) {
-    printf(COLOR_CYAN "  Chon STT de thu (vd: 1,3 hoac 99 de thu tat ca, 0 de huy): " COLOR_RESET);
+    printf(COLOR_CYAN "  Chon STT de thu (vd: 1,3 hoac 99 de thu tat ca, 0 de "
+                      "huy): " COLOR_RESET);
     readString(choiceStr, sizeof(choiceStr));
     trimSpaces(choiceStr);
 
@@ -1041,7 +1151,8 @@ int violationMarkPaid(AppDatabase *db) {
     char *token = strtok(tempStr, ",");
     while (token != NULL) {
       /* Trim spaces from token */
-      while (*token == ' ') token++;
+      while (*token == ' ')
+        token++;
       int len = (int)strlen(token);
       while (len > 0 && token[len - 1] == ' ') {
         token[len - 1] = '\0';
@@ -1148,21 +1259,22 @@ int violationMarkPaid(AppDatabase *db) {
     printf(ERR_OK "Da thu TOAN BO tien phat thanh cong!\n\n");
     logSystemAction(session->studentId, "Thu toan bo tien phat", m->studentId);
   } else {
-    printf(ERR_OK "Da thu tien phat cua cac STT da chon thanh cong! Tong no con lai: " COLOR_BOLD COLOR_GREEN "%.0f VND" COLOR_RESET "\n\n",
+    printf(ERR_OK "Da thu tien phat cua cac STT da chon thanh cong! Tong no "
+                  "con lai: " COLOR_BOLD COLOR_GREEN "%.0f VND" COLOR_RESET
+                  "\n\n",
            m->totalFine);
     logSystemAction(session->studentId, "Thu mot phan tien phat", m->studentId);
   }
   return 0;
 }
 
-
-
 /* ============================================================
  * Story 17 - View Violation History by Member (BCN)
  * ============================================================ */
 
 void violationViewByMSSV(AppDatabase *db) {
-  if (db == NULL) return;
+  if (db == NULL)
+    return;
 
   Account *session = authGetSession();
   if (session == NULL) {
@@ -1180,14 +1292,16 @@ void violationViewByMSSV(AppDatabase *db) {
     uiClear();
     uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem lich su VP theo MSSV");
 
-    printf(COLOR_CYAN "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
+    printf(COLOR_CYAN
+           "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
     readString(input, sizeof(input));
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
       return;
     }
-    if (!validateNotEmpty(input)) continue;
+    if (!validateNotEmpty(input))
+      continue;
 
     memberIdx = memberFindById(db, input);
     if (memberIdx == -1) {
@@ -1201,18 +1315,20 @@ void violationViewByMSSV(AppDatabase *db) {
       if (count == 1) {
         memberIdx = indices[0];
       } else {
-        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET, count);
+        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET,
+               count);
         for (int i = 0; i < count; i++) {
           Member *m = &db->members[indices[i]];
-          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId,
-                 m->fullName, teamName(m->team));
+          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
+                 teamName(m->team));
         }
-        int choice = readMenuChoice(
-            COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice =
+            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
         memberIdx = indices[choice - 1];
       }
     }
-    if (memberIdx != -1) break;
+    if (memberIdx != -1)
+      break;
   }
 
   Member *m = &db->members[memberIdx];
@@ -1242,42 +1358,55 @@ void violationViewByMSSV(AppDatabase *db) {
 
     int start = currentPage * ROWS_PER_PAGE;
     int end = start + ROWS_PER_PAGE;
-    if (end > found) end = found;
+    if (end > found)
+      end = found;
 
     for (int i = start; i < end; i++) {
       printViolationRow(m, &db->violations[matchIdx[i]]);
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++) printf(LINE_H);
+    for (int i = 0; i < 14; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 18; i++) printf(LINE_H);
+    for (int i = 0; i < 18; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 15; i++) printf(LINE_H);
+    for (int i = 0; i < 15; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_BR "\n" COLOR_RESET);
 
-    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
-           COLOR_BOLD "%d" COLOR_RESET " vi pham\n",
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
+           "%d" COLOR_RESET " vi pham\n",
            currentPage + 1, totalPages, found);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET " > ");
+      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
+                       " > ");
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') break;
-      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
-      else if ((c == 'p' || c == 'P') && currentPage > 0) currentPage--;
+      if (c == 'q' || c == 'Q')
+        break;
+      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1)
+        currentPage++;
+      else if ((c == 'p' || c == 'P') && currentPage > 0)
+        currentPage--;
     } else {
       break;
     }
@@ -1309,7 +1438,8 @@ void violationSearchByDate(AppDatabase *db) {
 date_input:
   while (1) {
     while (1) {
-      printf(COLOR_CYAN "  Nhap ngay bat dau (dd/mm/yyyy, 0 de quay lai): " COLOR_RESET);
+      printf(COLOR_CYAN
+             "  Nhap ngay bat dau (dd/mm/yyyy, 0 de quay lai): " COLOR_RESET);
       readString(startBuf, sizeof(startBuf));
       trimSpaces(startBuf);
       if (strcmp(startBuf, "0") == 0) {
@@ -1323,7 +1453,8 @@ date_input:
     }
 
     while (1) {
-      printf(COLOR_CYAN "  Nhap ngay ket thuc (dd/mm/yyyy, 0 de quay lai): " COLOR_RESET);
+      printf(COLOR_CYAN
+             "  Nhap ngay ket thuc (dd/mm/yyyy, 0 de quay lai): " COLOR_RESET);
       readString(endBuf, sizeof(endBuf));
       trimSpaces(endBuf);
       if (strcmp(endBuf, "0") == 0) {
@@ -1336,8 +1467,10 @@ date_input:
       }
     }
 
-    if (start <= end) break;
-    printf(ERR_LOI "Ngay bat dau phai truoc hoac bang ngay ket thuc! Vui long nhap lai.\n");
+    if (start <= end)
+      break;
+    printf(ERR_LOI "Ngay bat dau phai truoc hoac bang ngay ket thuc! Vui long "
+                   "nhap lai.\n");
   }
 
   /* Collect matching violation indices */
@@ -1364,7 +1497,8 @@ date_input:
 
     int startIdx = currentPage * ROWS_PER_PAGE;
     int endIdx = startIdx + ROWS_PER_PAGE;
-    if (endIdx > found) endIdx = found;
+    if (endIdx > found)
+      endIdx = found;
 
     for (int i = startIdx; i < endIdx; i++) {
       const Violation *v = &db->violations[matchIdx[i]];
@@ -1372,38 +1506,52 @@ date_input:
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++) printf(LINE_H);
+    for (int i = 0; i < 14; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 18; i++) printf(LINE_H);
+    for (int i = 0; i < 18; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++); printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      ;
+    printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 15; i++) printf(LINE_H);
+    for (int i = 0; i < 15; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_BR "\n" COLOR_RESET);
 
-    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
-           COLOR_BOLD "%d" COLOR_RESET " vi pham\n",
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
+           "%d" COLOR_RESET " vi pham\n",
            currentPage + 1, totalPages, found);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET " > ");
+      printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET
+                       " > ");
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') goto date_input;
-      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
-      else if ((c == 'm' || c == 'M') && currentPage > 0) currentPage--;
+      if (c == 'q' || c == 'Q')
+        goto date_input;
+      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1)
+        currentPage++;
+      else if ((c == 'm' || c == 'M') && currentPage > 0)
+        currentPage--;
     } else {
       printf("\n  Nhan Enter de tiep tuc...");
-      while (getchar() != '\n' && getchar() != EOF);
+      while (getchar() != '\n' && getchar() != EOF)
+        ;
       goto date_input;
     }
   }

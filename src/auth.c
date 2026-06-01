@@ -92,12 +92,13 @@ int authLogin(AppDatabase *db) {
 
     if (acc->isLocked) {
       printf(ERR_LOI "Tai khoan da bi khoa! "
-             "Vui long lien he BCN de mo khoa.\n");
+                     "Vui long lien he BCN de mo khoa.\n");
       continue;
     }
 
     char inputHashed[32];
-    /* Backward-compatible migration: If legacy account has no salt, generate one and hash password in-place */
+    /* Backward-compatible migration: If legacy account has no salt, generate
+     * one and hash password in-place */
     if (strlen(acc->salt) == 0) {
       generateSalt(acc->salt, sizeof(acc->salt));
       char oldPlain[MAX_PASS_LEN];
@@ -115,7 +116,7 @@ int authLogin(AppDatabase *db) {
       if (acc->failCount >= 3) {
         acc->isLocked = 1;
         printf(ERR_CANH_BAO "Tai khoan da bi khoa sau 3 lan nhap sai! "
-               "Lien he BCN de mo khoa.\n");
+                            "Lien he BCN de mo khoa.\n");
         (void)fileioSaveAccounts(db);
         return -1;
       }
@@ -132,7 +133,7 @@ int authLogin(AppDatabase *db) {
     sessionActive = 1;
 
     printf(ERR_OK "Dang nhap thanh cong! "
-           "Chao mung %s (%s)\n",
+                  "Chao mung %s (%s)\n",
            studentId, accountRoleName(acc->role));
 
     /* Force change default password if needed */
@@ -147,7 +148,7 @@ int authLogin(AppDatabase *db) {
         changed = (authChangePassword(db) == 0);
         if (!changed) {
           printf(ERR_LOI "Ban phai doi mat khau truoc khi "
-                 "su dung he thong!\n\n");
+                         "su dung he thong!\n\n");
         }
       }
 
@@ -222,7 +223,8 @@ int authChangePassword(AppDatabase *db) {
       char oldPlain[MAX_PASS_LEN];
       strncpy(oldPlain, db->accounts[idx].password, MAX_PASS_LEN - 1);
       oldPlain[MAX_PASS_LEN - 1] = '\0';
-      hashPassword(oldPlain, db->accounts[idx].salt, db->accounts[idx].password);
+      hashPassword(oldPlain, db->accounts[idx].salt,
+                   db->accounts[idx].password);
       (void)fileioSaveAccounts(db);
     }
 
@@ -274,7 +276,7 @@ int authChangePassword(AppDatabase *db) {
 
     if (strcmp(newPass, confirmPass) != 0) {
       printf(ERR_LOI "Mat khau xac nhan khong khop! "
-             "Vui long nhap lai mat khau moi.\n");
+                     "Vui long nhap lai mat khau moi.\n");
       continue;
     }
 
@@ -317,14 +319,15 @@ int authResetPassword(AppDatabase *db, const char *targetStudentId) {
 
   int idx = findAccountIndex(db, targetStudentId);
   if (idx == -1) {
-    printf(ERR_LOI "Khong tim thay tai khoan voi MSSV: %s!\n",
-           targetStudentId);
+    printf(ERR_LOI "Khong tim thay tai khoan voi MSSV: %s!\n", targetStudentId);
     return -1;
   }
 
-  /* Reset password to MSSV, unlock, mark as default using fresh salt and hash */
+  /* Reset password to MSSV, unlock, mark as default using fresh salt and hash
+   */
   generateSalt(db->accounts[idx].salt, sizeof(db->accounts[idx].salt));
-  hashPassword(targetStudentId, db->accounts[idx].salt, db->accounts[idx].password);
+  hashPassword(targetStudentId, db->accounts[idx].salt,
+               db->accounts[idx].password);
   db->accounts[idx].failCount = 0;
   db->accounts[idx].isLocked = 0;
   db->accounts[idx].isDefaultPassword = 1;
@@ -335,7 +338,7 @@ int authResetPassword(AppDatabase *db, const char *targetStudentId) {
   }
 
   printf(ERR_OK "Da reset mat khau cua %s ve MSSV. "
-         "Thanh vien se phai doi mat khau khi dang nhap.\n",
+                "Thanh vien se phai doi mat khau khi dang nhap.\n",
          targetStudentId);
   return 0;
 }

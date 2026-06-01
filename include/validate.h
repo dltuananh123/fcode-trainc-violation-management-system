@@ -40,7 +40,8 @@ void mssvAutoUpper(char *mssv);
 /** Validate full name: 2-5 words, max 50 chars, letters+spaces only. */
 int validateName(const char *name);
 
-/** Auto-fix name: capitalize each word, trim spaces, remove consecutive spaces. */
+/** Auto-fix name: capitalize each word, trim spaces, remove consecutive spaces.
+ */
 void nameAutoFix(char *name);
 
 /* ============================================================

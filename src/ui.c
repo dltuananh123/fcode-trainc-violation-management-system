@@ -8,10 +8,10 @@
 
 #include "ui.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <time.h>
 
 #ifdef _WIN32
@@ -84,8 +84,7 @@ void uiDrawTitle(const char *title) {
   int titleLen = 0;
   /* Count visible characters (skip UTF-8 multi-byte) */
   for (int i = 0; title[i] != '\0'; i++) {
-    if ((unsigned char)title[i] < 0x80 ||
-        (unsigned char)title[i] >= 0xC0) {
+    if ((unsigned char)title[i] < 0x80 || (unsigned char)title[i] >= 0xC0) {
       titleLen++;
     }
   }
@@ -101,8 +100,7 @@ void uiDrawTitle(const char *title) {
     printf(" ");
   }
   printf("%s", title);
-  for (int i = 0;
-       i < UI_TERM_WIDTH - padding - titleLen - 2; i++) {
+  for (int i = 0; i < UI_TERM_WIDTH - padding - titleLen - 2; i++) {
     printf(" ");
   }
   printf(COLOR_RESET);
@@ -116,8 +114,7 @@ void uiDrawStatusBar(const char *user, const char *role) {
   /* Top line of status bar */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_BOLD);
-  printf(" %s | %s (%s) | fcode VMS v2.0 ",
-         timeStr, user, role);
+  printf(" %s | %s (%s) | fcode VMS v2.0 ", timeStr, user, role);
 
   /* Fill remaining width */
   int used = (int)strlen(timeStr) + 3 + (int)strlen(user) + 1 +
@@ -213,9 +210,8 @@ void uiPrintCentered(const char *text, int width) {
 void uiGetCurrentTime(char *buffer, int bufSize) {
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
-  snprintf(buffer, (size_t)bufSize, "%02d/%02d/%04d %02d:%02d",
-           t->tm_mday, t->tm_mon + 1, t->tm_year + 1900,
-           t->tm_hour, t->tm_min);
+  snprintf(buffer, (size_t)bufSize, "%02d/%02d/%04d %02d:%02d", t->tm_mday,
+           t->tm_mon + 1, t->tm_year + 1900, t->tm_hour, t->tm_min);
 }
 
 static int uiVisibleLen(const char *s) {
@@ -225,8 +221,10 @@ static int uiVisibleLen(const char *s) {
       s++;
       if (*s == '[') {
         s++;
-        while (*s && *s != 'm') s++;
-        if (*s) s++;
+        while (*s && *s != 'm')
+          s++;
+        if (*s)
+          s++;
       }
     } else {
       len++;
@@ -273,25 +271,36 @@ void uiDrawLogo(void) {
 
   /* Firebird Phoenix ASCII Art */
   /* g4 = darkest green */
-  printf("                                    " COLOR_GREEN "--" COLOR_RESET "\n");
-  printf("                              " COLOR_GREEN "======" COLOR_GRAY "--" COLOR_RESET "\n");
+  printf("                                    " COLOR_GREEN "--" COLOR_RESET
+         "\n");
+  printf("                              " COLOR_GREEN "======" COLOR_GRAY
+         "--" COLOR_RESET "\n");
   /* g3 = dark green */
-  printf("                         " COLOR_GREEN "===========-" COLOR_RESET "\n");
-  printf("                    " COLOR_GREEN "=================" COLOR_RESET "\n");
+  printf("                         " COLOR_GREEN "===========-" COLOR_RESET
+         "\n");
+  printf("                    " COLOR_GREEN "=================" COLOR_RESET
+         "\n");
   /* g2 = green */
-  printf("                " COLOR_GREEN "++++================" COLOR_RESET "\n");
+  printf("                " COLOR_GREEN "++++================" COLOR_RESET
+         "\n");
   printf("               " COLOR_GREEN "+++++===========" COLOR_RESET "\n");
   /* g1 = light green, p1 = pale green */
-  printf("               " COLOR_GREEN "+++++++====" COLOR_RESET "     " COLOR_GREEN "****" COLOR_RESET "\n");
-  printf("               " COLOR_GREEN "++++++" COLOR_RESET "     " COLOR_GREEN "********" COLOR_RESET "\n");
-  printf("              " COLOR_GREEN "++" COLOR_RESET "     " COLOR_GREEN "***********" COLOR_RESET COLOR_GREEN "+" COLOR_RESET "\n");
+  printf("               " COLOR_GREEN "+++++++====" COLOR_RESET
+         "     " COLOR_GREEN "****" COLOR_RESET "\n");
+  printf("               " COLOR_GREEN "++++++" COLOR_RESET "     " COLOR_GREEN
+         "********" COLOR_RESET "\n");
+  printf("              " COLOR_GREEN "++" COLOR_RESET "     " COLOR_GREEN
+         "***********" COLOR_RESET COLOR_GREEN "+" COLOR_RESET "\n");
   /* p1 = pale green, yl = yellow light */
-  printf("                " COLOR_GREEN "**********" COLOR_RESET COLOR_YELLOW "+++++++" COLOR_RESET "\n");
-  printf("               " COLOR_GREEN "*****" COLOR_RESET COLOR_YELLOW "+++++++++++" COLOR_RESET "\n");
+  printf("                " COLOR_GREEN "**********" COLOR_RESET COLOR_YELLOW
+         "+++++++" COLOR_RESET "\n");
+  printf("               " COLOR_GREEN "*****" COLOR_RESET COLOR_YELLOW
+         "+++++++++++" COLOR_RESET "\n");
   /* yl = yellow light */
   printf("               " COLOR_YELLOW "*++++++++++" COLOR_RESET "\n");
   /* yl = yellow light, yd = orange */
-  printf("              " COLOR_YELLOW "++++++" COLOR_RESET COLOR_ORANGE "====" COLOR_RESET "\n");
+  printf("              " COLOR_YELLOW "++++++" COLOR_RESET COLOR_ORANGE
+         "====" COLOR_RESET "\n");
   printf("             " COLOR_ORANGE "+==-----------" COLOR_RESET "\n");
   /* d = dark (use GRAY for visibility) */
   printf("               " COLOR_GRAY "---------------" COLOR_RESET "\n");
@@ -301,14 +310,21 @@ void uiDrawLogo(void) {
   printf("\n");
 
   /* FCODE text */
-  printf("              " COLOR_BOLD COLOR_GREEN "███████╗       ██████╗ ██████╗ ██████╗ ███████╗" COLOR_RESET "\n");
-  printf("              " COLOR_BOLD COLOR_GREEN "██╔════╝      ██╔════╝██╔═══██╗██╔══██╗██╔════╝" COLOR_RESET "\n");
-  printf("              " COLOR_BOLD COLOR_GREEN "█████╗  ───── ██║     ██║   ██║██║  ██║█████╗  " COLOR_RESET "\n");
-  printf("              " COLOR_BOLD COLOR_GREEN "██╔══╝        ██║     ██║   ██║██║  ██║██╔══╝  " COLOR_RESET "\n");
-  printf("              " COLOR_BOLD COLOR_GREEN "██╗           ╚██████╗╚██████╔╝██████╔╝███████╗" COLOR_RESET "\n");
-  printf("              " COLOR_BOLD COLOR_GREEN "╚═╝            ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN
+         "███████╗       ██████╗ ██████╗ ██████╗ ███████╗" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN
+         "██╔════╝      ██╔════╝██╔═══██╗██╔══██╗██╔════╝" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN
+         "█████╗  ───── ██║     ██║   ██║██║  ██║█████╗  " COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN
+         "██╔══╝        ██║     ██║   ██║██║  ██║██╔══╝  " COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN
+         "██╗           ╚██████╗╚██████╔╝██████╔╝███████╗" COLOR_RESET "\n");
+  printf("              " COLOR_BOLD COLOR_GREEN
+         "╚═╝            ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝" COLOR_RESET "\n");
   printf("\n");
-  printf("                 " COLOR_DIM COLOR_GREEN " C o d e   t h e   d r e a m" COLOR_RESET "\n");
+  printf("                 " COLOR_DIM COLOR_GREEN
+         " C o d e   t h e   d r e a m" COLOR_RESET "\n");
   printf("\n");
   printf("\n");
 }

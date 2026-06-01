@@ -165,7 +165,7 @@ void getExeDir(char *buffer, size_t size);
 
 /**
  * @brief Salter and Hasher for passwords using key stretched FNV-1a.
- * 
+ *
  * @param password The plain text password.
  * @param salt The salt value.
  * @param outHashHex 32-character buffer to hold output hex string.
@@ -174,15 +174,16 @@ void hashPassword(const char *password, const char *salt, char *outHashHex);
 
 /**
  * @brief Generates a random salt.
- * 
+ *
  * @param salt The output salt buffer.
  * @param size Size of the buffer.
  */
 void generateSalt(char *salt, size_t size);
 
 /**
- * @brief Logs an administrative action to data/system_audit.log and triggers a simulated webhook to data/simulated_webhooks.log.
- * 
+ * @brief Logs an administrative action to data/system_audit.log and triggers a
+ * simulated webhook to data/simulated_webhooks.log.
+ *
  * @param actor The actor (e.g. BCN's student ID or username).
  * @param action The action performed.
  * @param target The target member or ID.

@@ -137,8 +137,6 @@ static int writeCountChecked(FILE *fp, int count, const char *label) {
   return 0;
 }
 
-
-
 /* Fix #6: explicit fflush before fclose for safety on all platforms */
 static int closeFileChecked(FILE *fp, const char *label) {
   if (fflush(fp) != 0) {
@@ -180,7 +178,8 @@ static int replaceStoreFile(const char *tmpFile, const char *dataFile,
   return 0;
 }
 
-static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize, int count, const char *label) {
+static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize,
+                           int count, const char *label) {
   if (count == 0) {
     return 0;
   }
@@ -195,14 +194,16 @@ static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize, int co
 
   if (fwrite(encrypted, itemSize, (size_t)count, fp) != (size_t)count) {
     free(encrypted);
-    printf("[LOI] Khong the ghi day du du lieu ma hoa %s vao file tam!\n", label);
+    printf("[LOI] Khong the ghi day du du lieu ma hoa %s vao file tam!\n",
+           label);
     return -1;
   }
   free(encrypted);
   return 0;
 }
 
-static int readAndDecrypt(FILE *fp, void *buffer, size_t itemSize, int count, const char *label) {
+static int readAndDecrypt(FILE *fp, void *buffer, size_t itemSize, int count,
+                          const char *label) {
   if (count == 0) {
     return 0;
   }
@@ -292,24 +293,28 @@ static int loadAccounts(AppDatabase *db) {
   if (fp != NULL) {
     char magic[MAGIC_LEN];
     int isEncrypted = 0;
-    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN && memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
+        memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
       isEncrypted = 1;
     } else {
       fseek(fp, 0, SEEK_SET);
     }
 
-    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") != 0) {
+    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") !=
+        0) {
       fclose(fp);
       return -1;
     }
 
     if (isEncrypted) {
-      if (readAndDecrypt(fp, db->accounts, sizeof(Account), db->accountCount, "accounts") != 0) {
+      if (readAndDecrypt(fp, db->accounts, sizeof(Account), db->accountCount,
+                         "accounts") != 0) {
         fclose(fp);
         return -1;
       }
     } else {
-      if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount, "accounts") != 0) {
+      if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount,
+                           "accounts") != 0) {
         fclose(fp);
         return -1;
       }
@@ -342,7 +347,8 @@ static int loadMembers(AppDatabase *db) {
   if (fp != NULL) {
     char magic[MAGIC_LEN];
     int isEncrypted = 0;
-    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN && memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
+        memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
       isEncrypted = 1;
     } else {
       fseek(fp, 0, SEEK_SET);
@@ -354,12 +360,14 @@ static int loadMembers(AppDatabase *db) {
     }
 
     if (isEncrypted) {
-      if (readAndDecrypt(fp, db->members, sizeof(Member), db->memberCount, "members") != 0) {
+      if (readAndDecrypt(fp, db->members, sizeof(Member), db->memberCount,
+                         "members") != 0) {
         fclose(fp);
         return -1;
       }
     } else {
-      if (readItemsChecked(fp, db->members, sizeof(Member), db->memberCount, "members") != 0) {
+      if (readItemsChecked(fp, db->members, sizeof(Member), db->memberCount,
+                           "members") != 0) {
         fclose(fp);
         return -1;
       }
@@ -380,24 +388,28 @@ static int loadViolations(AppDatabase *db) {
   if (fp != NULL) {
     char magic[MAGIC_LEN];
     int isEncrypted = 0;
-    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN && memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
+        memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
       isEncrypted = 1;
     } else {
       fseek(fp, 0, SEEK_SET);
     }
 
-    if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS, "violations") != 0) {
+    if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS,
+                         "violations") != 0) {
       fclose(fp);
       return -1;
     }
 
     if (isEncrypted) {
-      if (readAndDecrypt(fp, db->violations, sizeof(Violation), db->violationCount, "violations") != 0) {
+      if (readAndDecrypt(fp, db->violations, sizeof(Violation),
+                         db->violationCount, "violations") != 0) {
         fclose(fp);
         return -1;
       }
     } else {
-      if (readItemsChecked(fp, db->violations, sizeof(Violation), db->violationCount, "violations") != 0) {
+      if (readItemsChecked(fp, db->violations, sizeof(Violation),
+                           db->violationCount, "violations") != 0) {
         fclose(fp);
         return -1;
       }

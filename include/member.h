@@ -77,7 +77,8 @@ int memberEdit(AppDatabase *db);
  * ============================================================ */
 
 /**
- * @brief Search for a member by Name or MSSV and display their complete details.
+ * @brief Search for a member by Name or MSSV and display their complete
+ * details.
  *
  * Provides a detailed summary including contact info, role, active status,
  * consecutive absences, violation statistics, and recent violations history.
@@ -128,7 +129,8 @@ void memberListAll(AppDatabase *db);
 void memberViewArchive(AppDatabase *db);
 
 /**
- * @brief Kick a member (forces Out CLB + locks account) or restore/readmit them.
+ * @brief Kick a member (forces Out CLB + locks account) or restore/readmit
+ * them.
  *
  * @param db Pointer to the AppDatabase.
  */

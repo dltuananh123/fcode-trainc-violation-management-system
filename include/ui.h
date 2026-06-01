@@ -56,19 +56,19 @@
 #define BOX_H "\xE2\x95\x90"  /* ═ */
 #define BOX_V "\xE2\x95\x91"  /* ║ */
 
-#define LINE_TL "\xE2\x94\x8C" /* ┌ */
-#define LINE_TR "\xE2\x94\x90" /* ┐ */
-#define LINE_BL "\xE2\x94\x94" /* └ */
-#define LINE_BR "\xE2\x94\x98" /* ┘ */
-#define LINE_H "\xE2\x94\x80"  /* ─ */
-#define LINE_V "\xE2\x94\x82"  /* │ */
+#define LINE_TL "\xE2\x94\x8C"      /* ┌ */
+#define LINE_TR "\xE2\x94\x90"      /* ┐ */
+#define LINE_BL "\xE2\x94\x94"      /* └ */
+#define LINE_BR "\xE2\x94\x98"      /* ┘ */
+#define LINE_H "\xE2\x94\x80"       /* ─ */
+#define LINE_V "\xE2\x94\x82"       /* │ */
 #define LINE_T_RIGHT "\xE2\x94\x9C" /* ├ */
-#define LINE_T_LEFT "\xE2\x94\xA4" /* ┤ */
-#define LINE_T_DOWN "\xE2\x94\xAC" /* ┬ */
-#define LINE_T_UP "\xE2\x94\xB4" /* ┴ */
-#define LINE_cross "\xE2\x94\xBC" /* ┼ */
-#define LINE_TL2 "\xE2\x95\x94" /* ╔ (double) */
-#define LINE_V2 "\xE2\x95\x91"  /* ║ (double) */
+#define LINE_T_LEFT "\xE2\x94\xA4"  /* ┤ */
+#define LINE_T_DOWN "\xE2\x94\xAC"  /* ┬ */
+#define LINE_T_UP "\xE2\x94\xB4"    /* ┴ */
+#define LINE_cross "\xE2\x94\xBC"   /* ┼ */
+#define LINE_TL2 "\xE2\x95\x94"     /* ╔ (double) */
+#define LINE_V2 "\xE2\x95\x91"      /* ║ (double) */
 
 /* ============================================================
  * UI FUNCTION DECLARATIONS
@@ -116,8 +116,10 @@ void uiDrawBreadcrumb(const char *path);
 void uiDrawSeparator(void);
 
 /**
- * @brief Draw a single menu row inside the box (left-aligned, padded to full width).
- * @param text The menu item text (must NOT include leading/trailing spaces padding).
+ * @brief Draw a single menu row inside the box (left-aligned, padded to full
+ * width).
+ * @param text The menu item text (must NOT include leading/trailing spaces
+ * padding).
  */
 void uiDrawMenuRow(const char *text);
 
@@ -162,7 +164,8 @@ void uiGetCurrentTime(char *buffer, int bufSize);
 
 /**
  * @brief Draw the FCODE Firebird ASCII art logo on startup screen.
- * Displays a colorful firebird phoenix with "FCODE" text and "Code the dream" subtitle.
+ * Displays a colorful firebird phoenix with "FCODE" text and "Code the dream"
+ * subtitle.
  */
 void uiDrawLogo(void);
 

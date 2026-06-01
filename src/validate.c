@@ -99,7 +99,7 @@ int validateMSSVFormat(const char *mssv) {
 
   if (strlen(mssv) != 8) {
     printf(ERR_LOI "MSSV phai dung 8 ky tu (dang XY123456)! "
-           "Ban nhap %d ky tu.\n",
+                   "Ban nhap %d ky tu.\n",
            (int)strlen(mssv));
     return 0;
   }
@@ -108,7 +108,7 @@ int validateMSSVFormat(const char *mssv) {
   const char *campus = "SHDCQshdcq";
   if (strchr(campus, mssv[0]) == NULL) {
     printf(ERR_LOI "Ky tu dau tien phai la Campus: "
-           "S(HCM), H(HN), D(DN), C(CT), Q(QN)!\n");
+                   "S(HCM), H(HN), D(DN), C(CT), Q(QN)!\n");
     return 0;
   }
 
@@ -116,7 +116,7 @@ int validateMSSVFormat(const char *mssv) {
   const char *division = "EAS eas";
   if (strchr(division, mssv[1]) == NULL) {
     printf(ERR_LOI "Ky tu thu hai phai la khoi nganh: "
-           "E(Engineering), A(Arts), S(Social)!\n");
+                   "E(Engineering), A(Arts), S(Social)!\n");
     return 0;
   }
 
@@ -248,7 +248,7 @@ int validateName(const char *name) {
   /* Letters and spaces only */
   if (!isLettersOnly(name)) {
     printf(ERR_LOI "Ho ten chi duoc chua chu cai va khoang trang! "
-           "Khong duoc chua so hoac ky tu dac biet.\n");
+                   "Khong duoc chua so hoac ky tu dac biet.\n");
     return 0;
   }
 
@@ -319,9 +319,12 @@ void nameAutoFix(char *name) {
  * ============================================================ */
 
 static int isValidEmailChar(char c, int isLocal) {
-  if (c >= 'a' && c <= 'z') return 1;
-  if (c >= 'A' && c <= 'Z') return 1;
-  if (c >= '0' && c <= '9') return 1;
+  if (c >= 'a' && c <= 'z')
+    return 1;
+  if (c >= 'A' && c <= 'Z')
+    return 1;
+  if (c >= '0' && c <= '9')
+    return 1;
   if (isLocal) {
     return c == '.' || c == '_' || c == '%' || c == '+' || c == '-';
   }
@@ -416,7 +419,8 @@ int validateEmail(const char *email) {
   }
 
   /* Domain cannot start or end with dot or hyphen */
-  if (domain[0] == '.' || domain[0] == '-' || domain[strlen(domain) - 1] == '.') {
+  if (domain[0] == '.' || domain[0] == '-' ||
+      domain[strlen(domain) - 1] == '.') {
     printf(ERR_LOI "Ten mien khong hop le!\n");
     return 0;
   }
@@ -425,7 +429,9 @@ int validateEmail(const char *email) {
   char *tld = lastDot + 1;
   int tldLen = (int)strlen(tld);
   if (tldLen < 2) {
-    printf(ERR_LOI "Domain phai co it nhat 2 ky tu sau dau cham cuoi (vd: .com, .vn)!\n");
+    printf(
+        ERR_LOI
+        "Domain phai co it nhat 2 ky tu sau dau cham cuoi (vd: .com, .vn)!\n");
     return 0;
   }
 
@@ -525,7 +531,7 @@ int validatePhone(const char *phone) {
   int len = (int)strlen(normalized);
   if (len != 10) {
     printf(ERR_LOI "So dien thoai phai dung 10 chu so! "
-           "Ban nhap %d chu so.\n",
+                   "Ban nhap %d chu so.\n",
            len);
     return 0;
   }
@@ -539,11 +545,10 @@ int validatePhone(const char *phone) {
   }
 
   /* Second digit must be 3, 5, 7, 8, or 9 */
-  if (normalized[1] != '3' && normalized[1] != '5' &&
-      normalized[1] != '7' && normalized[1] != '8' &&
-      normalized[1] != '9') {
+  if (normalized[1] != '3' && normalized[1] != '5' && normalized[1] != '7' &&
+      normalized[1] != '8' && normalized[1] != '9') {
     printf(ERR_LOI "Dau so \"%c%c\" khong phai dau so dien thoai "
-           "Viet Nam hop le!\n",
+                   "Viet Nam hop le!\n",
            normalized[0], normalized[1]);
     return 0;
   }
@@ -567,22 +572,20 @@ const char *phoneCarrier(const char *phone) {
   prefix = (normalized[1] - '0') * 10 + (normalized[2] - '0');
 
   /* Viettel: 86, 96, 97, 98, 32-39 */
-  if ((prefix >= 32 && prefix <= 39) || prefix == 86 ||
-      prefix == 96 || prefix == 97 || prefix == 98) {
+  if ((prefix >= 32 && prefix <= 39) || prefix == 86 || prefix == 96 ||
+      prefix == 97 || prefix == 98) {
     return "Viettel";
   }
 
   /* Vinaphone: 91, 94, 88, 83, 84, 85, 81, 82 */
-  if (prefix == 81 || prefix == 82 || prefix == 83 ||
-      prefix == 84 || prefix == 85 || prefix == 88 ||
-      prefix == 91 || prefix == 94) {
+  if (prefix == 81 || prefix == 82 || prefix == 83 || prefix == 84 ||
+      prefix == 85 || prefix == 88 || prefix == 91 || prefix == 94) {
     return "Vinaphone";
   }
 
   /* Mobifone: 89, 90, 93, 70, 79, 77, 76, 78 */
-  if (prefix == 70 || prefix == 76 || prefix == 77 ||
-      prefix == 78 || prefix == 79 || prefix == 89 ||
-      prefix == 90 || prefix == 93) {
+  if (prefix == 70 || prefix == 76 || prefix == 77 || prefix == 78 ||
+      prefix == 79 || prefix == 89 || prefix == 90 || prefix == 93) {
     return "Mobifone";
   }
 
@@ -707,7 +710,8 @@ int validatePassword(const char *password) {
     }
   }
   if (!hasSpecial) {
-    printf(ERR_LOI "Mat khau phai chua it nhat 1 ky tu dac biet (@, $, !, %%, *, ?, &, ...)!\n");
+    printf(ERR_LOI "Mat khau phai chua it nhat 1 ky tu dac biet (@, $, !, %%, "
+                   "*, ?, &, ...)!\n");
     return 0;
   }
 
@@ -741,8 +745,8 @@ int validateNotEmpty(const char *input) {
 
 int validateInRange(int value, int min, int max) {
   if (value < min || value > max) {
-    printf(ERR_LOI "Lua chon khong hop le! Vui long chon tu %d-%d!\n",
-           min, max);
+    printf(ERR_LOI "Lua chon khong hop le! Vui long chon tu %d-%d!\n", min,
+           max);
     return 0;
   }
   return 1;
@@ -899,11 +903,11 @@ int validateDate(const char *date) {
   if (day > daysPerMonth[month]) {
     if (month == 2 && !isLeap) {
       printf(ERR_LOI "Nam %d khong phai nam nhuan! "
-             "Thang 2 chi co 28 ngay.\n",
+                     "Thang 2 chi co 28 ngay.\n",
              year);
     } else {
-      printf(ERR_LOI "Ngay khong hop le! Thang %d toi da %d ngay.\n",
-             month, daysPerMonth[month]);
+      printf(ERR_LOI "Ngay khong hop le! Thang %d toi da %d ngay.\n", month,
+             daysPerMonth[month]);
     }
     return 0;
   }
@@ -915,11 +919,10 @@ int validateDate(const char *date) {
   int todayMonth = t->tm_mon + 1;
   int todayYear = t->tm_year + 1900;
 
-  if (year > todayYear ||
-      (year == todayYear && month > todayMonth) ||
+  if (year > todayYear || (year == todayYear && month > todayMonth) ||
       (year == todayYear && month == todayMonth && day > todayDay)) {
     printf(ERR_LOI "Ngay khong duoc lon hon ngay hien tai "
-           "(%02d/%02d/%04d)!\n",
+                   "(%02d/%02d/%04d)!\n",
            todayDay, todayMonth, todayYear);
     return 0;
   }
@@ -946,11 +949,10 @@ int validateDateRange(const char *start, const char *end) {
   int eYear = (end[6] - '0') * 1000 + (end[7] - '0') * 100 +
               (end[8] - '0') * 10 + (end[9] - '0');
 
-  if (sYear > eYear ||
-      (sYear == eYear && sMonth > eMonth) ||
+  if (sYear > eYear || (sYear == eYear && sMonth > eMonth) ||
       (sYear == eYear && sMonth == eMonth && sDay > eDay)) {
     printf(ERR_LOI "Ngay bat dau (%s) phai truoc hoac bang "
-           "ngay ket thuc (%s)!\n",
+                   "ngay ket thuc (%s)!\n",
            start, end);
     return 0;
   }
