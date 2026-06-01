@@ -506,7 +506,6 @@ void phoneNormalize(char *phone) {
     temp[MAX_PHONE_LEN - 1] = '\0';
     strncpy(normalized, temp, MAX_PHONE_LEN - 1);
     normalized[MAX_PHONE_LEN - 1] = '\0';
-    j = (int)strlen(normalized);
   }
 
   strncpy(phone, normalized, MAX_PHONE_LEN - 1);

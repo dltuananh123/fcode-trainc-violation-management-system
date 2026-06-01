@@ -513,7 +513,6 @@ int violationRecord(AppDatabase *db) {
           printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
                  teamName(m->team));
         }
-        memberIdx = -1;
         int choice =
             readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
         memberIdx = indices[choice - 1];
@@ -1096,7 +1095,6 @@ int violationMarkPaid(AppDatabase *db) {
           printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
                  teamName(m->team));
         }
-        memberIdx = -1;
         int choice =
             readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
         memberIdx = indices[choice - 1];
@@ -1285,7 +1283,8 @@ int violationMarkPaid(AppDatabase *db) {
 
     if (valid && selectedCount > 0) {
       break;
-    } else if (valid && selectedCount == 0) {
+    }
+    if (valid && selectedCount == 0) {
       printf(ERR_LOI "Vui long chon it nhat mot STT hoac nhap 0 de huy!\n");
     }
   }
