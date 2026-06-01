@@ -23,7 +23,7 @@ int violationRecord(AppDatabase *db);
  * ============================================================ */
 
 int violationCheckOutThreshold(AppDatabase *db, Member *member);
-void violationCheckAllOutClb(AppDatabase *db);
+int violationCheckAllOutClb(AppDatabase *db);
 
 /* ============================================================
  * Story 3.3 - Mark Paid & View Own Violations/Fines
@@ -38,15 +38,15 @@ int violationMarkPaid(AppDatabase *db);
  * Story 3.4 - View All Violations with Filters
  * ============================================================ */
 
-void violationViewAllFiltered(AppDatabase *db);
+int violationViewAllFiltered(AppDatabase *db);
 
-void violationViewByMSSV(AppDatabase *db);
+int violationViewByMSSV(AppDatabase *db);
 
 /* ============================================================
  * Story 4.4 - Search Violations by Date Range
  * ============================================================ */
 
-void violationSearchByDate(AppDatabase *db);
+int violationSearchByDate(AppDatabase *db);
 
 int violationVoid(AppDatabase *db);
 

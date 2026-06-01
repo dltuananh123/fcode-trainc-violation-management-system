@@ -182,20 +182,13 @@ static int violationMatchesPayment(const Violation *v, int expectedPayment) {
   return v->isPaid == 1;
 }
 
-void violationViewAllFiltered(AppDatabase *db) {
+int violationViewAllFiltered(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen xem tat ca vi pham!\n");
-    return;
-  }
+  REQUIRE_BCN(session);
 
   int filterType = 0;
   int filterValue = 0;
@@ -215,10 +208,10 @@ void violationViewAllFiltered(AppDatabase *db) {
       filterType =
           readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, -1, 4);
       if (filterType == -1) {
-        return;
+        return RC_ERR_CANCELLED;
       }
       if (filterType == 0) {
-        return;
+        return RC_ERR_CANCELLED;
       }
       if (filterType == 4) {
         break;
@@ -265,7 +258,7 @@ void violationViewAllFiltered(AppDatabase *db) {
       }
 
       if (subChoice == -1) {
-        return;
+        return RC_ERR_CANCELLED;
       }
       if (subChoice == 0) {
         continue;
@@ -364,6 +357,7 @@ void violationViewAllFiltered(AppDatabase *db) {
       continue;
     }
   }
+  return RC_OK;
 }
 
 /* ============================================================
@@ -372,12 +366,15 @@ void violationViewAllFiltered(AppDatabase *db) {
 
 int violationRecord(AppDatabase *db) {
   if (db == NULL) {
-    return -1;
+    return RC_ERR_NULL;
   }
+
+  Account *session = authGetSession();
+  REQUIRE_BCN(session);
 
   if (db->violationCount >= MAX_VIOLATIONS) {
     printf(ERR_LOI "Da dat gioi han so luong vi pham (%d)!\n", MAX_VIOLATIONS);
-    return -1;
+    return RC_ERR_FULL;
   }
 
   uiClear();
@@ -393,7 +390,7 @@ int violationRecord(AppDatabase *db) {
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
-      return -1;
+      return RC_ERR_CANCELLED;
     }
     if (!validateNotEmpty(input)) {
       continue;
@@ -539,7 +536,7 @@ int violationRecord(AppDatabase *db) {
     if (confirm[0] == 'n' || confirm[0] == 'N') {
       *member = oldMemberState;
       printf(ERR_INFO "Da huy ghi nhan vi pham.\n");
-      return 0;
+      return RC_ERR_CANCELLED;
     }
     printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
   }
@@ -553,7 +550,7 @@ int violationRecord(AppDatabase *db) {
     printf(ERR_LOI "Khong the luu du lieu vi pham!\n");
     db->violationCount = oldViolationCount;
     *member = oldMemberState;
-    return -1;
+    return RC_ERR_IO;
   }
 
   if (fileioSaveMembers(db) != 0) {
@@ -561,15 +558,14 @@ int violationRecord(AppDatabase *db) {
     *member = oldMemberState;
     (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
-    return -1;
+    return RC_ERR_IO;
   }
 
   printf(ERR_OK "Ghi nhan vi pham thanh cong!\n");
-  Account *session = authGetSession();
   if (session != NULL) {
     logSystemAction(session->studentId, "Ghi nhan vi pham", member->studentId);
   }
-  return 0;
+  return RC_OK;
 }
 
 /* ============================================================
@@ -605,10 +601,13 @@ int violationCheckOutThreshold(AppDatabase *db, Member *member) {
   return 0;
 }
 
-void violationCheckAllOutClb(AppDatabase *db) {
+int violationCheckAllOutClb(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
+
+  Account *session = authGetSession();
+  REQUIRE_BCN(session);
 
   printf("\nKIEM TRA NGUONG OUT CLB\n");
   printf("+------------+----------------------+-----------+------------+\n");
@@ -651,6 +650,7 @@ void violationCheckAllOutClb(AppDatabase *db) {
   printf("  CANH BAO  : Vang 3 buoi lien tiep (them 1 buoi -> Out)\n");
   printf("  QUA NGUONG: Vang qua 3 buoi, cho BCN xu ly\n");
   printf("  Out CLB   : Da bi Out CLB\n\n");
+  return RC_OK;
 }
 
 /* ============================================================
@@ -955,18 +955,11 @@ void violationViewPaymentHistory(AppDatabase *db) {
 
 int violationMarkPaid(AppDatabase *db) {
   if (db == NULL) {
-    return -1;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return -1;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen thu tien phat!\n");
-    return -1;
-  }
+  REQUIRE_BCN(session);
 
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thu tien phat");
@@ -981,7 +974,7 @@ int violationMarkPaid(AppDatabase *db) {
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
-      return -1;
+      return RC_ERR_CANCELLED;
     }
     if (!validateNotEmpty(input)) {
       continue;
@@ -1264,7 +1257,7 @@ int violationMarkPaid(AppDatabase *db) {
     m->totalFine = oldTotalFine;
     m->consecutiveAbsences = oldConsecutiveAbsences;
     printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
-    return -1;
+    return RC_ERR_IO;
   }
 
   if (fileioSaveMembers(db) != 0) {
@@ -1277,7 +1270,7 @@ int violationMarkPaid(AppDatabase *db) {
     m->consecutiveAbsences = oldConsecutiveAbsences;
     (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
-    return -1;
+    return RC_ERR_IO;
   }
 
   if (selectedCount == unpaidCount) {
@@ -1290,27 +1283,20 @@ int violationMarkPaid(AppDatabase *db) {
            m->totalFine);
     logSystemAction(session->studentId, "Thu mot phan tien phat", m->studentId);
   }
-  return 0;
+  return RC_OK;
 }
 
 /* ============================================================
  * Story 17 - View Violation History by Member (BCN)
  * ============================================================ */
 
-void violationViewByMSSV(AppDatabase *db) {
+int violationViewByMSSV(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen xem lich su vi pham theo MSSV!\n");
-    return;
-  }
+  REQUIRE_BCN(session);
 
   char input[MAX_NAME_LEN];
   int memberIdx = -1;
@@ -1324,7 +1310,7 @@ void violationViewByMSSV(AppDatabase *db) {
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
-      return;
+      return RC_ERR_CANCELLED;
     }
     if (!validateNotEmpty(input)) {
       continue;
@@ -1371,7 +1357,7 @@ void violationViewByMSSV(AppDatabase *db) {
   if (found == 0) {
     printf(ERR_INFO "Thanh vien \"%s\" (%s) khong co lich su vi pham.\n\n",
            m->fullName, m->studentId);
-    return;
+    return RC_OK;
   }
 
   int totalPages = (found + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
@@ -1450,20 +1436,24 @@ void violationViewByMSSV(AppDatabase *db) {
       break;
     }
   }
+  return RC_OK;
 }
 
 /* ============================================================
  * Story 4.4 - Search Violations by Date Range
  * ============================================================ */
 
-void violationSearchByDate(AppDatabase *db) {
+int violationSearchByDate(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
+
+  Account *session = authGetSession();
+  REQUIRE_BCN(session);
 
   if (db->violationCount == 0) {
     printf(ERR_INFO "Khong co vi pham nao trong du lieu.\n");
-    return;
+    return RC_OK;
   }
 
   char startBuf[16];
@@ -1483,7 +1473,7 @@ date_input:
       trimSpaces(startBuf);
       if (strcmp(startBuf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
-        return;
+        return RC_ERR_CANCELLED;
       }
       if (validateDate(startBuf)) {
         parseDate(startBuf, &start, 0);
@@ -1498,7 +1488,7 @@ date_input:
       trimSpaces(endBuf);
       if (strcmp(endBuf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
-        return;
+        return RC_ERR_CANCELLED;
       }
       if (validateDate(endBuf)) {
         parseDate(endBuf, &end, 1);
@@ -1525,7 +1515,7 @@ date_input:
 
   if (found == 0) {
     printf("  Khong co vi pham nao trong khoang ngay nay\n");
-    return;
+    return RC_OK;
   }
 
   int totalPages = (found + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
@@ -1578,18 +1568,11 @@ date_input:
 
 int violationVoid(AppDatabase *db) {
   if (db == NULL) {
-    return -1;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return -1;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen huy vi pham!\n");
-    return -1;
-  }
+  REQUIRE_BCN(session);
 
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Huy vi pham (Void)");
@@ -1604,7 +1587,7 @@ int violationVoid(AppDatabase *db) {
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
-      return -1;
+      return RC_ERR_CANCELLED;
     }
     if (!validateNotEmpty(input)) {
       continue;
@@ -1750,7 +1733,7 @@ int violationVoid(AppDatabase *db) {
 
   if (activeViolCount == 0) {
     printf(ERR_OK "Thanh vien nay khong co vi pham nao de huy.\n\n");
-    return 0;
+    return RC_OK;
   }
 
   int choice = readMenuChoice(
@@ -1758,7 +1741,7 @@ int violationVoid(AppDatabase *db) {
       activeViolCount);
   if (choice == 0) {
     printf(ERR_INFO "Da huy thao tac.\n\n");
-    return 0;
+    return RC_ERR_CANCELLED;
   }
 
   int selectedIdx = activeViolIndices[choice - 1];
@@ -1766,9 +1749,14 @@ int violationVoid(AppDatabase *db) {
 
   char reason[MAX_NOTE_LEN];
   while (1) {
-    printf(COLOR_CYAN "  Nhap ly do huy vi pham (bat buoc): " COLOR_RESET);
+    printf(COLOR_CYAN
+           "  Nhap ly do huy vi pham (bat buoc, 0 de huy): " COLOR_RESET);
     readString(reason, sizeof(reason));
     trimSpaces(reason);
+    if (strcmp(reason, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n\n");
+      return RC_ERR_CANCELLED;
+    }
     if (strlen(reason) == 0) {
       printf(ERR_LOI "Ly do huy khong duoc de trong!\n");
       continue;
@@ -1798,7 +1786,7 @@ int violationVoid(AppDatabase *db) {
     }
     if (confirm[0] == 'n' || confirm[0] == 'N') {
       printf(ERR_INFO "Da huy thao tac.\n");
-      return 0;
+      return RC_ERR_CANCELLED;
     }
     printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
   }
@@ -1867,7 +1855,7 @@ int violationVoid(AppDatabase *db) {
     m->violationCount = oldViolationCount;
     m->consecutiveAbsences = oldConsecutiveAbsences;
     printf(ERR_LOI "Khong the luu du lieu vi pham!\n");
-    return -1;
+    return RC_ERR_IO;
   }
 
   if (fileioSaveMembers(db) != 0) {
@@ -1881,7 +1869,7 @@ int violationVoid(AppDatabase *db) {
     m->consecutiveAbsences = oldConsecutiveAbsences;
     (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
-    return -1;
+    return RC_ERR_IO;
   }
 
   printf(ERR_OK "Da huy vi pham #%d thanh cong!\n\n", target->id);
@@ -1890,5 +1878,5 @@ int violationVoid(AppDatabase *db) {
            reason);
   logSystemAction(session->studentId, logMsg, m->studentId);
 
-  return 0;
+  return RC_OK;
 }
