@@ -492,8 +492,9 @@ void viewSystemLogs(void) {
 
   while (fgets(line, sizeof(line), f) != NULL) {
     size_t len = strlen(line);
-    if (len > 0 && line[len - 1] == '\n')
+    if (len > 0 && line[len - 1] == '\n') {
       line[len - 1] = '\0';
+    }
 
     lineCount++;
 
@@ -527,13 +528,14 @@ void viewSystemLogs(void) {
 
     if (lineCount % pageSize == 0) {
       printf("\n" COLOR_DIM "  -- Nhan Enter de xem tiep (hoac 'q' + Enter de "
-                            "thoat) --" COLOR_RESET);
+             "thoat) --" COLOR_RESET);
       int ch = getchar();
       if (ch == 'q' || ch == 'Q') {
         break;
       }
-      while (getchar() != '\n')
+      while (getchar() != '\n') {
         ;
+      }
       uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong (tiep)");
     }
   }

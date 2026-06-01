@@ -339,8 +339,9 @@ int memberEdit(AppDatabase *db) {
     char buffer[256];
     readString(buffer, sizeof(buffer));
     trimSpaces(buffer);
-    if (strlen(buffer) == 0)
+    if (strlen(buffer) == 0) {
       break;
+    }
     for (int i = 0; buffer[i]; i++) {
       buffer[i] = (char)tolower((unsigned char)buffer[i]);
     }
@@ -357,8 +358,9 @@ int memberEdit(AppDatabase *db) {
     char buffer[256];
     readString(buffer, sizeof(buffer));
     trimSpaces(buffer);
-    if (strlen(buffer) == 0)
+    if (strlen(buffer) == 0) {
       break;
+    }
     char normalized[MAX_PHONE_LEN];
     strncpy(normalized, buffer, MAX_PHONE_LEN - 1);
     normalized[MAX_PHONE_LEN - 1] = '\0';
@@ -378,8 +380,9 @@ int memberEdit(AppDatabase *db) {
     char buf[32];
     readString(buf, sizeof(buf));
     trimSpaces(buf);
-    if (strlen(buf) == 0)
+    if (strlen(buf) == 0) {
       break;
+    }
     int val = 0;
     if (sscanf(buf, "%d", &val) == 1 && val >= TEAM_ACADEMIC &&
         val <= TEAM_MEDIA) {
@@ -398,8 +401,9 @@ int memberEdit(AppDatabase *db) {
     char buf[32];
     readString(buf, sizeof(buf));
     trimSpaces(buf);
-    if (strlen(buf) == 0)
+    if (strlen(buf) == 0) {
       break;
+    }
     int val = 0;
     if (sscanf(buf, "%d", &val) == 1 && val >= MEMBER_ROLE_MEMBER &&
         val <= MEMBER_ROLE_BCN) {
@@ -540,8 +544,9 @@ int memberSearchDetails(AppDatabase *db) {
 
   printf("\n");
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < 70; i++) {
     printf(LINE_H);
+  }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -550,8 +555,9 @@ int memberSearchDetails(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < 70; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
 #define PRINT_DETAIL_ROW(label, value, val_color)                              \
@@ -594,8 +600,9 @@ int memberSearchDetails(AppDatabase *db) {
                    m->totalFine > 0 ? COLOR_PURPLE : COLOR_GREEN);
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < 70; i++) {
     printf(LINE_H);
+  }
   printf(LINE_BR "\n" COLOR_RESET);
 
   /* Show recent violations */
@@ -658,8 +665,9 @@ void memberViewProfile(AppDatabase *db) {
   // tu ve breadcrum
   /* Top border */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  for (int i = 0; i < 68; i++)
+  for (int i = 0; i < 68; i++) {
     printf(BOX_H);
+  }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   /* Title row */
@@ -669,8 +677,9 @@ void memberViewProfile(AppDatabase *db) {
 
   /* Separator */
   printf(COLOR_BLUE "\xE2\x95\xA0");
-  for (int i = 0; i < 68; i++)
+  for (int i = 0; i < 68; i++) {
     printf(BOX_H);
+  }
   printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
 /* Helper to print a row with borders */
@@ -708,8 +717,9 @@ void memberViewProfile(AppDatabase *db) {
 
   /* Separator */
   printf(COLOR_BLUE "\xE2\x95\xA0");
-  for (int i = 0; i < 68; i++)
+  for (int i = 0; i < 68; i++) {
     printf(BOX_H);
+  }
   printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
   printf("\n");
@@ -767,8 +777,9 @@ void memberViewStats(AppDatabase *db) {
 
   /* Display summary card */
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < 70; i++) {
     printf(LINE_H);
+  }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -776,8 +787,9 @@ void memberViewStats(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < 70; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -811,19 +823,22 @@ void memberViewStats(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < 70; i++) {
     printf(LINE_H);
+  }
   printf(LINE_BR "\n" COLOR_RESET);
 
   /* Violation by reason breakdown */
   printf("\n");
   printf(COLOR_BOLD "  CHI TIET THEO LY DO:" COLOR_RESET "\n");
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 30; i++)
+  for (int i = 0; i < 30; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     printf(LINE_H);
+  }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -833,11 +848,13 @@ void memberViewStats(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 30; i++)
+  for (int i = 0; i < 30; i++) {
     printf(LINE_H);
+  }
   printf(LINE_cross);
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   int hasData = 0;
@@ -859,11 +876,13 @@ void memberViewStats(AppDatabase *db) {
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 30; i++)
+  for (int i = 0; i < 30; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     printf(LINE_H);
+  }
   printf(LINE_BR "\n" COLOR_RESET);
 
   /* Recent violations - show up to 5 most recent */
@@ -885,14 +904,17 @@ void memberViewStats(AppDatabase *db) {
     printf("  " COLOR_GREEN "Khong co vi pham nao." COLOR_RESET "\n\n");
   } else {
     printf(COLOR_CYAN "  " LINE_TL);
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < 25; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < 15; i++) {
       printf(LINE_H);
+    }
     printf(LINE_TR "\n" COLOR_RESET);
 
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -904,14 +926,17 @@ void memberViewStats(AppDatabase *db) {
     printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; i++) {
       printf(LINE_H);
+    }
     printf(LINE_cross);
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < 25; i++) {
       printf(LINE_H);
+    }
     printf(LINE_cross);
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < 15; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_LEFT "\n" COLOR_RESET);
 
     for (int i = 0; i < recentCount; i++) {
@@ -934,14 +959,17 @@ void memberViewStats(AppDatabase *db) {
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < 25; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < 15; i++) {
       printf(LINE_H);
+    }
     printf(LINE_BR "\n" COLOR_RESET);
     printf("\n");
   }
@@ -973,23 +1001,29 @@ void memberListAll(AppDatabase *db) {
     uiDrawBreadcrumb("MENU > Danh sach thanh vien");
 
     printf(COLOR_CYAN "  " LINE_TL);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < 26; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 14; i++)
+    for (int i = 0; i < 14; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 10; i++) {
       printf(LINE_H);
+    }
     printf(LINE_TR "\n" COLOR_RESET);
 
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -1001,39 +1035,48 @@ void memberListAll(AppDatabase *db) {
     printf(" %-8s " COLOR_CYAN LINE_V COLOR_RESET "\n", "Vai tro");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < 26; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 14; i++)
+    for (int i = 0; i < 14; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 10; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_LEFT "\n" COLOR_RESET);
 
     int start = currentPage * ROWS_PER_PAGE;
     int end = start + ROWS_PER_PAGE;
-    if (end > activeCount)
+    if (end > activeCount) {
       end = activeCount;
+    }
 
     int row = 0;
     int displayed = 0;
     for (int i = 0; i < db->memberCount && displayed < end; i++) {
       Member *m = &db->members[i];
-      if (m->isDeleted || m->isActive != STATUS_ACTIVE)
+      if (m->isDeleted || m->isActive != STATUS_ACTIVE) {
         continue;
+      }
       displayed++;
-      if (displayed <= start)
+      if (displayed <= start) {
         continue;
+      }
 
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
       printf(" %-10.10s ", m->studentId);
@@ -1052,23 +1095,29 @@ void memberListAll(AppDatabase *db) {
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < 26; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++)
+    for (int i = 0; i < 14; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 10; i++) {
       printf(LINE_H);
+    }
     printf(LINE_BR "\n" COLOR_RESET);
 
     printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
@@ -1080,12 +1129,14 @@ void memberListAll(AppDatabase *db) {
     char buf[10];
     readString(buf, sizeof(buf));
     char c = buf[0];
-    if (c == 'q' || c == 'Q')
+    if (c == 'q' || c == 'Q') {
       break;
-    if ((c == 'n' || c == 'N') && currentPage < totalPages - 1)
+    }
+    if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
       currentPage++;
-    else if ((c == 'm' || c == 'M') && currentPage > 0)
+    } else if ((c == 'm' || c == 'M') && currentPage > 0) {
       currentPage--;
+    }
   }
 }
 
@@ -1128,20 +1179,25 @@ void memberViewArchive(AppDatabase *db) {
 
   /* Columns: STT (6), MSSV (12), Ho va ten (22), Ban (14), Ngay xoa (18) */
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < 6; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++)
+  for (int i = 0; i < 22; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++)
+  for (int i = 0; i < 14; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     printf(LINE_H);
+  }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET
@@ -1152,20 +1208,25 @@ void memberViewArchive(AppDatabase *db) {
                     " Ngay xoa          " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < 6; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++)
+  for (int i = 0; i < 22; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++)
+  for (int i = 0; i < 14; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < archivedCount; i++) {
@@ -1182,20 +1243,25 @@ void memberViewArchive(AppDatabase *db) {
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < 6; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 22; i++)
+  for (int i = 0; i < 22; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 14; i++)
+  for (int i = 0; i < 14; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     printf(LINE_H);
+  }
   printf(LINE_BR "\n" COLOR_RESET);
 
   int choice = readMenuChoice(
@@ -1413,8 +1479,9 @@ void memberKickOrRestore(AppDatabase *db) {
       if (accIdx != -1) {
         db->accounts[accIdx].isLocked = oldLocked;
       }
-      if (violationAdded)
+      if (violationAdded) {
         db->violationCount = oldViolationCount;
+      }
       printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo kick.\n\n");
       return;
     }
@@ -1424,8 +1491,9 @@ void memberKickOrRestore(AppDatabase *db) {
       m->isActive = oldActive;
       m->consecutiveAbsences = oldConsecAbs;
       db->accounts[accIdx].isLocked = oldLocked;
-      if (violationAdded)
+      if (violationAdded) {
         db->violationCount = oldViolationCount;
+      }
       (void)fileioSaveMembers(db);
       printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo kick.\n\n");
       return;
@@ -1440,8 +1508,9 @@ void memberKickOrRestore(AppDatabase *db) {
       }
       db->violationCount = oldViolationCount;
       (void)fileioSaveMembers(db);
-      if (accIdx != -1)
+      if (accIdx != -1) {
         (void)fileioSaveAccounts(db);
+      }
       printf(ERR_LOI "Khong the ghi file vi pham! Huy bo kick.\n\n");
       return;
     }
@@ -1547,20 +1616,25 @@ void memberViewKicked(AppDatabase *db) {
 
   /* Columns: STT (4), MSSV (10), Ho va ten (18), Ban (12), Ly do kick (24) */
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 4; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 24; i++)
+  for (int i = 0; i < 24; i++) {
     printf(LINE_H);
+  }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -1576,20 +1650,25 @@ void memberViewKicked(AppDatabase *db) {
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 4; i++) {
     printf(LINE_H);
+  }
   printf(LINE_cross);
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     printf(LINE_H);
+  }
   printf(LINE_cross);
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     printf(LINE_H);
+  }
   printf(LINE_cross);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     printf(LINE_H);
+  }
   printf(LINE_cross);
-  for (int i = 0; i < 24; i++)
+  for (int i = 0; i < 24; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   for (int i = 0; i < kickedCount; i++) {
@@ -1642,20 +1721,25 @@ void memberViewKicked(AppDatabase *db) {
   }
 
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 4; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 24; i++)
+  for (int i = 0; i < 24; i++) {
     printf(LINE_H);
+  }
   printf(LINE_BR "\n" COLOR_RESET);
 
   printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET

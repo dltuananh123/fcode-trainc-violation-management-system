@@ -221,10 +221,12 @@ static int uiVisibleLen(const char *s) {
       s++;
       if (*s == '[') {
         s++;
-        while (*s && *s != 'm')
+        while (*s && *s != 'm') {
           s++;
-        if (*s)
+        }
+        if (*s) {
           s++;
+        }
       }
     } else {
       len++;

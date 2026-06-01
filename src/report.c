@@ -67,14 +67,20 @@ static int compareDescending(const void *a, const void *b) {
   return mb->violationCount - ma->violationCount;
 }
 
-static void sortMemberPointersByViolationCount(const AppDatabase *db, const Member *sorted[], int count, int ascending) {
-  MemberViolationCount *mvc = malloc((size_t)count * sizeof(MemberViolationCount));
-  if (!mvc) return;
+static void sortMemberPointersByViolationCount(const AppDatabase *db,
+                                               const Member *sorted[],
+                                               int count, int ascending) {
+  MemberViolationCount *mvc =
+      malloc((size_t)count * sizeof(MemberViolationCount));
+  if (!mvc) {
+    return;
+  }
   for (int i = 0; i < count; i++) {
     mvc[i].member = sorted[i];
     mvc[i].violationCount = countMemberViolations(db, sorted[i]->studentId);
   }
-  qsort(mvc, (size_t)count, sizeof(MemberViolationCount), ascending ? compareAscending : compareDescending);
+  qsort(mvc, (size_t)count, sizeof(MemberViolationCount),
+        ascending ? compareAscending : compareDescending);
   for (int i = 0; i < count; i++) {
     sorted[i] = mvc[i].member;
   }
@@ -97,17 +103,21 @@ void reportTeamStats(const AppDatabase *db) {
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thong ke tien phat theo ban");
   printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < 16; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_TR "\n" COLOR_RESET);
 
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET
@@ -117,17 +127,21 @@ void reportTeamStats(const AppDatabase *db) {
                     " Tong (VND)      " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < 16; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   double grandCollected = 0.0;
@@ -151,17 +165,21 @@ void reportTeamStats(const AppDatabase *db) {
 
   /* Bottom separator before grand total */
   printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < 16; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_DOWN);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_LEFT "\n" COLOR_RESET);
 
   /* Grand total row */
@@ -178,17 +196,21 @@ void reportTeamStats(const AppDatabase *db) {
 
   /* Final bottom border */
   printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < 16; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_T_UP);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     printf(LINE_H);
+  }
   printf(LINE_BR "\n" COLOR_RESET);
 }
 
@@ -246,17 +268,21 @@ void reportSortMembersByViolations(const AppDatabase *db) {
       printf(COLOR_BOLD
              "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
       printf(COLOR_CYAN "  " LINE_TL);
-      for (int i = 0; i < 22; i++)
+      for (int i = 0; i < 22; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_DOWN);
-      for (int i = 0; i < 12; i++)
+      for (int i = 0; i < 12; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++)
+      for (int i = 0; i < 14; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++)
+      for (int i = 0; i < 14; i++) {
         printf(LINE_H);
+      }
       printf(LINE_TR "\n" COLOR_RESET);
 
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET
@@ -266,23 +292,28 @@ void reportSortMembersByViolations(const AppDatabase *db) {
                         " So vi pham   " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
       printf(COLOR_CYAN "  " LINE_T_RIGHT);
-      for (int i = 0; i < 22; i++)
+      for (int i = 0; i < 22; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_DOWN);
-      for (int i = 0; i < 12; i++)
+      for (int i = 0; i < 12; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++)
+      for (int i = 0; i < 14; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++)
+      for (int i = 0; i < 14; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_LEFT "\n" COLOR_RESET);
 
       int start = currentPage * ROWS_PER_PAGE;
       int end = start + ROWS_PER_PAGE;
-      if (end > activeCount)
+      if (end > activeCount) {
         end = activeCount;
+      }
 
       for (int i = start; i < end; i++) {
         int violationCount = countMemberViolations(db, sorted[i]->studentId);
@@ -302,17 +333,21 @@ void reportSortMembersByViolations(const AppDatabase *db) {
       }
 
       printf(COLOR_CYAN "  " LINE_BL);
-      for (int i = 0; i < 22; i++)
+      for (int i = 0; i < 22; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_UP);
-      for (int i = 0; i < 12; i++)
+      for (int i = 0; i < 12; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_UP);
-      for (int i = 0; i < 14; i++)
+      for (int i = 0; i < 14; i++) {
         printf(LINE_H);
+      }
       printf(LINE_T_UP);
-      for (int i = 0; i < 14; i++)
+      for (int i = 0; i < 14; i++) {
         printf(LINE_H);
+      }
       printf(LINE_BR "\n" COLOR_RESET);
 
       printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
@@ -324,12 +359,14 @@ void reportSortMembersByViolations(const AppDatabase *db) {
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q')
+      if (c == 'q' || c == 'Q') {
         break;
-      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1)
+      }
+      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
         currentPage++;
-      else if ((c == 'm' || c == 'M') && currentPage > 0)
+      } else if ((c == 'm' || c == 'M') && currentPage > 0) {
         currentPage--;
+      }
     }
   }
 }
@@ -564,8 +601,9 @@ void reportDashboard(const AppDatabase *db) {
   }
 
   int filledBlocks = (int)(progress / 5.0);
-  if (filledBlocks > 20)
+  if (filledBlocks > 20) {
     filledBlocks = 20;
+  }
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf("    Tien do: [");
@@ -581,8 +619,9 @@ void reportDashboard(const AppDatabase *db) {
   printf("] %5.1f%%", progress);
 
   int printedBarLen = 14 + 20 + 2 + 6;
-  if (progress >= 100.0)
+  if (progress >= 100.0) {
     printedBarLen++;
+  }
   for (int i = printedBarLen; i < 68; i++) {
     printf(" ");
   }
