@@ -34,12 +34,19 @@ CFLAGS := -std=c17 -m64 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=
 SRCDIR := src
 INCDIR := include
 BINDIR := bin
+OBJDIR := obj
 
 # Find all .c files in src/
 SRCS := $(wildcard $(SRCDIR)/*.c)
 
 # Find all .h files in include/
 INCS := $(wildcard $(INCDIR)/*.h)
+
+# Object files (src/foo.c -> obj/foo.o)
+OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
+
+# Object files excluding main.o (for linking seed_data)
+LIB_OBJS := $(filter-out $(OBJDIR)/main.o,$(OBJS))
 
 
 # These are commands, not real files
@@ -48,22 +55,32 @@ INCS := $(wildcard $(INCDIR)/*.h)
 # Default command: build program
 all: $(BINDIR)/violation-management-system.exe
 
-# Build final program directly from source files
-$(BINDIR)/violation-management-system.exe: $(SRCS) | $(BINDIR)
-	$(CC) $(CFLAGS) $(SRCS) -o $@
+# Link object files into final executable
+$(BINDIR)/violation-management-system.exe: $(OBJS) | $(BINDIR)
+	$(CC) $(CFLAGS) $(OBJS) -o $@
 
-# Compile and run seed tool to generate demo data
+# Compile each .c to .o (incremental build)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(INCS) | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile and link seed tool against project object files
+# This eliminates code duplication between seed_data.c and the main project
 seed: $(BINDIR)/seed_data.exe
 
-$(BINDIR)/seed_data.exe: tools/seed_data.c | $(BINDIR)
-	$(CC) $(CFLAGS) $< -o $@
+$(BINDIR)/seed_data.exe: tools/seed_data.c $(LIB_OBJS) | $(BINDIR)
+	$(CC) $(CFLAGS) $< $(LIB_OBJS) -o $@
 
+# Create output directories
 $(BINDIR):
 	@if not exist $(BINDIR) mkdir $(BINDIR)
 
-# Delete bin/
+$(OBJDIR):
+	@if not exist $(OBJDIR) mkdir $(OBJDIR)
+
+# Delete bin/ and obj/
 clean:
 	@if exist $(BINDIR) rmdir /S /Q $(BINDIR)
+	@if exist $(OBJDIR) rmdir /S /Q $(OBJDIR)
 
 # Run clang-format on all .c and .h files
 format:
