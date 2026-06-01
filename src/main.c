@@ -22,6 +22,14 @@ static AppDatabase gDb;
  * MENU FUNCTIONS
  * ============================================================ */
 
+/* Forward declarations for menus */
+static void memberMenu(void);
+static void adminMenu(void);
+static void memberManagementMenu(void);
+static void violationManagementMenu(void);
+static void reportsAndStatsMenu(void);
+static void systemSettingsMenu(void);
+
 /* Member menu (for regular members and leaders) */
 static void memberMenu(void) {
   int choice;
@@ -40,7 +48,6 @@ static void memberMenu(void) {
     for (int i = breadcrumbLen; i < MENU_CONTENT_W; i++) {
       printf(" ");
     }
-    printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
     /* Separator under title */
     printf(COLOR_BLUE "\xE2\x95\xA0");
@@ -49,70 +56,56 @@ static void memberMenu(void) {
     }
     printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  %-66s", "1. Xem profile ca nhan");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET
+                     " Xem profile ca nhan");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET
+                     " Xem lich su vi pham");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
+                     " Xem tong tien phat con no");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
+                     " Lich su nop tien phat");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET " Thong ke ca nhan");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET " Doi mat khau");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET " Dang xuat");
 
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  %-66s", "2. Xem lich su vi pham");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  %-66s", "3. Xem tong tien phat con no");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  %-66s", "4. Lich su nop tien phat");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  %-66s", "5. Thong ke ca nhan");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf("  %-66s", "6. Doi mat khau");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_DIM "  %-66s" COLOR_RESET, "0. Dang xuat");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_BLUE BOX_BL);
     for (int i = 0; i < MENU_CONTENT_W; i++) {
       printf(BOX_H);
     }
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+    printf(BOX_BR COLOR_RESET "\n");
 
     choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 6);
 
     switch (choice) {
     case 1:
       memberViewProfile(&gDb);
+      uiPause();
       break;
     case 2:
       violationViewOwn(&gDb);
+      uiPause();
       break;
     case 3:
       violationViewFines(&gDb);
+      uiPause();
       break;
     case 4:
       violationViewPaymentHistory(&gDb);
+      uiPause();
       break;
     case 5:
       memberViewStats(&gDb);
+      uiPause();
       break;
     case 6:
       authChangePassword(&gDb);
+      uiPause();
       break;
     case 0:
       authLogout(&gDb);
       break;
     default:
       break;
-    }
-
-    if (choice != 0) {
-      uiPause();
     }
   } while (choice != 0);
 }
@@ -135,7 +128,6 @@ static void adminMenu(void) {
     for (int i = breadcrumbLen; i < MENU_CONTENT_W; i++) {
       printf(" ");
     }
-    printf(COLOR_RESET);
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
     /* Separator under title */
     printf(COLOR_BLUE "\xE2\x95\xA0");
@@ -144,79 +136,125 @@ static void adminMenu(void) {
     }
     printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
-    uiDrawDualMenuRow(1, "Them thanh vien moi", 9, "Sap xep theo so lan VP");
-    uiDrawDualMenuRow(2, "Sua thong tin TV", 10, "Xuat bao cao");
-    uiDrawDualMenuRow(3, "Tim kiem & xem CT TV", 11, "Tim kiem theo ngay");
-    uiDrawDualMenuRow(4, "Ghi nhan vi pham", 12, "Xem profile ca nhan");
-    uiDrawDualMenuRow(5, "Danh dau da thu tien", 13,
-                      "Xem DS TV dang hoat dong");
-    uiDrawDualMenuRow(6, "Xem DS vi pham", 14, "Doi mat khau");
-    uiDrawDualMenuRow(7, "Thong ke tien phat theo ban", 15,
-                      "Reset mat khau TV");
-    uiDrawDualMenuRow(8, "Kiem tra nguong Out CLB", 16,
-                      "Xem Dashboard ky luat");
-    uiDrawDualMenuRow(17, "Xem lich su VP theo MSSV", 18, "Kick/Khoi phuc TV");
-    uiDrawDualMenuRow(19, "Xem DS thanh vien da kick", 20,
-                      "Xem nhat ky he thong");
-    uiDrawDualMenuRow(21, "Huy vi pham (Void)", 0, "");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET " Quan ly thanh vien");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET " Quan ly vi pham");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
+                     " Bao cao va thong ke");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET " Quan ly he thong");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET
+                     " Xem profile ca nhan");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET " Dang xuat");
 
-    /* Row 12 - Thoat */
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
-    printf(COLOR_DIM "  %-66s" COLOR_RESET, "0. Dang xuat");
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
-
-    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_BLUE BOX_BL);
     for (int i = 0; i < MENU_CONTENT_W; i++) {
       printf(BOX_H);
     }
+    printf(BOX_BR COLOR_RESET "\n");
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 5);
+
+    switch (choice) {
+    case 1:
+      memberManagementMenu();
+      break;
+    case 2:
+      violationManagementMenu();
+      break;
+    case 3:
+      reportsAndStatsMenu();
+      break;
+    case 4:
+      systemSettingsMenu();
+      break;
+    case 5:
+      memberViewProfile(&gDb);
+      uiPause();
+      break;
+    case 0:
+      authLogout(&gDb);
+      break;
+    default:
+      break;
+    }
+  } while (choice != 0);
+}
+
+/* Category Menu: Member Management */
+static void memberManagementMenu(void) {
+  int choice;
+  do {
+    uiClear();
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM " QUAN LY THANH VIEN ");
+    int titleLen = (int)strlen(" QUAN LY THANH VIEN ");
+    for (int i = titleLen; i < MENU_CONTENT_W; i++) {
+      printf(" ");
+    }
     printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 21);
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
+
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET
+                     " Them thanh vien moi");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET
+                     " Sua thong tin thanh vien");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
+                     " Tim kiem va xem chi tiet thanh vien");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
+                     " Xem danh sach thanh vien dang hoat dong");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET
+                     " Kick hoac khoi phuc thanh vien");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
+                     " Xem danh sach thanh vien da kick");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET
+                     " Reset mat khau thanh vien");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
+                     " Quay lai menu chinh");
+
+    printf(COLOR_BLUE BOX_BL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_BR COLOR_RESET "\n");
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 7);
 
     switch (choice) {
     case 1:
       memberAdd(&gDb);
+      uiPause();
       break;
     case 2:
       memberEdit(&gDb);
+      uiPause();
       break;
     case 3:
       memberSearchDetails(&gDb);
+      uiPause();
       break;
     case 4:
-      violationRecord(&gDb);
+      memberListAll(&gDb);
+      uiPause();
       break;
     case 5:
-      violationMarkPaid(&gDb);
+      memberKickOrRestore(&gDb);
+      uiPause();
       break;
     case 6:
-      violationViewAllFiltered(&gDb);
+      memberViewKicked(&gDb);
+      uiPause();
       break;
-    case 7:
-      reportTeamStats(&gDb);
-      break;
-    case 8:
-      violationCheckAllOutClb(&gDb);
-      break;
-    case 9:
-      reportSortMembersByViolations(&gDb);
-      break;
-    case 10:
-      reportExportTxt(&gDb);
-      break;
-    case 11:
-      violationSearchByDate(&gDb);
-      break;
-    case 12:
-      memberViewProfile(&gDb);
-      break;
-    case 13:
-      memberListAll(&gDb);
-      break;
-    case 14:
-      authChangePassword(&gDb);
-      break;
-    case 15: {
+    case 7: {
       printf("Nhap MSSV can reset mat khau (0 de quay lai): ");
       char targetId[MAX_MSSV_LEN];
       readString(targetId, MAX_MSSV_LEN);
@@ -229,35 +267,230 @@ static void adminMenu(void) {
           logSystemAction(session->studentId, "Reset mat khau", targetId);
         }
       }
+      uiPause();
       break;
     }
-    case 16:
-      reportDashboard(&gDb);
+    default:
       break;
-    case 17:
+    }
+  } while (choice != 0);
+}
+
+/* Category Menu: Violation Management */
+static void violationManagementMenu(void) {
+  int choice;
+  do {
+    uiClear();
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM " QUAN LY VI PHAM ");
+    int titleLen = (int)strlen(" QUAN LY VI PHAM ");
+    for (int i = titleLen; i < MENU_CONTENT_W; i++) {
+      printf(" ");
+    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
+
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET
+                     " Ghi nhan vi pham moi");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET
+                     " Danh dau da thu tien phat");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
+                     " Xem danh sach vi pham (co loc)");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
+                     " Xem lich su vi pham theo thanh vien");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET
+                     " Tim kiem vi pham theo khoang ngay");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
+                     " Kiem tra nguong Out CLB");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Huy vi pham (Void)");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
+                     " Quay lai menu chinh");
+
+    printf(COLOR_BLUE BOX_BL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_BR COLOR_RESET "\n");
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 7);
+
+    switch (choice) {
+    case 1:
+      violationRecord(&gDb);
+      uiPause();
+      break;
+    case 2:
+      violationMarkPaid(&gDb);
+      uiPause();
+      break;
+    case 3:
+      violationViewAllFiltered(&gDb);
+      uiPause();
+      break;
+    case 4:
       violationViewByMSSV(&gDb);
+      uiPause();
       break;
-    case 18:
-      memberKickOrRestore(&gDb);
+    case 5:
+      violationSearchByDate(&gDb);
+      uiPause();
       break;
-    case 19:
-      memberViewKicked(&gDb);
+    case 6:
+      violationCheckAllOutClb(&gDb);
+      uiPause();
       break;
-    case 20:
-      viewSystemLogs();
-      break;
-    case 21:
+    case 7:
       violationVoid(&gDb);
-      break;
-    case 0:
-      authLogout(&gDb);
+      uiPause();
       break;
     default:
       break;
     }
+  } while (choice != 0);
+}
 
-    if (choice != 0) {
+/* Category Menu: Reports and Stats */
+static void reportsAndStatsMenu(void) {
+  int choice;
+  do {
+    uiClear();
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM " BAO CAO VA THONG KE ");
+    int titleLen = (int)strlen(" BAO CAO VA THONG KE ");
+    for (int i = titleLen; i < MENU_CONTENT_W; i++) {
+      printf(" ");
+    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
+
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET
+                     " Thong ke tien phat theo ban");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET
+                     " Sap xep thanh vien theo so lan vi pham");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
+                     " Xuat bao cao ra file");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
+                     " Xem Dashboard ky luat");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
+                     " Quay lai menu chinh");
+
+    printf(COLOR_BLUE BOX_BL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_BR COLOR_RESET "\n");
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 4);
+
+    switch (choice) {
+    case 1:
+      reportTeamStats(&gDb);
       uiPause();
+      break;
+    case 2:
+      reportSortMembersByViolations(&gDb);
+      uiPause();
+      break;
+    case 3:
+      reportExportTxt(&gDb);
+      uiPause();
+      break;
+    case 4:
+      reportDashboard(&gDb);
+      uiPause();
+      break;
+    default:
+      break;
+    }
+  } while (choice != 0);
+}
+
+/* Category Menu: System Settings */
+static void systemSettingsMenu(void) {
+  int choice;
+  do {
+    uiClear();
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_DIM " QUAN LY HE THONG ");
+    int titleLen = (int)strlen(" QUAN LY HE THONG ");
+    for (int i = titleLen; i < MENU_CONTENT_W; i++) {
+      printf(" ");
+    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
+
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET " Doi mat khau");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET
+                     " Xem nhat ky he thong");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET " Huong dan su dung");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
+                     " Thong tin phien ban");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
+                     " Quay lai menu chinh");
+
+    printf(COLOR_BLUE BOX_BL);
+    for (int i = 0; i < MENU_CONTENT_W; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_BR COLOR_RESET "\n");
+
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 4);
+
+    switch (choice) {
+    case 1:
+      authChangePassword(&gDb);
+      uiPause();
+      break;
+    case 2:
+      viewSystemLogs();
+      uiPause();
+      break;
+    case 3:
+      uiDrawHelp();
+      uiPause();
+      break;
+    case 4:
+      uiClear();
+      printf("\n  FCode TrainC Violation Management System\n");
+      printf("  Phien ban: v2.3\n");
+      printf("  Ban quyen thuoc ve CLB F-Code, Campus FPT HCM.\n");
+      uiPause();
+      break;
+    default:
+      break;
     }
   } while (choice != 0);
 }

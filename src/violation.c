@@ -330,7 +330,7 @@ int violationViewAllFiltered(AppDatabase *db) {
 
       if (totalPages > 1) {
         printf(COLOR_DIM
-               "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET " > ");
+               "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET " > ");
         char buf[10];
         readString(buf, sizeof(buf));
         char c = buf[0];
@@ -340,7 +340,7 @@ int violationViewAllFiltered(AppDatabase *db) {
         }
         if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
           currentPage++;
-        } else if ((c == 'm' || c == 'M') && currentPage > 0) {
+        } else if ((c == 'p' || c == 'P') && currentPage > 0) {
           currentPage--;
         }
       } else {
@@ -1543,7 +1543,7 @@ date_input:
            currentPage + 1, totalPages, found);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET
+      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
                        " > ");
       char buf[10];
       readString(buf, sizeof(buf));
@@ -1553,7 +1553,7 @@ date_input:
       }
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
         currentPage++;
-      } else if ((c == 'm' || c == 'M') && currentPage > 0) {
+      } else if ((c == 'p' || c == 'P') && currentPage > 0) {
         currentPage--;
       }
     } else {

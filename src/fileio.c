@@ -1,6 +1,7 @@
 #include "fileio.h"
 #include "member.h"
 #include "types.h"
+#include "ui.h"
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -219,8 +220,18 @@ static int replaceStoreFile(const char *tmpFile, const char *dataFile,
 }
 
 static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize,
-                           int count, const char *label) {
+                           int count, const char *label, unsigned int *outCrc) {
+  if (outCrc != NULL) {
+    *outCrc = 0;
+  }
+  if (count < 0 || count > MAX_VIOLATIONS) {
+    printf("[LOI] So luong phan tu de ma hoa khong hop le: %d\n", count);
+    return -1;
+  }
   if (count == 0) {
+    if (outCrc != NULL) {
+      *outCrc = calculateCrc32(NULL, 0);
+    }
     return 0;
   }
   size_t totalSize = itemSize * (size_t)count;
@@ -231,6 +242,10 @@ static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize,
   }
   memcpy(encrypted, buffer, totalSize);
   xorBuffer(encrypted, totalSize);
+
+  if (outCrc != NULL) {
+    *outCrc = calculateCrc32(encrypted, totalSize);
+  }
 
   if (fwrite(encrypted, itemSize, (size_t)count, fp) != (size_t)count) {
     free(encrypted);
@@ -245,6 +260,16 @@ static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize,
 static int readAndDecrypt(FILE *fp, void *buffer, size_t itemSize, int count,
                           const char *label) {
   if (count == 0) {
+    unsigned int expectedCrc = 0;
+    if (fread(&expectedCrc, sizeof(unsigned int), 1, fp) != 1) {
+      printf("[LOI] Khong the doc checksum CRC32 cho %s!\n", label);
+      return -1;
+    }
+    unsigned int computed = calculateCrc32(NULL, 0);
+    if (computed != expectedCrc) {
+      printf("[LOI] Checksum CRC32 khong khop cho %s!\n", label);
+      return -1;
+    }
     return 0;
   }
   size_t totalSize = itemSize * (size_t)count;
@@ -252,6 +277,22 @@ static int readAndDecrypt(FILE *fp, void *buffer, size_t itemSize, int count,
     printf("[LOI] Khong the doc day du du lieu %s tu file!\n", label);
     return -1;
   }
+
+  /* Read the 4-byte CRC32 at the end of the file */
+  unsigned int expectedCrc = 0;
+  if (fread(&expectedCrc, sizeof(unsigned int), 1, fp) != 1) {
+    printf("[LOI] Khong the doc checksum CRC32 cho %s!\n", label);
+    return -1;
+  }
+
+  /* Calculate CRC32 of the encrypted data (still encrypted in buffer) */
+  unsigned int computed = calculateCrc32(buffer, totalSize);
+  if (computed != expectedCrc) {
+    printf("[LOI] Checksum CRC32 khong khop cho %s! (File co the bi loi)\n",
+           label);
+    return -1;
+  }
+
   xorBuffer(buffer, totalSize);
   return 0;
 }
@@ -281,7 +322,16 @@ static int saveStore(const char *tmpFile, const char *dataFile,
     return -1;
   }
 
-  if (encryptAndWrite(fp, buffer, itemSize, count, label) != 0) {
+  unsigned int crc = 0;
+  if (encryptAndWrite(fp, buffer, itemSize, count, label, &crc) != 0) {
+    fclose(fp);
+    remove(tmpFile);
+    return -1;
+  }
+
+  /* Write 4-byte CRC32 at the end of the file */
+  if (fwrite(&crc, sizeof(unsigned int), 1, fp) != 1) {
+    printf("[LOI] Khong the ghi checksum CRC32 cho %s vao file tam!\n", label);
     fclose(fp);
     remove(tmpFile);
     return -1;
@@ -327,43 +377,63 @@ int fileioSaveAccounts(AppDatabase *db) {
 
 /* --- Load helpers (Fix #3) --- */
 
-static int loadAccounts(AppDatabase *db) {
-  initPaths();
-  FILE *fp = fopen(pathAccounts, "rb");
-  if (fp != NULL) {
-    char magic[MAGIC_LEN];
-    int isEncrypted = 0;
-    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
-        memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
-      isEncrypted = 1;
-    } else {
-      fseek(fp, 0, SEEK_SET);
-    }
+static int loadAccountsFromStream(FILE *fp, AppDatabase *db) {
+  char magic[MAGIC_LEN];
+  int isEncrypted = 0;
+  if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
+      memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+    isEncrypted = 1;
+  } else {
+    fseek(fp, 0, SEEK_SET);
+  }
 
-    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") !=
-        0) {
-      fclose(fp);
+  if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") != 0) {
+    return -1;
+  }
+
+  if (isEncrypted) {
+    if (readAndDecrypt(fp, db->accounts, sizeof(Account), db->accountCount,
+                       "accounts") != 0) {
       return -1;
     }
-
-    if (isEncrypted) {
-      if (readAndDecrypt(fp, db->accounts, sizeof(Account), db->accountCount,
+  } else {
+    if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount,
                          "accounts") != 0) {
-        fclose(fp);
-        return -1;
-      }
-    } else {
-      if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount,
-                           "accounts") != 0) {
-        fclose(fp);
-        return -1;
-      }
+      return -1;
+    }
+  }
+  return 0;
+}
+
+static int loadAccounts(AppDatabase *db) {
+  initPaths();
+  int loaded = 0;
+
+  FILE *fp = fopen(pathAccounts, "rb");
+  if (fp != NULL) {
+    if (loadAccountsFromStream(fp, db) == 0) {
+      loaded = 1;
     }
     fclose(fp);
   }
 
-  /* First-run: create default admin account */
-  if (db->accountCount == 0) {
+  if (!loaded) {
+    fp = fopen(pathBakAccounts, "rb");
+    if (fp != NULL) {
+      printf(COLOR_YELLOW "[CANH BAO] File accounts.dat bi loi hoac thieu. "
+                          "Dang thu doc tu backup...\n" COLOR_RESET);
+      if (loadAccountsFromStream(fp, db) == 0) {
+        loaded = 1;
+        fclose(fp);
+        fileioSaveAccounts(db); /* Restore main file */
+      } else {
+        fclose(fp);
+      }
+    }
+  }
+
+  /* First-run: create default admin account if none loaded */
+  if (!loaded || db->accountCount == 0) {
     strcpy(db->accounts[0].studentId, "SE203055");
     generateSalt(db->accounts[0].salt, sizeof(db->accounts[0].salt));
 
@@ -394,7 +464,7 @@ static int loadAccounts(AppDatabase *db) {
 
     printf("\n");
     printf("==================================================================="
-           "===\n");
+           "==\n");
     printf("[CANH BAO] Khong tim thay co so du lieu tai khoan.\n");
     printf("He thong da tao tai khoan Ban Chu Nhiem mac dinh:\n");
     printf("  MSSV: SE203055\n");
@@ -403,7 +473,7 @@ static int loadAccounts(AppDatabase *db) {
            "khau\n");
     printf("ngay trong lan dang nhap dau tien de bao mat he thong.\n");
     printf("==================================================================="
-           "===\n");
+           "==\n");
     printf("\n");
 
     secureZero(defaultPass, sizeof(defaultPass));
@@ -420,39 +490,62 @@ static int loadAccounts(AppDatabase *db) {
   return 0;
 }
 
-static int loadMembers(AppDatabase *db) {
-  initPaths();
-  FILE *fp = fopen(pathMembers, "rb");
-  if (fp != NULL) {
-    char magic[MAGIC_LEN];
-    int isEncrypted = 0;
-    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
-        memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
-      isEncrypted = 1;
-    } else {
-      fseek(fp, 0, SEEK_SET);
-    }
+static int loadMembersFromStream(FILE *fp, AppDatabase *db) {
+  char magic[MAGIC_LEN];
+  int isEncrypted = 0;
+  if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
+      memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+    isEncrypted = 1;
+  } else {
+    fseek(fp, 0, SEEK_SET);
+  }
 
-    if (readCountChecked(fp, &(db->memberCount), MAX_MEMBERS, "members") != 0) {
-      fclose(fp);
+  if (readCountChecked(fp, &(db->memberCount), MAX_MEMBERS, "members") != 0) {
+    return -1;
+  }
+
+  if (isEncrypted) {
+    if (readAndDecrypt(fp, db->members, sizeof(Member), db->memberCount,
+                       "members") != 0) {
       return -1;
     }
-
-    if (isEncrypted) {
-      if (readAndDecrypt(fp, db->members, sizeof(Member), db->memberCount,
+  } else {
+    if (readItemsChecked(fp, db->members, sizeof(Member), db->memberCount,
                          "members") != 0) {
-        fclose(fp);
-        return -1;
-      }
-    } else {
-      if (readItemsChecked(fp, db->members, sizeof(Member), db->memberCount,
-                           "members") != 0) {
-        fclose(fp);
-        return -1;
-      }
+      return -1;
+    }
+  }
+  return 0;
+}
+
+static int loadMembers(AppDatabase *db) {
+  initPaths();
+  int loaded = 0;
+
+  FILE *fp = fopen(pathMembers, "rb");
+  if (fp != NULL) {
+    if (loadMembersFromStream(fp, db) == 0) {
+      loaded = 1;
     }
     fclose(fp);
-  } else {
+  }
+
+  if (!loaded) {
+    fp = fopen(pathBakMembers, "rb");
+    if (fp != NULL) {
+      printf(COLOR_YELLOW "[CANH BAO] File members.dat bi loi hoac thieu. Dang "
+                          "thu doc tu backup...\n" COLOR_RESET);
+      if (loadMembersFromStream(fp, db) == 0) {
+        loaded = 1;
+        fclose(fp);
+        fileioSaveMembers(db); /* Restore main file */
+      } else {
+        fclose(fp);
+      }
+    }
+  }
+
+  if (!loaded) {
     /* First-run: create empty members file */
     if (fileioSaveMembers(db) != 0) {
       return -1;
@@ -461,40 +554,63 @@ static int loadMembers(AppDatabase *db) {
   return 0;
 }
 
-static int loadViolations(AppDatabase *db) {
-  initPaths();
-  FILE *fp = fopen(pathViolations, "rb");
-  if (fp != NULL) {
-    char magic[MAGIC_LEN];
-    int isEncrypted = 0;
-    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
-        memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
-      isEncrypted = 1;
-    } else {
-      fseek(fp, 0, SEEK_SET);
-    }
+static int loadViolationsFromStream(FILE *fp, AppDatabase *db) {
+  char magic[MAGIC_LEN];
+  int isEncrypted = 0;
+  if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN &&
+      memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+    isEncrypted = 1;
+  } else {
+    fseek(fp, 0, SEEK_SET);
+  }
 
-    if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS,
-                         "violations") != 0) {
-      fclose(fp);
+  if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS,
+                       "violations") != 0) {
+    return -1;
+  }
+
+  if (isEncrypted) {
+    if (readAndDecrypt(fp, db->violations, sizeof(Violation),
+                       db->violationCount, "violations") != 0) {
       return -1;
     }
-
-    if (isEncrypted) {
-      if (readAndDecrypt(fp, db->violations, sizeof(Violation),
+  } else {
+    if (readItemsChecked(fp, db->violations, sizeof(Violation),
                          db->violationCount, "violations") != 0) {
-        fclose(fp);
-        return -1;
-      }
-    } else {
-      if (readItemsChecked(fp, db->violations, sizeof(Violation),
-                           db->violationCount, "violations") != 0) {
-        fclose(fp);
-        return -1;
-      }
+      return -1;
+    }
+  }
+  return 0;
+}
+
+static int loadViolations(AppDatabase *db) {
+  initPaths();
+  int loaded = 0;
+
+  FILE *fp = fopen(pathViolations, "rb");
+  if (fp != NULL) {
+    if (loadViolationsFromStream(fp, db) == 0) {
+      loaded = 1;
     }
     fclose(fp);
-  } else {
+  }
+
+  if (!loaded) {
+    fp = fopen(pathBakViolations, "rb");
+    if (fp != NULL) {
+      printf(COLOR_YELLOW "[CANH BAO] File violations.dat bi loi hoac thieu. "
+                          "Dang thu doc tu backup...\n" COLOR_RESET);
+      if (loadViolationsFromStream(fp, db) == 0) {
+        loaded = 1;
+        fclose(fp);
+        fileioSaveViolations(db); /* Restore main file */
+      } else {
+        fclose(fp);
+      }
+    }
+  }
+
+  if (!loaded) {
     /* First-run: create empty violations file */
     if (fileioSaveViolations(db) != 0) {
       return -1;
@@ -509,6 +625,24 @@ static int loadViolations(AppDatabase *db) {
   }
 
   return 0;
+}
+
+static int verifyDataIntegrity(const AppDatabase *db) {
+  int warnings = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    const Violation *v = &db->violations[i];
+    if (v->isVoided) {
+      continue;
+    }
+    int memberIdx = memberFindById(db, v->studentId);
+    if (memberIdx == -1) {
+      printf(COLOR_YELLOW "[CANH BAO] Vi pham ID #%d tham chieu toi MSSV '%s' "
+                          "nhung khong tim thay thanh vien!\n" COLOR_RESET,
+             v->id, v->studentId);
+      warnings++;
+    }
+  }
+  return warnings;
 }
 
 /* --- Public load API --- */
@@ -535,5 +669,6 @@ int fileioLoadAll(AppDatabase *db) {
   }
   memberRebuildIndex(db);
   memberPurgeExpired(db, 90);
+  verifyDataIntegrity(db);
   return 0;
 }

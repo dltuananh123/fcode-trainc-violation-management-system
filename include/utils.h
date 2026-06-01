@@ -173,6 +173,15 @@ void generateSalt(char *salt, size_t size);
 void secureZero(void *ptr, size_t len);
 
 /**
+ * @brief Calculates the standard CRC32 (IEEE 802.3) of a memory buffer.
+ *
+ * @param data Pointer to the memory buffer.
+ * @param length Length of the memory buffer in bytes.
+ * @return The 32-bit CRC checksum.
+ */
+unsigned int calculateCrc32(const unsigned char *data, size_t length);
+
+/**
  * @brief Logs an administrative action to data/system_audit.log and triggers a
  * simulated webhook to data/simulated_webhooks.log.
  *
