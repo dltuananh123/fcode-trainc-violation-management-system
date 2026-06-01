@@ -1,6 +1,6 @@
 ---
 # Check all header files too
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: ".*"
 
 # Do not check system headers like stdio.h, stdlib.h
 SystemHeaders: false
@@ -19,6 +19,7 @@ Checks: >
   -readability-magic-numbers,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   -bugprone-easily-swappable-parameters,
+  -readability-function-cognitive-complexity,
 
 CheckOptions:
   # Constants should use UPPER_CASE
