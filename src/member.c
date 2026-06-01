@@ -1082,7 +1082,7 @@ void memberListAll(AppDatabase *db) {
            "%d" COLOR_RESET " thanh vien\n",
            currentPage + 1, totalPages, activeCount);
 
-    printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET
+    printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
                      " > ");
     char buf[10];
     readString(buf, sizeof(buf));
@@ -1092,7 +1092,7 @@ void memberListAll(AppDatabase *db) {
     }
     if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
       currentPage++;
-    } else if ((c == 'm' || c == 'M') && currentPage > 0) {
+    } else if ((c == 'p' || c == 'P') && currentPage > 0) {
       currentPage--;
     }
   }
