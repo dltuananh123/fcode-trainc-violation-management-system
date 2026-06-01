@@ -851,7 +851,7 @@ void memberViewStats(AppDatabase *db) {
   for (int i = 0; i < 30; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 10; i++) {
     printf(LINE_H);
   }
@@ -929,11 +929,11 @@ void memberViewStats(AppDatabase *db) {
     for (int i = 0; i < 16; i++) {
       printf(LINE_H);
     }
-    printf(LINE_cross);
+    printf(LINE_CROSS);
     for (int i = 0; i < 25; i++) {
       printf(LINE_H);
     }
-    printf(LINE_cross);
+    printf(LINE_CROSS);
     for (int i = 0; i < 15; i++) {
       printf(LINE_H);
     }
@@ -1653,19 +1653,19 @@ void memberViewKicked(AppDatabase *db) {
   for (int i = 0; i < 4; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 10; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 18; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 12; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 24; i++) {
     printf(LINE_H);
   }

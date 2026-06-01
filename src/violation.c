@@ -982,11 +982,11 @@ void violationViewPaymentHistory(AppDatabase *db) {
   for (int i = 0; i < 16; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 20; i++) {
     printf(LINE_H);
   }
-  printf(LINE_cross);
+  printf(LINE_CROSS);
   for (int i = 0; i < 15; i++) {
     printf(LINE_H);
   }
