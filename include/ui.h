@@ -135,6 +135,15 @@ void uiDrawMenuRow(const char *text);
 void uiDrawMenuRowFmt(const char *fmt, ...);
 
 /**
+ * @brief Draw a double menu row side-by-side inside the box.
+ * @param n1 Number of the first option.
+ * @param t1 Title of the first option.
+ * @param n2 Number of the second option.
+ * @param t2 Title of the second option.
+ */
+void uiDrawDualMenuRow(int n1, const char *t1, int n2, const char *t2);
+
+/**
  * @brief Wait for Enter key press ("Press any key to continue").
  */
 void uiPause(void);
