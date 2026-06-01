@@ -37,7 +37,7 @@ CheckOptions:
   - key: readability-identifier-naming.EnumConstantCase
     value: UPPER_CASE
 
-  # Normal variables should use camelBack (theo requirement)
+  # Normal variables should use camelBack
   # Example: memberCount, totalFine
   - key: readability-identifier-naming.VariableCase
     value: camelBack
@@ -46,12 +46,12 @@ CheckOptions:
   - key: readability-identifier-naming.GlobalVariableCase
     value: camelBack
 
-  # Function names should use snake_case
-  # Example: auth_login, member_add
+  # Function names should use camelBack
+  # Example: authLogin, memberAdd
   - key: readability-identifier-naming.FunctionCase
     value: camelBack
 
-  # Global/public function names should also use snake_case
+  # Global/public function names should also use camelBack
   - key: readability-identifier-naming.GlobalFunctionCase
     value: camelBack
 
@@ -60,12 +60,12 @@ CheckOptions:
   - key: readability-identifier-naming.ParameterCase
     value: camelBack
 
-  # Struct names should use CamelCase (PascalCase)
+  # Struct names should use CamelCase
   # Example: Member, Violation, AppDatabase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
 
-  # Struct fields should use camelBack (theo requirement)
+  # Struct fields should use camelBack
   # Example: memberCount, totalFine
   - key: readability-identifier-naming.StructMemberCase
     value: camelBack
