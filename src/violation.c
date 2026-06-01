@@ -267,189 +267,203 @@ void violationViewAllFiltered(AppDatabase *db) {
     return;
   }
 
-  int filterType;
+  int filterType = 0;
   int filterValue = 0;
 
-filter_selection:
   while (1) {
-    uiClear();
-    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham");
-    uiDrawMenuRow("  1. Loc theo ban");
-    uiDrawMenuRow("  2. Loc theo ly do vi pham");
-    uiDrawMenuRow("  3. Loc theo trang thai thu tien");
-    uiDrawMenuRow("  4. Xem tat ca, khong loc");
-    uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
-    uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
-    uiDrawSeparator();
-    filterType =
-        readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, -1, 4);
-    if (filterType == -1) {
-      return;
-    }
-    if (filterType == 0) {
-      return;
-    }
-    if (filterType == 4) {
-      break;
-    }
-
-    int subChoice;
-    if (filterType == 1) {
+    /* Filter selection loop */
+    while (1) {
       uiClear();
-      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ban");
-      uiDrawMenuRow("  1. Academic");
-      uiDrawMenuRow("  2. Planning");
-      uiDrawMenuRow("  3. HR");
-      uiDrawMenuRow("  4. Media");
+      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham");
+      uiDrawMenuRow("  1. Loc theo ban");
+      uiDrawMenuRow("  2. Loc theo ly do vi pham");
+      uiDrawMenuRow("  3. Loc theo trang thai thu tien");
+      uiDrawMenuRow("  4. Xem tat ca, khong loc");
       uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
       uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
       uiDrawSeparator();
-      subChoice =
-          readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
-    } else if (filterType == 2) {
-      uiClear();
-      uiDrawBreadcrumb(
-          "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ly do");
-      uiDrawMenuRow("  1. Khong mac ao CLB");
-      uiDrawMenuRow("  2. Vang hop/Train-C");
-      uiDrawMenuRow("  3. Khong tham gia hoat dong");
-      uiDrawMenuRow("  4. Bao luc (Out CLB)");
-      uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
-      uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
-      uiDrawSeparator();
-      subChoice =
-          readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
-    } else {
-      uiClear();
-      uiDrawBreadcrumb(
-          "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon trang thai");
-      uiDrawMenuRow("  1. Chua thu tien");
-      uiDrawMenuRow("  2. Da thu tien");
-      uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
-      uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
-      uiDrawSeparator();
-      subChoice =
-          readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 2);
-    }
-
-    if (subChoice == -1) {
-      return;
-    }
-    if (subChoice == 0) {
-      continue;
-    }
-    filterValue = subChoice - 1;
-    break;
-  }
-
-  /* Collect matching violation indices */
-  int matchIdx[MAX_VIOLATIONS];
-  int found = 0;
-  for (int i = 0; i < db->violationCount; i++) {
-    const Violation *v = &db->violations[i];
-    int match = 0;
-    switch (filterType) {
-    case 4:
-      match = 1;
-      break;
-    case 1:
-      match = violationMatchesTeam(db, v, filterValue);
-      break;
-    case 2:
-      match = violationMatchesReason(v, filterValue);
-      break;
-    case 3:
-      match = violationMatchesPayment(v, filterValue);
-      break;
-    default:
-      break;
-    }
-    if (match) {
-      matchIdx[found++] = i;
-    }
-  }
-
-  if (found == 0) {
-    printf("  Khong co vi pham nao\n");
-    return;
-  }
-
-  int totalPages = (found + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
-  int currentPage = 0;
-
-  while (1) {
-    uiClear();
-    printViolationTableHeader();
-
-    int start = currentPage * ROWS_PER_PAGE;
-    int end = start + ROWS_PER_PAGE;
-    if (end > found) {
-      end = found;
-    }
-
-    for (int i = start; i < end; i++) {
-      const Violation *v = &db->violations[matchIdx[i]];
-      printViolationRow(findMemberForViolation(db, v), v);
-    }
-
-    printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 18; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 15; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_BR "\n" COLOR_RESET);
-
-    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
-           "%d" COLOR_RESET " vi pham\n",
-           currentPage + 1, totalPages, found);
-
-    if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET
-                       " > ");
-      char buf[10];
-      readString(buf, sizeof(buf));
-      char c = buf[0];
-      if (c == 'q' || c == 'Q') {
-        goto filter_selection;
+      filterType =
+          readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, -1, 4);
+      if (filterType == -1) {
+        return;
       }
-      if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
-        currentPage++;
-      } else if ((c == 'm' || c == 'M') && currentPage > 0) {
-        currentPage--;
+      if (filterType == 0) {
+        return;
       }
-    } else {
+      if (filterType == 4) {
+        break;
+      }
+
+      int subChoice;
+      if (filterType == 1) {
+        uiClear();
+        uiDrawBreadcrumb(
+            "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ban");
+        uiDrawMenuRow("  1. Academic");
+        uiDrawMenuRow("  2. Planning");
+        uiDrawMenuRow("  3. HR");
+        uiDrawMenuRow("  4. Media");
+        uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
+        uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
+        uiDrawSeparator();
+        subChoice =
+            readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
+      } else if (filterType == 2) {
+        uiClear();
+        uiDrawBreadcrumb(
+            "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon ly do");
+        uiDrawMenuRow("  1. Khong mac ao CLB");
+        uiDrawMenuRow("  2. Vang hop/Train-C");
+        uiDrawMenuRow("  3. Khong tham gia hoat dong");
+        uiDrawMenuRow("  4. Bao luc (Out CLB)");
+        uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
+        uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
+        uiDrawSeparator();
+        subChoice =
+            readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 4);
+      } else {
+        uiClear();
+        uiDrawBreadcrumb(
+            "MENU BAN CHU NHIEM > Xem danh sach vi pham > Chon trang thai");
+        uiDrawMenuRow("  1. Chua thu tien");
+        uiDrawMenuRow("  2. Da thu tien");
+        uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
+        uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
+        uiDrawSeparator();
+        subChoice =
+            readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 2);
+      }
+
+      if (subChoice == -1) {
+        return;
+      }
+      if (subChoice == 0) {
+        continue;
+      }
+      filterValue = subChoice - 1;
+      break;
+    }
+
+    /* Collect matching violation indices */
+    int matchIdx[MAX_VIOLATIONS];
+    int found = 0;
+    for (int i = 0; i < db->violationCount; i++) {
+      const Violation *v = &db->violations[i];
+      int match = 0;
+      switch (filterType) {
+      case 4:
+        match = 1;
+        break;
+      case 1:
+        match = violationMatchesTeam(db, v, filterValue);
+        break;
+      case 2:
+        match = violationMatchesReason(v, filterValue);
+        break;
+      case 3:
+        match = violationMatchesPayment(v, filterValue);
+        break;
+      default:
+        break;
+      }
+      if (match) {
+        matchIdx[found++] = i;
+      }
+    }
+
+    if (found == 0) {
+      printf("  Khong co vi pham nao\n");
       printf("\n  Nhan Enter de tiep tuc...");
       while (getchar() != '\n' && getchar() != EOF) {
         ;
       }
-      goto filter_selection;
+      continue;
+    }
+
+    int totalPages = (found + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
+    int currentPage = 0;
+    int exitPagination = 0;
+
+    while (1) {
+      uiClear();
+      printViolationTableHeader();
+
+      int start = currentPage * ROWS_PER_PAGE;
+      int end = start + ROWS_PER_PAGE;
+      if (end > found) {
+        end = found;
+      }
+
+      for (int i = start; i < end; i++) {
+        const Violation *v = &db->violations[matchIdx[i]];
+        printViolationRow(findMemberForViolation(db, v), v);
+      }
+
+      printf(COLOR_CYAN "  " LINE_BL);
+      for (int i = 0; i < 12; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 22; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 14; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 22; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 18; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 12; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 15; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_T_UP);
+      for (int i = 0; i < 12; i++) {
+        printf(LINE_H);
+      }
+      printf(LINE_BR "\n" COLOR_RESET);
+
+      printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
+             "%d" COLOR_RESET " vi pham\n",
+             currentPage + 1, totalPages, found);
+
+      if (totalPages > 1) {
+        printf(COLOR_DIM
+               "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET " > ");
+        char buf[10];
+        readString(buf, sizeof(buf));
+        char c = buf[0];
+        if (c == 'q' || c == 'Q') {
+          exitPagination = 1;
+          break;
+        }
+        if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
+          currentPage++;
+        } else if ((c == 'm' || c == 'M') && currentPage > 0) {
+          currentPage--;
+        }
+      } else {
+        printf("\n  Nhan Enter de tiep tuc...");
+        while (getchar() != '\n' && getchar() != EOF) {
+          ;
+        }
+        exitPagination = 1;
+        break;
+      }
+    }
+
+    if (exitPagination) {
+      continue;
     }
   }
 }
