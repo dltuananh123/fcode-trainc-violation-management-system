@@ -223,7 +223,7 @@ static void adminMenu(void) {
       trimSpaces(targetId);
       if (strcmp(targetId, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
-      } else if (authResetPassword(&gDb, targetId) == 0) {
+      } else if (authResetPassword(&gDb, targetId) == RC_OK) {
         Account *session = authGetSession();
         if (session != NULL) {
           logSystemAction(session->studentId, "Reset mat khau", targetId);
