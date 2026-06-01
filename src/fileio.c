@@ -48,7 +48,7 @@ static void deriveXorKey(unsigned char *key, size_t keyLen) {
   }
 }
 
-static void xorBuffer(unsigned char *data, size_t size) {
+void xorBuffer(unsigned char *data, size_t size) {
   if (!gXorKeyDerived) {
     deriveXorKey(gXorKey, XOR_KEY_LEN);
     gXorKeyDerived = 1;

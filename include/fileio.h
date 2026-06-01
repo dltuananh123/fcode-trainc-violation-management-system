@@ -45,4 +45,15 @@ int fileioSaveViolations(AppDatabase *db);
  */
 int fileioSaveAccounts(AppDatabase *db);
 
+/**
+ * @brief Applies XOR encryption/decryption to a data buffer in-place.
+ *
+ * Uses a machine-derived XOR key. Calling twice on the same buffer
+ * restores the original data (symmetric operation).
+ *
+ * @param data Pointer to the data buffer.
+ * @param size Size of the data buffer in bytes.
+ */
+void xorBuffer(unsigned char *data, size_t size);
+
 #endif /* FILEIO_H */
