@@ -54,19 +54,40 @@ int isLettersOnly(const char *str) {
   if (str == NULL) {
     return 0;
   }
-  for (int i = 0; str[i] != '\0'; i++) {
+  int i = 0;
+  while (str[i] != '\0') {
     unsigned char c = (unsigned char)str[i];
     if (c == ' ') {
+      i++;
       continue;
     }
-    /* ASCII letters */
     if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+      i++;
       continue;
     }
-    /* UTF-8 continuation bytes (Vietnamese diacritics) */
-    if (c >= 0x80) {
-      continue;
+
+    /* Valid UTF-8 multi-byte sequences (Vietnamese diacritics) */
+    if (c >= 0xC0 && c <= 0xDF) {
+      /* 2-byte: check next byte is continuation (0x80-0xBF) */
+      if ((unsigned char)str[i + 1] >= 0x80 &&
+          (unsigned char)str[i + 1] <= 0xBF) {
+        i += 2;
+        continue;
+      }
+      return 0; /* Invalid UTF-8 */
     }
+    if (c >= 0xE0 && c <= 0xEF) {
+      /* 3-byte: Vietnamese diacritics are in this range */
+      if ((unsigned char)str[i + 1] >= 0x80 &&
+          (unsigned char)str[i + 1] <= 0xBF &&
+          (unsigned char)str[i + 2] >= 0x80 &&
+          (unsigned char)str[i + 2] <= 0xBF) {
+        i += 3;
+        continue;
+      }
+      return 0;
+    }
+    /* Reject 4-byte (emoji, CJK, etc.) and invalid bytes */
     return 0;
   }
   return 1;
@@ -352,7 +373,7 @@ int validateEmail(const char *email) {
   }
 
   /* Find @ */
-  char *at = strchr(email, '@');
+  const char *at = strchr(email, '@');
   if (at == NULL) {
     printf(ERR_LOI "Email phai chua dau \"@\"!\n");
     return 0;
@@ -367,6 +388,13 @@ int validateEmail(const char *email) {
   /* Text before @ */
   if (at == email) {
     printf(ERR_LOI "Email phai co ten truoc dau \"@\"!\n");
+    return 0;
+  }
+
+  /* Local part (before @) length validation */
+  int localLen = (int)(at - email);
+  if (localLen > 64) {
+    printf(ERR_LOI "Phan ten email truoc dau \"@\" khong duoc qua 64 ky tu!\n");
     return 0;
   }
 
@@ -393,9 +421,16 @@ int validateEmail(const char *email) {
   }
 
   /* Domain after @ */
-  char *domain = at + 1;
+  const char *domain = at + 1;
   if (domain[0] == '\0') {
     printf(ERR_LOI "Email phai co ten mien sau dau \"@\"!\n");
+    return 0;
+  }
+
+  /* Domain length validation */
+  int domainLen = (int)strlen(domain);
+  if (domainLen > 253) {
+    printf(ERR_LOI "Ten mien email sau dau \"@\" khong duoc qua 253 ky tu!\n");
     return 0;
   }
 
@@ -408,7 +443,7 @@ int validateEmail(const char *email) {
   }
 
   /* Domain must contain . */
-  char *lastDot = strrchr(domain, '.');
+  const char *lastDot = strrchr(domain, '.');
   if (lastDot == NULL) {
     printf(ERR_LOI "Email phai co ten mien hop le (vd: gmail.com)!\n");
     return 0;
@@ -420,15 +455,39 @@ int validateEmail(const char *email) {
     return 0;
   }
 
-  /* Domain cannot start or end with dot or hyphen */
-  if (domain[0] == '.' || domain[0] == '-' ||
-      domain[strlen(domain) - 1] == '.') {
-    printf(ERR_LOI "Ten mien khong hop le!\n");
-    return 0;
+  /* Split domain by '.' and check label lengths and hyphens */
+  const char *startLabel = domain;
+  while (1) {
+    const char *endLabel = strchr(startLabel, '.');
+    int labelLen;
+    if (endLabel == NULL) {
+      labelLen = (int)strlen(startLabel);
+    } else {
+      labelLen = (int)(endLabel - startLabel);
+    }
+
+    if (labelLen == 0) {
+      printf(ERR_LOI "Ten mien co label rong!\n");
+      return 0;
+    }
+    if (labelLen > 63) {
+      printf(ERR_LOI "Moi phan cua ten mien khong duoc qua 63 ky tu!\n");
+      return 0;
+    }
+    if (startLabel[0] == '-' || startLabel[labelLen - 1] == '-') {
+      printf(ERR_LOI "Phan ten mien khong duoc bat dau hoac ket thuc bang dau "
+                     "gach ngang!\n");
+      return 0;
+    }
+
+    if (endLabel == NULL) {
+      break;
+    }
+    startLabel = endLabel + 1;
   }
 
   /* TLD must be at least 2 letters */
-  char *tld = lastDot + 1;
+  const char *tld = lastDot + 1;
   int tldLen = (int)strlen(tld);
   if (tldLen < 2) {
     printf(
@@ -443,6 +502,31 @@ int validateEmail(const char *email) {
       printf(ERR_LOI "Duoi domain chi duoc chua chu cai (vd: .com, .vn)!\n");
       return 0;
     }
+  }
+
+  /* Soft warn for uncommon TLDs */
+  static const char *commonTlds[] = {"com", "vn",  "net", "org",  "edu",
+                                     "io",  "dev", "gov", "info", "co",
+                                     "me",  "app", NULL};
+  int knownTld = 0;
+  for (int i = 0; commonTlds[i] != NULL; i++) {
+    int match = 1;
+    for (int j = 0; tld[j] != '\0' || commonTlds[i][j] != '\0'; j++) {
+      if (tolower((unsigned char)tld[j]) !=
+          tolower((unsigned char)commonTlds[i][j])) {
+        match = 0;
+        break;
+      }
+    }
+    if (match) {
+      knownTld = 1;
+      break;
+    }
+  }
+  if (!knownTld) {
+    printf(ERR_CANH_BAO "Ten mien quoc gia hoac to chuc \".%s\" la it pho "
+                        "bien. Vui long kiem tra lai.\n",
+           tld);
   }
 
   return 1;
@@ -889,8 +973,20 @@ int validateDate(const char *date) {
     return 0;
   }
 
-  if (year < 2000 || year > 2099) {
-    printf(ERR_LOI "Nam khong hop le! Nam phai tu 2000 den 2099.\n");
+  /* Get current time for dynamic year validation */
+  time_t now = time(NULL);
+  struct tm *t = localtime(&now);
+  int todayDay = 1;
+  int todayMonth = 1;
+  int todayYear = 2026; /* fallback */
+  if (t != NULL) {
+    todayDay = t->tm_mday;
+    todayMonth = t->tm_mon + 1;
+    todayYear = t->tm_year + 1900;
+  }
+
+  if (year < 2020 || year > todayYear) {
+    printf(ERR_LOI "Nam khong hop le! Nam phai tu 2020 den %d.\n", todayYear);
     return 0;
   }
 
@@ -916,12 +1012,6 @@ int validateDate(const char *date) {
   }
 
   /* Not future date */
-  time_t now = time(NULL);
-  struct tm *t = localtime(&now);
-  int todayDay = t->tm_mday;
-  int todayMonth = t->tm_mon + 1;
-  int todayYear = t->tm_year + 1900;
-
   if (year > todayYear || (year == todayYear && month > todayMonth) ||
       (year == todayYear && month == todayMonth && day > todayDay)) {
     printf(ERR_LOI "Ngay khong duoc lon hon ngay hien tai "

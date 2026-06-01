@@ -76,7 +76,8 @@ int validatePhoneUnique(const char *phone, const AppDatabase *db,
  * PASSWORD
  * ============================================================ */
 
-/** Validate new password: min 6, max 30, has letter, has digit, no spaces. */
+/** Validate new password: min 8, max 30, has upper, has lower, has digit, has
+ * special, no spaces. */
 int validatePassword(const char *password);
 
 /* ============================================================
