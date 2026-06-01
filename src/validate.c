@@ -7,6 +7,7 @@
  */
 
 #include "validate.h"
+#include "member.h"
 #include "types.h"
 #include "ui.h"
 
@@ -145,12 +146,9 @@ int validateMSSV(const char *mssv, const AppDatabase *db) {
 
   /* Check uniqueness */
   if (db != NULL) {
-    for (int i = 0; i < db->memberCount; i++) {
-      if (strcmp(db->members[i].studentId, mssv) == 0 &&
-          !db->members[i].isDeleted) {
-        printf(ERR_LOI "MSSV \"%s\" da ton tai trong he thong!\n", mssv);
-        return 0;
-      }
+    if (memberFindById(db, mssv) != -1) {
+      printf(ERR_LOI "MSSV \"%s\" da ton tai trong he thong!\n", mssv);
+      return 0;
     }
   }
 

@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -15,16 +16,46 @@
  * FIND / SEARCH
  * ============================================================ */
 
+static int memberIndexCompare(const void *a, const void *b) {
+  return strcmp(((const MemberIndex *)a)->studentId,
+                ((const MemberIndex *)b)->studentId);
+}
+
+void memberRebuildIndex(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+  db->memberIndexCount = 0;
+  for (int i = 0; i < db->memberCount; i++) {
+    if (!db->members[i].isDeleted) {
+      int idx = db->memberIndexCount;
+      strncpy(db->memberIndexes[idx].studentId, db->members[i].studentId,
+              MAX_MSSV_LEN - 1);
+      db->memberIndexes[idx].studentId[MAX_MSSV_LEN - 1] = '\0';
+      db->memberIndexes[idx].index = i;
+      db->memberIndexCount++;
+    }
+  }
+  if (db->memberIndexCount > 1) {
+    qsort(db->memberIndexes, (size_t)db->memberIndexCount, sizeof(MemberIndex),
+          memberIndexCompare);
+  }
+}
+
 int memberFindById(const AppDatabase *db, const char *studentId) {
-  if (db == NULL || studentId == NULL) {
+  if (db == NULL || studentId == NULL || db->memberIndexCount == 0) {
     return -1;
   }
 
-  for (int i = 0; i < db->memberCount; i++) {
-    if (!db->members[i].isDeleted &&
-        strcmp(db->members[i].studentId, studentId) == 0) {
-      return i;
-    }
+  MemberIndex key;
+  strncpy(key.studentId, studentId, MAX_MSSV_LEN - 1);
+  key.studentId[MAX_MSSV_LEN - 1] = '\0';
+
+  MemberIndex *res =
+      bsearch(&key, db->memberIndexes, (size_t)db->memberIndexCount,
+              sizeof(MemberIndex), memberIndexCompare);
+  if (res != NULL) {
+    return res->index;
   }
 
   return -1;
@@ -251,6 +282,7 @@ int memberAdd(AppDatabase *db) {
     logSystemAction(session->studentId, "Them thanh vien", newMember.studentId);
   }
 
+  memberRebuildIndex(db);
   return 0;
 }
 
@@ -1300,6 +1332,7 @@ void memberViewArchive(AppDatabase *db) {
     m->deletedAt = time(NULL);
     printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n\n");
   } else {
+    memberRebuildIndex(db);
     printf(ERR_OK "Khoi phuc thanh vien \"%s\" (%s) thanh cong!\n\n",
            m->fullName, m->studentId);
     logSystemAction(session->studentId, "Khoi phuc tu kho luu tru",
@@ -1343,14 +1376,7 @@ void memberKickOrRestore(AppDatabase *db) {
     }
 
     /* Find member */
-    memberIdx = -1;
-    for (int i = 0; i < db->memberCount; i++) {
-      if (!db->members[i].isDeleted &&
-          strcmp(db->members[i].studentId, studentId) == 0) {
-        memberIdx = i;
-        break;
-      }
-    }
+    memberIdx = memberFindById(db, studentId);
 
     if (memberIdx != -1) {
       break;

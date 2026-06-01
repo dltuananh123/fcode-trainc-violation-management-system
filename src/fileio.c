@@ -1,4 +1,5 @@
 #include "fileio.h"
+#include "member.h"
 #include "types.h"
 #include "utils.h"
 #include <stdio.h>
@@ -444,5 +445,6 @@ int fileioLoadAll(AppDatabase *db) {
   if (loadViolations(db) != 0) {
     return -1;
   }
+  memberRebuildIndex(db);
   return 0;
 }

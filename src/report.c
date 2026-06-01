@@ -1,4 +1,5 @@
 #include "report.h"
+#include "member.h"
 #include "types.h"
 #include "ui.h"
 #include "utils.h"
@@ -18,11 +19,9 @@ static void aggregateTeamTotals(const AppDatabase *db, double collected[],
     const Violation *v = &db->violations[i];
     int team = -1;
 
-    for (int j = 0; j < db->memberCount; j++) {
-      if (strcmp(db->members[j].studentId, v->studentId) == 0) {
-        team = db->members[j].team;
-        break;
-      }
+    int memberIdx = memberFindById(db, v->studentId);
+    if (memberIdx != -1) {
+      team = db->members[memberIdx].team;
     }
 
     if (team >= TEAM_ACADEMIC && team <= TEAM_MEDIA) {
