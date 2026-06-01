@@ -484,8 +484,12 @@ void reportDashboard(const AppDatabase *db) {
 
   /* 1. Calculate general stats */
   int totalViolations = db->violationCount;
-  int jacketCount = 0, absentCount = 0, activityCount = 0, violenceCount = 0;
-  double totalIssued = 0.0, totalPaid = 0.0;
+  int jacketCount = 0;
+  int absentCount = 0;
+  int activityCount = 0;
+  int violenceCount = 0;
+  double totalIssued = 0.0;
+  double totalPaid = 0.0;
 
   for (int i = 0; i < db->violationCount; i++) {
     const Violation *v = &db->violations[i];
@@ -551,7 +555,10 @@ void reportDashboard(const AppDatabase *db) {
     double pActivity = ((double)activityCount / totalViolations) * 100.0;
     double pViolence = ((double)violenceCount / totalViolations) * 100.0;
 
-    char temp1[128], temp2[128], temp3[128], temp4[128];
+    char temp1[128];
+    char temp2[128];
+    char temp3[128];
+    char temp4[128];
     snprintf(temp1, sizeof(temp1),
              "    + Khong mac ao CLB:      %3d lan (%5.1f%%)", jacketCount,
              pJacket);

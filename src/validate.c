@@ -859,7 +859,9 @@ int validateDate(const char *date) {
   }
 
   /* Parse day, month, year */
-  int day = 0, month = 0, year = 0;
+  int day = 0;
+  int month = 0;
+  int year = 0;
   for (int i = 0; i < 2; i++) {
     if (!isdigit((unsigned char)date[i]) ||
         !isdigit((unsigned char)date[3 + i]) ||
