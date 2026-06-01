@@ -497,6 +497,34 @@ int main(int argc, char *argv[]) {
     makeViolation(&violations[vc++], "SE200516", dateSec(2026,5,15),
                   REASON_VIOLENCE, 0, 1, PENALTY_OUT_CLB, "Danh nhau trong CLB");
 
+    /* === Recalculate Member Stats based on seeded Violations === */
+    for (int i = 0; i < mc; i++) {
+        members[i].violationCount = 0;
+        members[i].totalFine = 0.0;
+        members[i].consecutiveAbsences = 0;
+    }
+    for (int i = 0; i < vc; i++) {
+        Violation *v = &violations[i];
+        for (int j = 0; j < mc; j++) {
+            if (strcmp(members[j].studentId, v->studentId) == 0) {
+                members[j].violationCount++;
+                if (v->isPaid == 0) {
+                    members[j].totalFine += v->fine;
+                }
+                if (v->reason == REASON_ABSENT) {
+                    members[j].consecutiveAbsences++;
+                } else {
+                    members[j].consecutiveAbsences = 0;
+                }
+                if (v->penalty == PENALTY_OUT_CLB) {
+                    members[j].isActive = STATUS_OUT_CLB;
+                    members[j].consecutiveAbsences = 0;
+                }
+                break;
+            }
+        }
+    }
+
     /* === Write encrypted files to data/ === */
     char path[256];
 
