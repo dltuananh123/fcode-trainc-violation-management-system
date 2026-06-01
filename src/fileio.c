@@ -324,8 +324,8 @@ static int loadAccounts(AppDatabase *db) {
 
   /* First-run: create default admin account */
   if (db->accountCount == 0) {
-    printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan "
-           "admin mac dinh...\n");
+    // printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan "
+    //        "admin mac dinh...\n");
     strcpy(db->accounts[0].studentId, "SE203055");
     generateSalt(db->accounts[0].salt, sizeof(db->accounts[0].salt));
     hashPassword("Phuc@2006", db->accounts[0].salt, db->accounts[0].password);
