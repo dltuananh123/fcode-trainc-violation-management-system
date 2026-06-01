@@ -1,11 +1,9 @@
-#include <libloaderapi.h>
-#include <minwindef.h>
 #ifndef _WIN32
 #define _POSIX_C_SOURCE 200809L
 #endif
+#include "utils.h"
 #include "types.h"
 #include "ui.h"
-#include "utils.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +12,7 @@
 
 #ifdef _WIN32
 #include <conio.h>
+#include <windows.h>
 #else
 #include <termios.h>
 #include <unistd.h>
