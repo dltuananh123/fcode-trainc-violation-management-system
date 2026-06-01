@@ -155,6 +155,8 @@ void formatTime(time_t t, char *buffer, size_t bufSize) {
     return;
   }
 
+  /* Note: localtime is not thread-safe but this application is
+     single-threaded. */
   struct tm *timeinfo = localtime(&t);
   if (timeinfo != NULL) {
     strftime(buffer, bufSize, "%d/%m/%Y %H:%M", timeinfo);
@@ -526,6 +528,8 @@ void logSystemAction(const char *actor, const char *action,
 #endif
 
   time_t now = time(NULL);
+  /* Note: localtime is not thread-safe but this application is
+     single-threaded. */
   struct tm *t = localtime(&now);
   char timeBuf[32];
   if (t != NULL) {
@@ -618,11 +622,14 @@ void viewSystemLogs(void) {
       printf("\n" COLOR_DIM "  -- Nhan Enter de xem tiep (hoac 'q' + Enter de "
              "thoat) --" COLOR_RESET);
       int ch = getchar();
-      if (ch == 'q' || ch == 'Q') {
+      if (ch == 'q' || ch == 'Q' || ch == EOF) {
         break;
       }
-      while (getchar() != '\n') {
-        ;
+      if (ch != '\n') {
+        int nextCh;
+        while ((nextCh = getchar()) != '\n' && nextCh != EOF) {
+          ;
+        }
       }
       uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong (tiep)");
     }
@@ -636,4 +643,22 @@ void viewSystemLogs(void) {
     printf("\n" COLOR_GREEN "  Tong cong: %d dong nhat ky." COLOR_RESET "\n",
            lineCount);
   }
+}
+
+unsigned int calculateCrc32(const unsigned char *data, size_t length) {
+  unsigned int crc = 0xFFFFFFFFU;
+  if (data == NULL) {
+    return 0;
+  }
+  for (size_t i = 0; i < length; i++) {
+    crc ^= data[i];
+    for (int j = 0; j < 8; j++) {
+      if (crc & 1) {
+        crc = (crc >> 1) ^ 0xEDB88320U;
+      } else {
+        crc >>= 1;
+      }
+    }
+  }
+  return crc ^ 0xFFFFFFFFU;
 }
