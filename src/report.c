@@ -70,6 +70,9 @@ static int compareDescending(const void *a, const void *b) {
 static void sortMemberPointersByViolationCount(const AppDatabase *db,
                                                const Member *sorted[],
                                                int count, int ascending) {
+  if (count <= 0) {
+    return;
+  }
   MemberViolationCount *mvc =
       malloc((size_t)count * sizeof(MemberViolationCount));
   if (!mvc) {
@@ -509,6 +512,8 @@ void reportDashboard(const AppDatabase *db) {
       break;
     case REASON_VIOLENCE:
       violenceCount++;
+      break;
+    default:
       break;
     }
   }
