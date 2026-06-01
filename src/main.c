@@ -144,36 +144,20 @@ static void adminMenu(void) {
     }
     printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
-    /* Menu rows helper - build content then print with borders */
-    char row[128];
-#define PRINT_MENU_ROW(n1, t1, n2, t2)                                         \
-  do {                                                                         \
-    sprintf(row, "  %2s. %-27s  %2s. %-29s", #n1, t1, #n2, t2);                \
-    printf(COLOR_BLUE BOX_V COLOR_RESET "%s" COLOR_BLUE BOX_V COLOR_RESET      \
-                                        "\n",                                  \
-           row);                                                               \
-  } while (0)
-
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(1, "Them thanh vien moi", 9, "Sap xep theo so lan VP");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(2, "Sua thong tin TV", 10, "Xuat bao cao");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(3, "Tim kiem & xem CT TV", 11, "Tim kiem theo ngay");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(4, "Ghi nhan vi pham", 12, "Xem profile ca nhan");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(5, "Danh dau da thu tien", 13, "Xem DS TV dang hoat dong");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(6, "Xem DS vi pham", 14, "Doi mat khau");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(7, "Thong ke tien phat theo ban", 15, "Reset mat khau TV");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(8, "Kiem tra nguong Out CLB", 16, "Xem Dashboard ky luat");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(17, "Xem lich su VP theo MSSV", 18, "Kick/Khoi phuc TV");
-    printf(COLOR_GREEN);
-    PRINT_MENU_ROW(19, "Xem DS thanh vien da kick", 20, "Xem nhat ky he thong");
+    uiDrawDualMenuRow(1, "Them thanh vien moi", 9, "Sap xep theo so lan VP");
+    uiDrawDualMenuRow(2, "Sua thong tin TV", 10, "Xuat bao cao");
+    uiDrawDualMenuRow(3, "Tim kiem & xem CT TV", 11, "Tim kiem theo ngay");
+    uiDrawDualMenuRow(4, "Ghi nhan vi pham", 12, "Xem profile ca nhan");
+    uiDrawDualMenuRow(5, "Danh dau da thu tien", 13,
+                      "Xem DS TV dang hoat dong");
+    uiDrawDualMenuRow(6, "Xem DS vi pham", 14, "Doi mat khau");
+    uiDrawDualMenuRow(7, "Thong ke tien phat theo ban", 15,
+                      "Reset mat khau TV");
+    uiDrawDualMenuRow(8, "Kiem tra nguong Out CLB", 16,
+                      "Xem Dashboard ky luat");
+    uiDrawDualMenuRow(17, "Xem lich su VP theo MSSV", 18, "Kick/Khoi phuc TV");
+    uiDrawDualMenuRow(19, "Xem DS thanh vien da kick", 20,
+                      "Xem nhat ky he thong");
 
     /* Row 11 - Thoat */
     printf(COLOR_BLUE BOX_V COLOR_RESET);

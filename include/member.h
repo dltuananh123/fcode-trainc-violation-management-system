@@ -36,6 +36,13 @@ int memberAdd(AppDatabase *db);
 int memberFindById(const AppDatabase *db, const char *studentId);
 
 /**
+ * @brief Rebuild the sorted member index.
+ *
+ * @param db Pointer to the AppDatabase
+ */
+void memberRebuildIndex(AppDatabase *db);
+
+/**
  * @brief Search members by name (case-insensitive substring match).
  *
  * @param db Pointer to the AppDatabase

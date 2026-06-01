@@ -109,6 +109,15 @@ typedef struct {
 } Violation;
 
 /**
+ * @struct MemberIndex
+ * @brief Helper structure to maintain a sorted index of members.
+ */
+typedef struct {
+  char studentId[MAX_MSSV_LEN];
+  int index; /* Index in members[] */
+} MemberIndex;
+
+/**
  * @struct AppDatabase
  * @brief Global state container to hold all system data arrays in memory.
  */
@@ -119,6 +128,8 @@ typedef struct {
   int memberCount;
   int violationCount;
   int accountCount;
+  MemberIndex memberIndexes[MAX_MEMBERS]; /* Sorted member index */
+  int memberIndexCount;                   /* Number of elements in the index */
 } AppDatabase;
 
 #endif /* TYPES_H */

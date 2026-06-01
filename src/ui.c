@@ -255,6 +255,82 @@ void uiDrawMenuRowFmt(const char *fmt, ...) {
   uiDrawMenuRow(buf);
 }
 
+void uiDrawDualMenuRow(int n1, const char *t1, int n2, const char *t2) {
+  char row[128];
+  snprintf(row, sizeof(row), "  %2d. %-27s  %2d. %-29s", n1, t1, n2, t2);
+  printf(COLOR_BLUE BOX_V COLOR_RESET "%s" COLOR_BLUE BOX_V COLOR_RESET "\n",
+         row);
+}
+
+void uiTableBegin(const TableColumn cols[], int colCount) {
+  printf(COLOR_CYAN "  " LINE_TL COLOR_RESET);
+  for (int i = 0; i < colCount; i++) {
+    for (int w = 0; w < cols[i].width; w++) {
+      printf(COLOR_CYAN LINE_H COLOR_RESET);
+    }
+    if (i < colCount - 1) {
+      printf(COLOR_CYAN LINE_T_DOWN COLOR_RESET);
+    }
+  }
+  printf(COLOR_CYAN LINE_TR COLOR_RESET "\n");
+
+  /* Header Row */
+  uiTableRowBegin();
+  for (int i = 0; i < colCount; i++) {
+    uiTableCell(cols[i].header, cols[i].width, COLOR_BOLD);
+  }
+  uiTableRowEnd();
+
+  /* Separator */
+  uiTableSeparator(cols, colCount);
+}
+
+void uiTableSeparator(const TableColumn cols[], int colCount) {
+  printf(COLOR_CYAN "  " LINE_T_RIGHT COLOR_RESET);
+  for (int i = 0; i < colCount; i++) {
+    for (int w = 0; w < cols[i].width; w++) {
+      printf(COLOR_CYAN LINE_H COLOR_RESET);
+    }
+    if (i < colCount - 1) {
+      printf(COLOR_CYAN LINE_T_DOWN COLOR_RESET);
+    }
+  }
+  printf(COLOR_CYAN LINE_T_LEFT COLOR_RESET "\n");
+}
+
+void uiTableEnd(const TableColumn cols[], int colCount) {
+  printf(COLOR_CYAN "  " LINE_BL COLOR_RESET);
+  for (int i = 0; i < colCount; i++) {
+    for (int w = 0; w < cols[i].width; w++) {
+      printf(COLOR_CYAN LINE_H COLOR_RESET);
+    }
+    if (i < colCount - 1) {
+      printf(COLOR_CYAN LINE_T_UP COLOR_RESET);
+    }
+  }
+  printf(COLOR_CYAN LINE_BR COLOR_RESET "\n");
+}
+
+void uiTableRowBegin(void) { printf(COLOR_CYAN "  " COLOR_RESET); }
+
+void uiTableRowEnd(void) { printf(COLOR_CYAN LINE_V COLOR_RESET "\n"); }
+
+void uiTableCell(const char *text, int width, const char *color) {
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" %s%-*.*s " COLOR_RESET, color, width - 2, width - 2, text);
+}
+
+void uiTableCellFmt(int width, const char *color, const char *fmt, ...) {
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" %s", color);
+  va_list args;
+  va_start(args, fmt);
+  char buf[256];
+  vsnprintf(buf, sizeof(buf), fmt, args);
+  va_end(args);
+  printf("%-*.*s " COLOR_RESET, width - 2, width - 2, buf);
+}
+
 void uiPause(void) {
   printf(COLOR_CYAN "\n  Nhan Enter de tiep tuc..." COLOR_RESET);
   fflush(stdout);
