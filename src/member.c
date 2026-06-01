@@ -1102,20 +1102,13 @@ void memberListAll(AppDatabase *db) {
  * ARCHIVE & RESTORE / ACCOUNT FREEZING
  * ============================================================ */
 
-void memberViewArchive(AppDatabase *db) {
+int memberViewArchive(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen quan ly luu tru!\n");
-    return;
-  }
+  REQUIRE_BCN(session);
 
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kho luu tru");
@@ -1132,7 +1125,7 @@ void memberViewArchive(AppDatabase *db) {
   if (archivedCount == 0) {
     uiDrawMenuRow("  Kho luu tru hien tai trong.");
     uiDrawSeparator();
-    return;
+    return RC_OK;
   }
 
   static const TableColumn ARCHIVE_COLS[] = {{6, "STT"},
@@ -1168,7 +1161,7 @@ void memberViewArchive(AppDatabase *db) {
 
   if (choice == 0) {
     printf(ERR_INFO "Da huy thao tac.\n\n");
-    return;
+    return RC_ERR_CANCELLED;
   }
 
   int targetIdx = archivedIndices[choice - 1];
@@ -1177,13 +1170,24 @@ void memberViewArchive(AppDatabase *db) {
   printf("\n");
   printf(ERR_CANH_BAO "Ban co chac muon khoi phuc hoat dong cho \"%s\" (%s)?\n",
          m->fullName, m->studentId);
-  int confirm = readMenuChoice(
-      COLOR_CYAN "  Xac nhan khoi phuc? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
 
-  if (confirm != 1) {
-    printf(ERR_INFO "Da huy khoi phuc.\n\n");
-    return;
+  while (1) {
+    printf(COLOR_CYAN "  Xac nhan khoi phuc? (Y/N): " COLOR_RESET);
+    char confirm[4];
+    readString(confirm, sizeof(confirm));
+    if (confirm[0] == 'y' || confirm[0] == 'Y') {
+      break;
+    }
+    if (confirm[0] == 'n' || confirm[0] == 'N') {
+      printf(ERR_INFO "Da huy khoi phuc.\n\n");
+      return RC_ERR_CANCELLED;
+    }
+    printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
   }
+
+  /* Keep backup states for transactional rollback */
+  int oldIsDeleted = m->isDeleted;
+  time_t oldDeletedAt = m->deletedAt;
 
   /* Perform recovery */
   m->isDeleted = 0;
@@ -1191,32 +1195,26 @@ void memberViewArchive(AppDatabase *db) {
 
   if (fileioSaveMembers(db) != 0) {
     /* Rollback */
-    m->isDeleted = 1;
-    m->deletedAt = time(NULL);
+    m->isDeleted = oldIsDeleted;
+    m->deletedAt = oldDeletedAt;
     printf(ERR_LOI "Khong the luu thay doi vao tap tin!\n\n");
-  } else {
-    memberRebuildIndex(db);
-    printf(ERR_OK "Khoi phuc thanh vien \"%s\" (%s) thanh cong!\n\n",
-           m->fullName, m->studentId);
-    logSystemAction(session->studentId, "Khoi phuc tu kho luu tru",
-                    m->studentId);
+    return RC_ERR_IO;
   }
+
+  memberRebuildIndex(db);
+  printf(ERR_OK "Khoi phuc thanh vien \"%s\" (%s) thanh cong!\n\n", m->fullName,
+         m->studentId);
+  logSystemAction(session->studentId, "Khoi phuc tu kho luu tru", m->studentId);
+  return RC_OK;
 }
 
-void memberKickOrRestore(AppDatabase *db) {
+int memberKickOrRestore(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen kick/khoi phuc thanh vien!\n");
-    return;
-  }
+  REQUIRE_BCN(session);
 
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kick / Khoi phuc thanh vien");
@@ -1231,7 +1229,7 @@ void memberKickOrRestore(AppDatabase *db) {
 
     if (strcmp(studentId, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
-      return;
+      return RC_ERR_CANCELLED;
     }
 
     if (!validateNotEmpty(studentId)) {
@@ -1253,7 +1251,7 @@ void memberKickOrRestore(AppDatabase *db) {
   /* Prevent self-action */
   if (strcmp(session->studentId, m->studentId) == 0) {
     printf(ERR_LOI "Khong the tu kick hoac tu khoi phuc chinh ban!\n");
-    return;
+    return RC_ERR_INVALID;
   }
 
   /* Find corresponding account */
@@ -1273,7 +1271,7 @@ void memberKickOrRestore(AppDatabase *db) {
   if (m->role == MEMBER_ROLE_BCN && !isSuperAdmin) {
     printf(ERR_LOI "Chi Super Admin (admin/SE203055) moi co quyen kick/khoi "
                    "phuc thanh vien BCN khac!\n");
-    return;
+    return RC_ERR_AUTH;
   }
 
   printf("\n");
@@ -1290,21 +1288,32 @@ void memberKickOrRestore(AppDatabase *db) {
     printf(ERR_CANH_BAO "Ban chuan bi kick thanh vien \"%s\" khoi CLB va KHOA "
                         "tai khoan dang nhap!\n",
            m->fullName);
-    int confirm1 = readMenuChoice(
-        COLOR_CYAN "  Ban co chac muon tiep tuc? (1=Co, 0=Khong): " COLOR_RESET,
-        0, 1);
-    if (confirm1 != 1) {
-      printf(ERR_INFO "Da huy thao tac.\n\n");
-      return;
+
+    while (1) {
+      printf(COLOR_CYAN "  Ban co chac muon tiep tuc? (Y/N): " COLOR_RESET);
+      char confirm1[4];
+      readString(confirm1, sizeof(confirm1));
+      if (confirm1[0] == 'y' || confirm1[0] == 'Y') {
+        break;
+      }
+      if (confirm1[0] == 'n' || confirm1[0] == 'N') {
+        printf(ERR_INFO "Da huy thao tac.\n\n");
+        return RC_ERR_CANCELLED;
+      }
+      printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
     }
 
     /* Mandatory Kick Reason */
     char reason[MAX_NOTE_LEN];
     while (1) {
-      printf(COLOR_CYAN
-             "  Nhap ly do kick (bat buoc, toi da 255 ky tu): " COLOR_RESET);
+      printf(COLOR_CYAN "  Nhap ly do kick (bat buoc, toi da 255 ky tu, 0 de "
+                        "huy): " COLOR_RESET);
       readString(reason, sizeof(reason));
       trimSpaces(reason);
+      if (strcmp(reason, "0") == 0) {
+        printf(ERR_INFO "Da huy thao tac.\n\n");
+        return RC_ERR_CANCELLED;
+      }
       if (validateNotEmpty(reason)) {
         break;
       }
@@ -1314,7 +1323,8 @@ void memberKickOrRestore(AppDatabase *db) {
     /* Step 2: Double confirmation (re-enter MSSV to confirm) */
     printf("\n" COLOR_BOLD COLOR_RED
            "  XAC THUC AN TOAN (BUOC CUOI):" COLOR_RESET "\n");
-    printf("  Vui long nhap lai chinh xac MSSV cua thanh vien (%s) de hoan tat "
+    printf("  Vui long nhap lai chinh xac MSSV cua thanh vien (%s, 0 de huy) "
+           "de hoan tat "
            "kick: ",
            m->studentId);
     char confirmMSSV[MAX_MSSV_LEN];
@@ -1322,10 +1332,15 @@ void memberKickOrRestore(AppDatabase *db) {
     trimSpaces(confirmMSSV);
     mssvAutoUpper(confirmMSSV);
 
+    if (strcmp(confirmMSSV, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n\n");
+      return RC_ERR_CANCELLED;
+    }
+
     if (strcmp(confirmMSSV, m->studentId) != 0) {
       printf(ERR_LOI
              "MSSV xac nhan khong trung khop! Huy bo kick thanh vien.\n\n");
-      return;
+      return RC_ERR_INVALID;
     }
 
     /* Keep backup states for transactional rollback */
@@ -1374,7 +1389,7 @@ void memberKickOrRestore(AppDatabase *db) {
         db->violationCount = oldViolationCount;
       }
       printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo kick.\n\n");
-      return;
+      return RC_ERR_IO;
     }
 
     if (accIdx != -1 && fileioSaveAccounts(db) != 0) {
@@ -1387,7 +1402,7 @@ void memberKickOrRestore(AppDatabase *db) {
       }
       (void)fileioSaveMembers(db);
       printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo kick.\n\n");
-      return;
+      return RC_ERR_IO;
     }
 
     if (violationAdded && fileioSaveViolations(db) != 0) {
@@ -1403,7 +1418,7 @@ void memberKickOrRestore(AppDatabase *db) {
         (void)fileioSaveAccounts(db);
       }
       printf(ERR_LOI "Khong the ghi file vi pham! Huy bo kick.\n\n");
-      return;
+      return RC_ERR_IO;
     }
 
     printf(ERR_OK "Da kick thanh vien \"%s\" (%s) khoi CLB va khoa tai khoan "
@@ -1415,11 +1430,19 @@ void memberKickOrRestore(AppDatabase *db) {
     /* --- CASE 2: RESTORE MEMBER --- */
     printf(ERR_INFO "Thanh vien nay hien da roi CLB. Ban co muon MO LAI tai "
                     "khoan va khoi phuc hoat dong?\n");
-    int confirm = readMenuChoice(
-        COLOR_CYAN "  Xac nhan khoi phuc? (1=Co, 0=Khong): " COLOR_RESET, 0, 1);
-    if (confirm != 1) {
-      printf(ERR_INFO "Da huy thao tac.\n\n");
-      return;
+
+    while (1) {
+      printf(COLOR_CYAN "  Xac nhan khoi phuc? (Y/N): " COLOR_RESET);
+      char confirm[4];
+      readString(confirm, sizeof(confirm));
+      if (confirm[0] == 'y' || confirm[0] == 'Y') {
+        break;
+      }
+      if (confirm[0] == 'n' || confirm[0] == 'N') {
+        printf(ERR_INFO "Da huy thao tac.\n\n");
+        return RC_ERR_CANCELLED;
+      }
+      printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
     }
 
     /* Backup for rollback */
@@ -1450,7 +1473,7 @@ void memberKickOrRestore(AppDatabase *db) {
         db->accounts[accIdx].failCount = oldFailCount;
       }
       printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo khoi phuc.\n\n");
-      return;
+      return RC_ERR_IO;
     }
 
     if (accIdx != -1 && fileioSaveAccounts(db) != 0) {
@@ -1461,7 +1484,7 @@ void memberKickOrRestore(AppDatabase *db) {
       db->accounts[accIdx].failCount = oldFailCount;
       (void)fileioSaveMembers(db);
       printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo khoi phuc.\n\n");
-      return;
+      return RC_ERR_IO;
     }
 
     printf(ERR_OK "Da khoi phuc trang thai hoat dong va mo khoa tai khoan cho "
@@ -1469,22 +1492,16 @@ void memberKickOrRestore(AppDatabase *db) {
            m->fullName);
     logSystemAction(session->studentId, "Khoi phuc TV", m->studentId);
   }
+  return RC_OK;
 }
 
-void memberViewKicked(AppDatabase *db) {
+int memberViewKicked(AppDatabase *db) {
   if (db == NULL) {
-    return;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return;
-  }
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen xem danh sach thanh vien da kick!\n");
-    return;
-  }
+  REQUIRE_BCN(session);
 
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM > Danh sach thanh vien da kick");
@@ -1502,7 +1519,7 @@ void memberViewKicked(AppDatabase *db) {
   if (kickedCount == 0) {
     uiDrawMenuRow("  Khong co thanh vien nao trong danh sach da kick.");
     uiDrawSeparator();
-    return;
+    return RC_OK;
   }
 
   /* Columns: STT (4), MSSV (10), Ho va ten (18), Ban (12), Ly do kick (40) */
@@ -1636,6 +1653,7 @@ void memberViewKicked(AppDatabase *db) {
   printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET
          " thanh vien da bi kick khoi CLB.\n\n",
          kickedCount);
+  return RC_OK;
 }
 
 void memberPurgeExpired(AppDatabase *db, int retentionDays) {
