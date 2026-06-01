@@ -287,6 +287,24 @@ static void xorBuffer(unsigned char *data, size_t size) {
   }
 }
 
+static unsigned int calculateCrc32(const unsigned char *data, size_t length) {
+  unsigned int crc = 0xFFFFFFFFU;
+  if (data == NULL) {
+    return 0;
+  }
+  for (size_t i = 0; i < length; i++) {
+    crc ^= data[i];
+    for (int j = 0; j < 8; j++) {
+      if (crc & 1) {
+        crc = (crc >> 1) ^ 0xEDB88320U;
+      } else {
+        crc >>= 1;
+      }
+    }
+  }
+  return crc ^ 0xFFFFFFFFU;
+}
+
 static int writeFileEncrypted(const char *path, const void *data,
                               size_t itemSize, int count) {
   FILE *fp = fopen(path, "wb");
@@ -296,6 +314,8 @@ static int writeFileEncrypted(const char *path, const void *data,
   }
   fwrite("FCE1", 1, 4, fp);
   fwrite(&count, sizeof(int), 1, fp);
+
+  unsigned int crc = 0;
   if (count > 0) {
     size_t totalSize = itemSize * (size_t)count;
     unsigned char *encrypted = (unsigned char *)malloc(totalSize);
@@ -306,9 +326,17 @@ static int writeFileEncrypted(const char *path, const void *data,
     }
     memcpy(encrypted, data, totalSize);
     xorBuffer(encrypted, totalSize);
+
+    crc = calculateCrc32(encrypted, totalSize);
+
     fwrite(encrypted, itemSize, (size_t)count, fp);
     free(encrypted);
+  } else {
+    crc = calculateCrc32(NULL, 0);
   }
+
+  fwrite(&crc, sizeof(unsigned int), 1, fp);
+
   fclose(fp);
   return 0;
 }
