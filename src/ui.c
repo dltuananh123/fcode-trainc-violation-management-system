@@ -10,6 +10,9 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
 #endif
 
 #include <stdarg.h>
@@ -22,6 +25,22 @@
 /* ============================================================
  * INITIALIZATION
  * ============================================================ */
+
+int uiGetTermWidth(void) {
+#ifdef _WIN32
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (h != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(h, &csbi)) {
+    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+  }
+#else
+  struct winsize w;
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+    return w.ws_col;
+  }
+#endif
+  return UI_TERM_WIDTH; /* fallback */
+}
 
 void uiInit(void) {
 #ifdef _WIN32
@@ -37,6 +56,14 @@ void uiInit(void) {
   /* Enable UTF-8 output on Windows */
   SetConsoleOutputCP(CP_UTF8);
 #endif
+
+  int w = uiGetTermWidth();
+  if (w < UI_TERM_WIDTH) {
+    printf(ERR_CANH_BAO "Terminal hien tai co be rong %d cot.\n", w);
+    printf("           Khuyen nghi toi thieu %d cot de hien thi tot nhat!\n",
+           UI_TERM_WIDTH);
+    uiPause();
+  }
 }
 
 /* ============================================================
@@ -45,7 +72,24 @@ void uiInit(void) {
 
 void uiClear(void) {
 #ifdef _WIN32
-  system("cls");
+  /* Try ANSI first (already enabled in uiInit) */
+  HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  DWORD mode = 0;
+  if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &mode) &&
+      (mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
+    printf("\033[2J\033[H\033[3J");
+  } else if (hOut != INVALID_HANDLE_VALUE) {
+    /* Fallback: Win32 API — no shell call */
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(hOut, &csbi)) {
+      DWORD cells = (DWORD)(csbi.dwSize.X * csbi.dwSize.Y);
+      COORD home = {0, 0};
+      DWORD written;
+      FillConsoleOutputCharacterA(hOut, ' ', cells, home, &written);
+      FillConsoleOutputAttribute(hOut, csbi.wAttributes, cells, home, &written);
+      SetConsoleCursorPosition(hOut, home);
+    }
+  }
 #else
   printf("\033[2J\033[H\033[3J");
 #endif
@@ -210,8 +254,12 @@ void uiPrintCentered(const char *text, int width) {
 void uiGetCurrentTime(char *buffer, int bufSize) {
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
-  snprintf(buffer, (size_t)bufSize, "%02d/%02d/%04d %02d:%02d", t->tm_mday,
-           t->tm_mon + 1, t->tm_year + 1900, t->tm_hour, t->tm_min);
+  if (t != NULL) {
+    snprintf(buffer, (size_t)bufSize, "%02d/%02d/%04d %02d:%02d", t->tm_mday,
+             t->tm_mon + 1, t->tm_year + 1900, t->tm_hour, t->tm_min);
+  } else {
+    snprintf(buffer, (size_t)bufSize, "--/--/---- --:--");
+  }
 }
 
 static int uiVisibleLen(const char *s) {
@@ -409,4 +457,42 @@ void uiDrawLogo(void) {
          " C o d e   t h e   d r e a m" COLOR_RESET "\n");
   printf("\n");
   printf("\n");
+}
+
+void uiDrawHelp(void) {
+  uiClear();
+  printf(COLOR_BLUE BOX_TL);
+  for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_TR COLOR_RESET "\n");
+
+  uiDrawTitle("HUONG DAN SU DUNG HE THONG");
+  uiDrawSeparator();
+
+  uiDrawMenuRow("  GIOI THIEU");
+  uiDrawMenuRow("  He thong Quan ly Vi pham CLB F-Code (VMS) ho tro theo doi");
+  uiDrawMenuRow("  ky luat, vang hop, va tien phat cua cac thanh vien.");
+  uiDrawMenuRow("");
+  uiDrawMenuRow("  THAO TAC CO BAN");
+  uiDrawMenuRow("  - Nhap phim so tuong ung va nhan Enter de chon menu.");
+  uiDrawMenuRow("  - Nhap \"0\" va nhan Enter de QUAY LAI hoac HUY thao tac.");
+  uiDrawMenuRow("  - Khi sua thong tin, nhan Enter de GIU NGUYEN gia tri cu.");
+  uiDrawMenuRow("");
+  uiDrawMenuRow("  QUY QUET PAGINATION (PHAN TRANG)");
+  uiDrawMenuRow("  - n: Xem trang tiep theo");
+  uiDrawMenuRow("  - p: Xem trang truoc do");
+  uiDrawMenuRow("  - q: Thoat che do xem danh sach");
+  uiDrawMenuRow("");
+  uiDrawMenuRow("  THU TIEN PHAT (BCN)");
+  uiDrawMenuRow(
+      "  - Nhap so thu tu (STT) cach nhau boi dau phay (vd: 1,3,5) de thu.");
+  uiDrawMenuRow(
+      "  - Nhap \"99\" de thu toan bo cac vi pham cua thanh vien do.");
+
+  printf(COLOR_BLUE BOX_BL);
+  for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_BR COLOR_RESET "\n");
 }

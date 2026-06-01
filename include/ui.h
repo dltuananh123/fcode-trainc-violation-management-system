@@ -90,6 +90,12 @@ void uiInit(void);
 void uiClear(void);
 
 /**
+ * @brief Get the current terminal width.
+ * @return Terminal width in characters.
+ */
+int uiGetTermWidth(void);
+
+/**
  * @brief Draw a double-line box at the specified position.
  * @param width  Width of the box (in characters).
  * @param height Height of the box (in rows).
@@ -238,5 +244,10 @@ void uiGetCurrentTime(char *buffer, int bufSize);
  * subtitle.
  */
 void uiDrawLogo(void);
+
+/**
+ * @brief Draw the help / user guide screen.
+ */
+void uiDrawHelp(void);
 
 #endif /* UI_H */
