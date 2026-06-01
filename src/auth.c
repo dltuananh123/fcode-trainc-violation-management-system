@@ -321,24 +321,16 @@ int authChangePassword(AppDatabase *db) {
 
 int authResetPassword(AppDatabase *db, const char *targetStudentId) {
   if (db == NULL || targetStudentId == NULL) {
-    return -1;
+    return RC_ERR_NULL;
   }
 
   Account *session = authGetSession();
-  if (session == NULL) {
-    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
-    return -1;
-  }
-
-  if (session->role != ACCOUNT_ROLE_BCN) {
-    printf(ERR_LOI "Chi BCN moi co quyen reset mat khau!\n");
-    return -1;
-  }
+  REQUIRE_BCN(session);
 
   int idx = findAccountIndex(db, targetStudentId);
   if (idx == -1) {
     printf(ERR_LOI "Khong tim thay tai khoan voi MSSV: %s!\n", targetStudentId);
-    return -1;
+    return RC_ERR_NOT_FOUND;
   }
 
   /* Reset password to MSSV, unlock, mark as default using fresh salt and hash
@@ -352,11 +344,11 @@ int authResetPassword(AppDatabase *db, const char *targetStudentId) {
 
   if (fileioSaveAccounts(db) != 0) {
     printf(ERR_LOI "Khong the luu mat khau moi!\n");
-    return -1;
+    return RC_ERR_IO;
   }
 
   printf(ERR_OK "Da reset mat khau cua %s ve MSSV. "
                 "Thanh vien se phai doi mat khau khi dang nhap.\n",
          targetStudentId);
-  return 0;
+  return RC_OK;
 }

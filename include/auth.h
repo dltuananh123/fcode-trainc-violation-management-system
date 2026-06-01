@@ -57,4 +57,16 @@ int authChangePassword(AppDatabase *db);
  */
 int authResetPassword(AppDatabase *db, const char *targetStudentId);
 
+#define REQUIRE_BCN(session)                                                   \
+  do {                                                                         \
+    if ((session) == NULL) {                                                   \
+      printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");                    \
+      return RC_ERR_AUTH;                                                      \
+    }                                                                          \
+    if ((session)->role != ACCOUNT_ROLE_BCN) {                                 \
+      printf(ERR_LOI "Chi Ban Chu Nhiem moi co quyen thuc hien!\n");           \
+      return RC_ERR_AUTH;                                                      \
+    }                                                                          \
+  } while (0)
+
 #endif /* AUTH_H */

@@ -60,29 +60,12 @@ int readMenuChoice(const char *prompt, int min, int max);
  * ============================================================ */
 
 /**
- * @brief Checks if an email is valid (contains '@' and '.').
- *
- * @param email The email string to validate.
- * @return 1 if valid, 0 otherwise.
- */
-int isEmailValid(const char *email);
-
-/**
  * @brief Checks if a student ID (MSSV) is valid.
  *
  * @param id The ID string to validate.
  * @return 1 if valid, 0 otherwise.
  */
 int isIdValid(const char *id);
-
-/**
- * @brief Checks if a phone number is valid (digits only, 7-15 chars, optional
- * leading '+').
- *
- * @param phone The phone string to validate.
- * @return 1 if valid, 0 otherwise.
- */
-int isPhoneValid(const char *phone);
 
 /* ============================================================
  * TIME & DATE HELPERS

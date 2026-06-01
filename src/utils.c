@@ -119,61 +119,6 @@ int readMenuChoice(const char *prompt, int min, int max) {
  * VALIDATION HELPERS
  * ============================================================ */
 
-int isEmailValid(const char *email) {
-  if (email == NULL || email[0] == '\0') {
-    return 0;
-  }
-
-  size_t len = strlen(email);
-
-  /* Must not start or end with '@' or '.' */
-  if (email[0] == '@' || email[0] == '.' || email[len - 1] == '@' ||
-      email[len - 1] == '.') {
-    return 0;
-  }
-
-  /* Exactly one '@' */
-  const char *atSign = strchr(email, '@');
-  if (atSign == NULL) {
-    return 0;
-  }
-  if (strchr(atSign + 1, '@') != NULL) {
-    return 0;
-  }
-
-  /* Local part (before @) must have at least one character */
-  if (atSign == email) {
-    return 0;
-  }
-
-  /* Domain part (after @) must have at least one '.' with non-empty parts */
-  const char *domain = atSign + 1;
-  if (*domain == '\0' || *domain == '.') {
-    return 0;
-  }
-
-  const char *dot = strchr(domain, '.');
-  if (dot == NULL) {
-    return 0;
-  }
-
-  /* Character before dot cannot be '.' (no "..") and after dot must exist */
-  if (*(dot - 1) == '.' || *(dot + 1) == '\0') {
-    return 0;
-  }
-
-  /* Only allow letters, digits, '.', '_', '%', '+', '-', '@' */
-  for (size_t i = 0; i < len; i++) {
-    char c = email[i];
-    if (!isalnum((unsigned char)c) && c != '.' && c != '_' && c != '%' &&
-        c != '+' && c != '-' && c != '@') {
-      return 0;
-    }
-  }
-
-  return 1;
-}
-
 int isIdValid(const char *id) {
   if (id == NULL || strlen(id) == 0) {
     return 0;
@@ -198,37 +143,6 @@ int isIdValid(const char *id) {
       return 0;
     }
   }
-  return 1;
-}
-
-int isPhoneValid(const char *phone) {
-  if (phone == NULL || phone[0] == '\0') {
-    return 0;
-  }
-
-  size_t len = strlen(phone);
-
-  /* Phone must be 7-15 digits, may start with '+' */
-  size_t start = 0;
-  if (phone[0] == '+') {
-    start = 1;
-    if (len < 8) {
-      return 0;
-    }
-  }
-
-  /* Must have at least 7 digits after optional '+' */
-  if (len - start < 7 || len - start > 15) {
-    return 0;
-  }
-
-  /* All remaining characters must be digits */
-  for (size_t i = start; i < len; i++) {
-    if (!isdigit((unsigned char)phone[i])) {
-      return 0;
-    }
-  }
-
   return 1;
 }
 

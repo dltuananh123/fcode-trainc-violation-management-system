@@ -132,18 +132,20 @@ void memberListAll(AppDatabase *db);
  * @brief View archived (soft-deleted) members and restore them.
  *
  * @param db Pointer to the AppDatabase.
+ * @return 0 on success, or ResultCode error
  */
-void memberViewArchive(AppDatabase *db);
+int memberViewArchive(AppDatabase *db);
 
 /**
  * @brief Kick a member (forces Out CLB + locks account) or restore/readmit
  * them.
  *
  * @param db Pointer to the AppDatabase.
+ * @return 0 on success, or ResultCode error
  */
-void memberKickOrRestore(AppDatabase *db);
+int memberKickOrRestore(AppDatabase *db);
 
-void memberViewKicked(AppDatabase *db);
+int memberViewKicked(AppDatabase *db);
 
 void memberPurgeExpired(AppDatabase *db, int retentionDays);
 
