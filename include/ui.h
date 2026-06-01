@@ -144,6 +144,62 @@ void uiDrawMenuRowFmt(const char *fmt, ...);
 void uiDrawDualMenuRow(int n1, const char *t1, int n2, const char *t2);
 
 /**
+ * @struct TableColumn
+ * @brief Represents a single column definition in a table.
+ */
+typedef struct {
+  int width;          /* Total width of the column including padding spaces */
+  const char *header; /* Column header title */
+} TableColumn;
+
+/**
+ * @brief Start drawing a table by rendering the top border and headers.
+ * @param cols     Array of TableColumn definitions.
+ * @param colCount Number of columns.
+ */
+void uiTableBegin(const TableColumn cols[], int colCount);
+
+/**
+ * @brief Render a table row separator line.
+ * @param cols     Array of TableColumn definitions.
+ * @param colCount Number of columns.
+ */
+void uiTableSeparator(const TableColumn cols[], int colCount);
+
+/**
+ * @brief Render the bottom border of the table.
+ * @param cols     Array of TableColumn definitions.
+ * @param colCount Number of columns.
+ */
+void uiTableEnd(const TableColumn cols[], int colCount);
+
+/**
+ * @brief Start a new table row.
+ */
+void uiTableRowBegin(void);
+
+/**
+ * @brief Complete the current table row.
+ */
+void uiTableRowEnd(void);
+
+/**
+ * @brief Render a single table cell with text.
+ * @param text  The string content to print.
+ * @param width Width of the column.
+ * @param color ANSI color code for the cell text (or empty string).
+ */
+void uiTableCell(const char *text, int width, const char *color);
+
+/**
+ * @brief Render a single table cell with formatted text.
+ * @param width Width of the column.
+ * @param color ANSI color code for the cell text (or empty string).
+ * @param fmt   Printf-style format string.
+ */
+void uiTableCellFmt(int width, const char *color, const char *fmt, ...);
+
+/**
  * @brief Wait for Enter key press ("Press any key to continue").
  */
 void uiPause(void);

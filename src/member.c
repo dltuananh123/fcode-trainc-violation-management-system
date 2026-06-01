@@ -1034,65 +1034,13 @@ void memberListAll(AppDatabase *db) {
     uiClear();
     uiDrawBreadcrumb("MENU > Danh sach thanh vien");
 
-    printf(COLOR_CYAN "  " LINE_TL);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 26; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 14; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 10; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_TR "\n" COLOR_RESET);
+    static const TableColumn MEMBER_COLS[] = {{12, "MSSV"},  {22, "Ho va ten"},
+                                              {26, "Email"}, {14, "SDT"},
+                                              {12, "Ban"},   {10, "Vai tro"}};
+    static const int MEMBER_COL_COUNT =
+        (int)(sizeof(MEMBER_COLS) / sizeof(MEMBER_COLS[0]));
 
-    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-    printf(" %-10s " COLOR_CYAN LINE_V COLOR_RESET, "MSSV");
-    printf(" %-20s " COLOR_CYAN LINE_V COLOR_RESET, "Ho va ten");
-    printf(" %-24s " COLOR_CYAN LINE_V COLOR_RESET, "Email");
-    printf(" %-12s " COLOR_CYAN LINE_V COLOR_RESET, "SDT");
-    printf(" %-10s " COLOR_CYAN LINE_V COLOR_RESET, "Ban");
-    printf(" %-8s " COLOR_CYAN LINE_V COLOR_RESET "\n", "Vai tro");
-
-    printf(COLOR_CYAN "  " LINE_T_RIGHT);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 26; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 14; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_DOWN);
-    for (int i = 0; i < 10; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_LEFT "\n" COLOR_RESET);
+    uiTableBegin(MEMBER_COLS, MEMBER_COL_COUNT);
 
     int start = currentPage * ROWS_PER_PAGE;
     int end = start + ROWS_PER_PAGE;
@@ -1112,47 +1060,18 @@ void memberListAll(AppDatabase *db) {
         continue;
       }
 
-      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-      printf(" %-10.10s ", m->studentId);
-      printf(COLOR_CYAN LINE_V COLOR_RESET);
-      printf(" %-20.20s ", m->fullName);
-      printf(COLOR_CYAN LINE_V COLOR_RESET);
-      printf(" %-24.24s ", m->email);
-      printf(COLOR_CYAN LINE_V COLOR_RESET);
-      printf(" %-12.12s ", m->phone);
-      printf(COLOR_CYAN LINE_V COLOR_RESET);
-      printf(" %-10.10s ", teamName(m->team));
-      printf(COLOR_CYAN LINE_V COLOR_RESET);
-      printf(" %-8.8s ", memberRoleName(m->role));
-      printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+      uiTableRowBegin();
+      uiTableCell(m->studentId, 12, "");
+      uiTableCell(m->fullName, 22, "");
+      uiTableCell(m->email, 26, "");
+      uiTableCell(m->phone, 14, "");
+      uiTableCell(teamName(m->team), 12, "");
+      uiTableCell(memberRoleName(m->role), 10, "");
+      uiTableRowEnd();
       row++;
     }
 
-    printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 26; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 10; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_BR "\n" COLOR_RESET);
+    uiTableEnd(MEMBER_COLS, MEMBER_COL_COUNT);
 
     printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
            "%d" COLOR_RESET " thanh vien\n",
@@ -1211,92 +1130,31 @@ void memberViewArchive(AppDatabase *db) {
     return;
   }
 
-  /* Columns: STT (6), MSSV (12), Ho va ten (22), Ban (14), Ngay xoa (18) */
-  printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 6; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_TR "\n" COLOR_RESET);
+  static const TableColumn ARCHIVE_COLS[] = {{6, "STT"},
+                                             {12, "MSSV"},
+                                             {22, "Ho va ten"},
+                                             {14, "Ban"},
+                                             {18, "Ngay xoa"}};
+  static const int ARCHIVE_COL_COUNT =
+      (int)(sizeof(ARCHIVE_COLS) / sizeof(ARCHIVE_COLS[0]));
 
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
-                    " STT  " COLOR_CYAN LINE_V COLOR_RESET
-                    " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-                    " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-                    " Ban          " COLOR_CYAN LINE_V COLOR_RESET
-                    " Ngay xoa          " COLOR_CYAN LINE_V COLOR_RESET "\n");
-
-  printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 6; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_LEFT "\n" COLOR_RESET);
+  uiTableBegin(ARCHIVE_COLS, ARCHIVE_COL_COUNT);
 
   for (int i = 0; i < archivedCount; i++) {
     Member *m = &db->members[archivedIndices[i]];
     char timeBuf[20];
     formatTime(m->deletedAt, timeBuf, sizeof(timeBuf));
 
-    printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", i + 1);
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", m->studentId);
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", m->fullName);
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-12s ", teamName(m->team));
-    printf(COLOR_CYAN LINE_V COLOR_RESET " %-16s ", timeBuf);
-    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+    uiTableRowBegin();
+    uiTableCellFmt(6, "", "%d", i + 1);
+    uiTableCell(m->studentId, 12, "");
+    uiTableCell(m->fullName, 22, "");
+    uiTableCell(teamName(m->team), 14, "");
+    uiTableCell(timeBuf, 18, "");
+    uiTableRowEnd();
   }
 
-  printf(COLOR_CYAN "  " LINE_BL);
-  for (int i = 0; i < 6; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_UP);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_UP);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_UP);
-  for (int i = 0; i < 14; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_UP);
-  for (int i = 0; i < 18; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_BR "\n" COLOR_RESET);
+  uiTableEnd(ARCHIVE_COLS, ARCHIVE_COL_COUNT);
 
   int choice = readMenuChoice(
       COLOR_CYAN

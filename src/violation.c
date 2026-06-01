@@ -93,86 +93,17 @@ static const Member *findMemberForViolation(const AppDatabase *db,
   return &db->members[memberIdx];
 }
 
+static const TableColumn VIOLATION_COLS[] = {
+    {12, "MSSV"},          {22, "Ho va ten"}, {14, "Ban"},
+    {22, "Ly do"},         {18, "Thoi gian"}, {12, "Tien phat"},
+    {15, "Cho dong phat"}, {12, "Trang thai"}};
+static const int VIOLATION_COL_COUNT =
+    (int)(sizeof(VIOLATION_COLS) / sizeof(VIOLATION_COLS[0]));
+
 static void printViolationTableHeader(void) {
   printf("\n");
   printf(COLOR_BOLD "  DANH SACH VI PHAM\n" COLOR_RESET);
-  printf(COLOR_CYAN "  " LINE_TL);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_TR "\n" COLOR_RESET);
-
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
-                    " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-                    " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-                    " Ban          " COLOR_CYAN LINE_V COLOR_RESET
-                    " Ly do                " COLOR_CYAN LINE_V COLOR_RESET
-                    " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
-                    " Tien phat  " COLOR_CYAN LINE_V COLOR_RESET
-                    " Cho dong phat " COLOR_CYAN LINE_V COLOR_RESET
-                    " Trang thai " COLOR_CYAN LINE_V COLOR_RESET "\n");
-
-  printf(COLOR_CYAN "  " LINE_T_RIGHT);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 14; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 22; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 18; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 15; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_DOWN);
-  for (int i = 0; i < 12; i++) {
-    printf(LINE_H);
-  }
-  printf(LINE_T_LEFT "\n" COLOR_RESET);
+  uiTableBegin(VIOLATION_COLS, VIOLATION_COL_COUNT);
 }
 
 static void printViolationRow(const Member *member, const Violation *v) {
@@ -209,30 +140,23 @@ static void printViolationRow(const Member *member, const Violation *v) {
     }
   }
 
-  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-  printf(" %-10.10s ", v->studentId);
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %-20.20s ", memberName);
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %-12.12s ", team);
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %-20.20s ", reasonName(v->reason));
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %-16s ", timeBuf);
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %-10.0f ", v->fine);
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %-13s ", pendingBuf);
-  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  uiTableRowBegin();
+  uiTableCell(v->studentId, 12, "");
+  uiTableCell(memberName, 22, "");
+  uiTableCell(team, 14, "");
+  uiTableCell(reasonName(v->reason), 22, "");
+  uiTableCell(timeBuf, 18, "");
+  uiTableCellFmt(12, "", "%.0f", v->fine);
+  uiTableCell(pendingBuf, 15, "");
 
   if (v->penalty == PENALTY_OUT_CLB) {
-    printf(COLOR_RED " OUT CLB    " COLOR_RESET);
+    uiTableCell("OUT CLB", 12, COLOR_RED);
   } else if (v->isPaid) {
-    printf(COLOR_GREEN " Da thu     " COLOR_RESET);
+    uiTableCell("Da thu", 12, COLOR_GREEN);
   } else {
-    printf(COLOR_RED " Chua thu   " COLOR_RESET);
+    uiTableCell("Chua thu", 12, COLOR_RED);
   }
-  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+  uiTableRowEnd();
 }
 
 static int violationMatchesTeam(const AppDatabase *db, const Violation *v,
@@ -399,39 +323,7 @@ void violationViewAllFiltered(AppDatabase *db) {
         printViolationRow(findMemberForViolation(db, v), v);
       }
 
-      printf(COLOR_CYAN "  " LINE_BL);
-      for (int i = 0; i < 12; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 22; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 22; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 18; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 12; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 15; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 12; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_BR "\n" COLOR_RESET);
+      uiTableEnd(VIOLATION_COLS, VIOLATION_COL_COUNT);
 
       printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
              "%d" COLOR_RESET " vi pham\n",
@@ -1612,40 +1504,7 @@ date_input:
       printViolationRow(findMemberForViolation(db, v), v);
     }
 
-    printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 14; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 18; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) {
-      ;
-    }
-    printf(LINE_H);
-    printf(LINE_T_UP);
-    for (int i = 0; i < 15; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) {
-      printf(LINE_H);
-    }
-    printf(LINE_BR "\n" COLOR_RESET);
+    uiTableEnd(VIOLATION_COLS, VIOLATION_COL_COUNT);
 
     printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
            "%d" COLOR_RESET " vi pham\n",

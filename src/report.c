@@ -269,47 +269,12 @@ void reportSortMembersByViolations(const AppDatabase *db) {
       uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
       printf(COLOR_BOLD
              "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
-      printf(COLOR_CYAN "  " LINE_TL);
-      for (int i = 0; i < 22; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_DOWN);
-      for (int i = 0; i < 12; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_TR "\n" COLOR_RESET);
+      static const TableColumn RANKING_COLS[] = {
+          {22, "Ho va ten"}, {12, "MSSV"}, {14, "Ban"}, {14, "So vi pham"}};
+      static const int RANKING_COL_COUNT =
+          (int)(sizeof(RANKING_COLS) / sizeof(RANKING_COLS[0]));
 
-      printf(COLOR_CYAN "  " LINE_V COLOR_RESET
-                        " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-                        " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-                        " Ban          " COLOR_CYAN LINE_V COLOR_RESET
-                        " So vi pham   " COLOR_CYAN LINE_V COLOR_RESET "\n");
-
-      printf(COLOR_CYAN "  " LINE_T_RIGHT);
-      for (int i = 0; i < 22; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_DOWN);
-      for (int i = 0; i < 12; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_DOWN);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_LEFT "\n" COLOR_RESET);
+      uiTableBegin(RANKING_COLS, RANKING_COL_COUNT);
 
       int start = currentPage * ROWS_PER_PAGE;
       int end = start + ROWS_PER_PAGE;
@@ -319,38 +284,19 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
       for (int i = start; i < end; i++) {
         int violationCount = countMemberViolations(db, sorted[i]->studentId);
-        printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
-        printf(" %-20.20s ", sorted[i]->fullName);
-        printf(COLOR_CYAN LINE_V COLOR_RESET);
-        printf(" %-10.10s ", sorted[i]->studentId);
-        printf(COLOR_CYAN LINE_V COLOR_RESET);
-        printf(" %-12.12s ", teamName(sorted[i]->team));
-        printf(COLOR_CYAN LINE_V COLOR_RESET);
+        uiTableRowBegin();
+        uiTableCell(sorted[i]->fullName, 22, "");
+        uiTableCell(sorted[i]->studentId, 12, "");
+        uiTableCell(teamName(sorted[i]->team), 14, "");
         if (violationCount > 0) {
-          printf(" " COLOR_RED "%-12d" COLOR_RESET " ", violationCount);
+          uiTableCellFmt(14, COLOR_RED, "%d", violationCount);
         } else {
-          printf(" %-12d ", violationCount);
+          uiTableCellFmt(14, "", "%d", violationCount);
         }
-        printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+        uiTableRowEnd();
       }
 
-      printf(COLOR_CYAN "  " LINE_BL);
-      for (int i = 0; i < 22; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 12; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_T_UP);
-      for (int i = 0; i < 14; i++) {
-        printf(LINE_H);
-      }
-      printf(LINE_BR "\n" COLOR_RESET);
+      uiTableEnd(RANKING_COLS, RANKING_COL_COUNT);
 
       printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: " COLOR_BOLD
              "%d" COLOR_RESET " thanh vien\n",
