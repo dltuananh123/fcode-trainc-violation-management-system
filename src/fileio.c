@@ -5,6 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define FILE_MAGIC "FCE1"
+#define MAGIC_LEN 4
+
+static const unsigned char XOR_KEY[] = "FCodeTrainC2026_SecureKey!";
+#define XOR_KEY_LEN (sizeof(XOR_KEY) - 1)
+
+static void xorBuffer(unsigned char *data, size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    data[i] ^= XOR_KEY[i % XOR_KEY_LEN];
+  }
+}
+
 #define MAX_PATH_BASE 512
 #define MAX_PATH_FULL 1024
 
@@ -125,17 +137,7 @@ static int writeCountChecked(FILE *fp, int count, const char *label) {
   return 0;
 }
 
-static int writeItemsChecked(FILE *fp, const void *buffer, size_t itemSize,
-                             int count, const char *label) {
-  if (count == 0) {
-    return 0;
-  }
-  if (fwrite(buffer, itemSize, (size_t)count, fp) != (size_t)count) {
-    printf("[LOI] Khong the ghi day du du lieu %s vao file tam!\n", label);
-    return -1;
-  }
-  return 0;
-}
+
 
 /* Fix #6: explicit fflush before fclose for safety on all platforms */
 static int closeFileChecked(FILE *fp, const char *label) {
@@ -178,6 +180,41 @@ static int replaceStoreFile(const char *tmpFile, const char *dataFile,
   return 0;
 }
 
+static int encryptAndWrite(FILE *fp, const void *buffer, size_t itemSize, int count, const char *label) {
+  if (count == 0) {
+    return 0;
+  }
+  size_t totalSize = itemSize * (size_t)count;
+  unsigned char *encrypted = malloc(totalSize);
+  if (encrypted == NULL) {
+    printf("[LOI] Khong the cap phat bo nho de ma hoa %s!\n", label);
+    return -1;
+  }
+  memcpy(encrypted, buffer, totalSize);
+  xorBuffer(encrypted, totalSize);
+
+  if (fwrite(encrypted, itemSize, (size_t)count, fp) != (size_t)count) {
+    free(encrypted);
+    printf("[LOI] Khong the ghi day du du lieu ma hoa %s vao file tam!\n", label);
+    return -1;
+  }
+  free(encrypted);
+  return 0;
+}
+
+static int readAndDecrypt(FILE *fp, void *buffer, size_t itemSize, int count, const char *label) {
+  if (count == 0) {
+    return 0;
+  }
+  size_t totalSize = itemSize * (size_t)count;
+  if (fread(buffer, itemSize, (size_t)count, fp) != (size_t)count) {
+    printf("[LOI] Khong the doc day du du lieu %s tu file!\n", label);
+    return -1;
+  }
+  xorBuffer(buffer, totalSize);
+  return 0;
+}
+
 /* --- Generic save (Fix #2) --- */
 
 static int saveStore(const char *tmpFile, const char *dataFile,
@@ -189,13 +226,21 @@ static int saveStore(const char *tmpFile, const char *dataFile,
     return -1;
   }
 
+  /* Step 1: write magic header */
+  if (fwrite(FILE_MAGIC, 1, MAGIC_LEN, fp) != MAGIC_LEN) {
+    printf("[LOI] Khong the ghi magic signature %s vao file tam!\n", label);
+    fclose(fp);
+    remove(tmpFile);
+    return -1;
+  }
+
   if (writeCountChecked(fp, count, label) != 0) {
     fclose(fp);
     remove(tmpFile);
     return -1;
   }
 
-  if (writeItemsChecked(fp, buffer, itemSize, count, label) != 0) {
+  if (encryptAndWrite(fp, buffer, itemSize, count, label) != 0) {
     fclose(fp);
     remove(tmpFile);
     return -1;
@@ -245,28 +290,44 @@ static int loadAccounts(AppDatabase *db) {
   initPaths();
   FILE *fp = fopen(pathAccounts, "rb");
   if (fp != NULL) {
-    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") !=
-        0) {
+    char magic[MAGIC_LEN];
+    int isEncrypted = 0;
+    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN && memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+      isEncrypted = 1;
+    } else {
+      fseek(fp, 0, SEEK_SET);
+    }
+
+    if (readCountChecked(fp, &(db->accountCount), MAX_MEMBERS, "accounts") != 0) {
       fclose(fp);
       return -1;
     }
-    if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount,
-                         "accounts") != 0) {
-      fclose(fp);
-      return -1;
+
+    if (isEncrypted) {
+      if (readAndDecrypt(fp, db->accounts, sizeof(Account), db->accountCount, "accounts") != 0) {
+        fclose(fp);
+        return -1;
+      }
+    } else {
+      if (readItemsChecked(fp, db->accounts, sizeof(Account), db->accountCount, "accounts") != 0) {
+        fclose(fp);
+        return -1;
+      }
     }
     fclose(fp);
   }
 
   /* First-run: create default admin account */
   if (db->accountCount == 0) {
-    printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan ADMIN "
-           "mac dinh...\n");
-    strcpy(db->accounts[0].studentId, "ADMIN");
-    strcpy(db->accounts[0].password, "ADMIN");
+    printf("[CANH BAO] Khong tim thay tai khoan nao. Dang tao tai khoan "
+           "admin mac dinh...\n");
+    strcpy(db->accounts[0].studentId, "SE203055");
+    generateSalt(db->accounts[0].salt, sizeof(db->accounts[0].salt));
+    hashPassword("Phuc@2006", db->accounts[0].salt, db->accounts[0].password);
     db->accounts[0].role = ACCOUNT_ROLE_BCN;
     db->accounts[0].isLocked = 0;
     db->accounts[0].failCount = 0;
+    db->accounts[0].isDefaultPassword = 0;
     db->accountCount = 1;
     if (fileioSaveAccounts(db) != 0) {
       return -1;
@@ -279,14 +340,29 @@ static int loadMembers(AppDatabase *db) {
   initPaths();
   FILE *fp = fopen(pathMembers, "rb");
   if (fp != NULL) {
+    char magic[MAGIC_LEN];
+    int isEncrypted = 0;
+    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN && memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+      isEncrypted = 1;
+    } else {
+      fseek(fp, 0, SEEK_SET);
+    }
+
     if (readCountChecked(fp, &(db->memberCount), MAX_MEMBERS, "members") != 0) {
       fclose(fp);
       return -1;
     }
-    if (readItemsChecked(fp, db->members, sizeof(Member), db->memberCount,
-                         "members") != 0) {
-      fclose(fp);
-      return -1;
+
+    if (isEncrypted) {
+      if (readAndDecrypt(fp, db->members, sizeof(Member), db->memberCount, "members") != 0) {
+        fclose(fp);
+        return -1;
+      }
+    } else {
+      if (readItemsChecked(fp, db->members, sizeof(Member), db->memberCount, "members") != 0) {
+        fclose(fp);
+        return -1;
+      }
     }
     fclose(fp);
   } else {
@@ -302,15 +378,29 @@ static int loadViolations(AppDatabase *db) {
   initPaths();
   FILE *fp = fopen(pathViolations, "rb");
   if (fp != NULL) {
-    if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS,
-                         "violations") != 0) {
+    char magic[MAGIC_LEN];
+    int isEncrypted = 0;
+    if (fread(magic, 1, MAGIC_LEN, fp) == MAGIC_LEN && memcmp(magic, FILE_MAGIC, MAGIC_LEN) == 0) {
+      isEncrypted = 1;
+    } else {
+      fseek(fp, 0, SEEK_SET);
+    }
+
+    if (readCountChecked(fp, &(db->violationCount), MAX_VIOLATIONS, "violations") != 0) {
       fclose(fp);
       return -1;
     }
-    if (readItemsChecked(fp, db->violations, sizeof(Violation),
-                         db->violationCount, "violations") != 0) {
-      fclose(fp);
-      return -1;
+
+    if (isEncrypted) {
+      if (readAndDecrypt(fp, db->violations, sizeof(Violation), db->violationCount, "violations") != 0) {
+        fclose(fp);
+        return -1;
+      }
+    } else {
+      if (readItemsChecked(fp, db->violations, sizeof(Violation), db->violationCount, "violations") != 0) {
+        fclose(fp);
+        return -1;
+      }
     }
     fclose(fp);
   } else {

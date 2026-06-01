@@ -1,6 +1,7 @@
 #include "report.h"
 #include "types.h"
 #include "utils.h"
+#include "ui.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,19 +80,86 @@ void reportTeamStats(const AppDatabase *db) {
   double outstanding[4] = {0.0, 0.0, 0.0, 0.0};
   aggregateTeamTotals(db, collected, outstanding);
 
-  printf("\n--- THONG KE TIEN PHAT THEO BAN ---\n");
-  printf("%-15s | %-15s | %-15s | %-15s\n", "Ban", "Da thu (VND)",
-         "Con no (VND)", "Tong (VND)");
-  printf("---------------------------------------------------------------------"
-         "-\n");
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thong ke tien phat theo ban");
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+         " Ban            " COLOR_CYAN LINE_V COLOR_RESET
+         " Da thu (VND)    " COLOR_CYAN LINE_V COLOR_RESET
+         " Con no (VND)    " COLOR_CYAN LINE_V COLOR_RESET
+         " Tong (VND)      " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+  double grandCollected = 0.0;
+  double grandOutstanding = 0.0;
 
   for (int team = TEAM_ACADEMIC; team <= TEAM_MEDIA; team++) {
     double total = collected[team] + outstanding[team];
-    printf("%-15s | %15.0f | %15.0f | %15.0f\n", teamName(team),
-           collected[team], outstanding[team], total);
+    grandCollected += collected[team];
+    grandOutstanding += outstanding[team];
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+    printf(" %-14s ", teamName(team));
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" " COLOR_GREEN "%15.0f" COLOR_RESET " ", collected[team]);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" " COLOR_RED "%15.0f" COLOR_RESET " ", outstanding[team]);
+    printf(COLOR_CYAN LINE_V COLOR_RESET);
+    printf(" " COLOR_PURPLE "%15.0f" COLOR_RESET " ", total);
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
   }
-  printf("---------------------------------------------------------------------"
-         "-\n");
+
+  /* Bottom separator before grand total */
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+  /* Grand total row */
+  double grandTotal = grandCollected + grandOutstanding;
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD "%-14s" COLOR_RESET " ", "Tong Cong");
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_GREEN "%15.0f" COLOR_RESET " ", grandCollected);
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_RED "%15.0f" COLOR_RESET " ", grandOutstanding);
+  printf(COLOR_CYAN LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD COLOR_PURPLE "%15.0f" COLOR_RESET " ", grandTotal);
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  /* Final bottom border */
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 16; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_T_UP);
+  for (int i = 0; i < 17; i++) printf(LINE_H);
+  printf(LINE_BR "\n" COLOR_RESET);
 }
 
 void reportSortMembersByViolations(const AppDatabase *db) {
@@ -100,60 +168,120 @@ void reportSortMembersByViolations(const AppDatabase *db) {
   }
 
   if (db->memberCount == 0) {
-    printf("[THONG BAO] Chua co thanh vien nao trong du lieu\n");
+    printf(ERR_INFO "Chua co thanh vien nao trong du lieu\n");
     return;
   }
 
-  int choice;
-  printf("\nSAP XEP THEO SO LAN VI PHAM\n");
-  printf("1. Tang dan\n");
-  printf("2. Giam dan\n");
-  printf("0. Quay lai\n");
-  printf("Nhap lua chon: ");
+  while (1) {
+    uiClear();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
+    uiDrawMenuRow("  1. Tang dan");
+    uiDrawMenuRow("  2. Giam dan");
+    uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
+    uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
+    uiDrawSeparator();
 
-  if (readInt(&choice) != 1) {
-    printf("[LOI] Lua chon khong hop le\n");
-    return;
-  }
+    int choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, -1, 2);
 
-  if (choice == 0) {
-    return;
-  }
-  if (choice != 1 && choice != 2) {
-    printf("[LOI] Lua chon khong hop le\n");
-    return;
-  }
+    if (choice == -1 || choice == 0) {
+      return;
+    }
 
-  MemberViolationCount sorted[MAX_MEMBERS];
-  for (int i = 0; i < db->memberCount; i++) {
-    sorted[i].member = &db->members[i];
-    sorted[i].violationCount =
-        countMemberViolations(db, db->members[i].studentId);
-  }
+    const Member *sorted[MAX_MEMBERS] = {NULL};
+    int activeCount = 0;
+    for (int i = 0; i < db->memberCount; i++) {
+      if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_ACTIVE) {
+        sorted[activeCount++] = &db->members[i];
+      }
+    }
 
-  qsort(sorted, (size_t)db->memberCount, sizeof(MemberViolationCount),
-        choice == 1 ? compareAscending : compareDescending);
-
-  printf("\nDANH SACH THANH VIEN THEO SO LAN VI PHAM\n");
-  printf(
-      "+----------------------+------------+--------------+--------------+\n");
-  printf(
-      "| Ho va ten            | MSSV       | Ban          | So vi pham   |\n");
-  printf(
-      "+----------------------+------------+--------------+--------------+\n");
-
-  for (int i = 0; i < db->memberCount; i++) {
-    if (sorted[i].member == NULL) {
+    if (activeCount == 0) {
+      printf(ERR_INFO "Chua co thanh vien dang hoat dong nao trong du lieu\n");
+      printf(COLOR_DIM "  Nhan Enter de tiep tuc..." COLOR_RESET " ");
+      char dummy[10];
+      readString(dummy, sizeof(dummy));
       continue;
     }
-    printf("| %-20.20s | %-10.10s | %-12.12s | %-12d |\n",
-           sorted[i].member->fullName, sorted[i].member->studentId,
-           teamName(sorted[i].member->team), sorted[i].violationCount);
-  }
 
-  printf(
-      "+----------------------+------------+--------------+--------------+\n");
-  printf("Tong: %d thanh vien\n", db->memberCount);
+    sortMemberPointersByViolationCount(db, sorted, activeCount, choice == 1);
+
+    int totalPages = (activeCount + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
+    int currentPage = 0;
+
+    while (currentPage < totalPages) {
+    uiClear();
+    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
+    printf(COLOR_BOLD "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
+    printf(COLOR_CYAN "  " LINE_TL);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_TR "\n" COLOR_RESET);
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+           " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
+           " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+           " Ban          " COLOR_CYAN LINE_V COLOR_RESET
+           " So vi pham   " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+    printf(COLOR_CYAN "  " LINE_T_RIGHT);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_DOWN);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+    int start = currentPage * ROWS_PER_PAGE;
+    int end = start + ROWS_PER_PAGE;
+    if (end > activeCount) end = activeCount;
+
+    for (int i = start; i < end; i++) {
+      int violationCount = countMemberViolations(db, sorted[i]->studentId);
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+      printf(" %-20.20s ", sorted[i]->fullName);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-10.10s ", sorted[i]->studentId);
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      printf(" %-12.12s ", teamName(sorted[i]->team));
+      printf(COLOR_CYAN LINE_V COLOR_RESET);
+      if (violationCount > 0) {
+        printf(" " COLOR_RED "%-12d" COLOR_RESET " ", violationCount);
+      } else {
+        printf(" %-12d ", violationCount);
+      }
+      printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+    }
+
+    printf(COLOR_CYAN "  " LINE_BL);
+    for (int i = 0; i < 22; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 12; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_T_UP);
+    for (int i = 0; i < 14; i++) printf(LINE_H);
+    printf(LINE_BR "\n" COLOR_RESET);
+
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: "
+           COLOR_BOLD "%d" COLOR_RESET " thanh vien\n",
+           currentPage + 1, totalPages, activeCount);
+
+    printf(COLOR_DIM "  n: trang tiep | m: trang truoc | q: thoat" COLOR_RESET " > ");
+    char buf[10];
+    readString(buf, sizeof(buf));
+    char c = buf[0];
+    if (c == 'q' || c == 'Q') break;
+    if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) currentPage++;
+    else if ((c == 'm' || c == 'M') && currentPage > 0) currentPage--;
+    }
+  }
 }
 
 void reportExportTxt(const AppDatabase *db) {
@@ -223,11 +351,15 @@ void reportExportTxt(const AppDatabase *db) {
   }
 
   fprintf(fp, "\nTHANH VIEN CON NO TIEN PHAT\n");
-  fprintf(fp, "%-20s | %-10s | %-15s\n", "Ho va ten", "MSSV", "Con no (VND)");
-  fprintf(fp, "---------------------------------------------------\n");
+  fprintf(fp, "%-20s | %-10s | %-25s | %-12s | %-15s\n", "Ho va ten", "MSSV", "Email", "SDT", "Con no (VND)");
+  fprintf(fp, "--------------------------------------------------------------"
+              "------------------\n");
 
   int foundOutstanding = 0;
   for (int i = 0; i < db->memberCount; i++) {
+    if (db->members[i].isDeleted) {
+      continue;
+    }
     double totalOwed = 0.0;
 
     for (int j = 0; j < db->violationCount; j++) {
@@ -239,8 +371,12 @@ void reportExportTxt(const AppDatabase *db) {
     }
 
     if (totalOwed > 0.0) {
-      fprintf(fp, "%-20.20s | %-10.10s | %15.0f\n", db->members[i].fullName,
-              db->members[i].studentId, totalOwed);
+      fprintf(fp, "%-20.20s | %-10.10s | %-25.25s | %-12.12s | %15.0f\n",
+              db->members[i].fullName,
+              db->members[i].studentId,
+              db->members[i].email,
+              db->members[i].phone,
+              totalOwed);
       foundOutstanding++;
     }
   }
@@ -251,4 +387,135 @@ void reportExportTxt(const AppDatabase *db) {
 
   fclose(fp);
   printf("[OK] Da xuat bao cao ra file: %s\n", filePath);
+}
+
+void reportDashboard(const AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Dashboard thong ke ky luat CLB");
+
+  /* 1. Calculate general stats */
+  int totalViolations = db->violationCount;
+  int jacketCount = 0, absentCount = 0, activityCount = 0, violenceCount = 0;
+  double totalIssued = 0.0, totalPaid = 0.0;
+
+  for (int i = 0; i < db->violationCount; i++) {
+    const Violation *v = &db->violations[i];
+    totalIssued += v->fine;
+    if (v->isPaid) {
+      totalPaid += v->fine;
+    }
+    switch (v->reason) {
+      case REASON_NO_JACKET: jacketCount++; break;
+      case REASON_ABSENT: absentCount++; break;
+      case REASON_NO_ACTIVITY: activityCount++; break;
+      case REASON_VIOLENCE: violenceCount++; break;
+    }
+  }
+
+  /* 2. Top 5 violators (active and non-deleted members only) */
+  const Member *sorted[MAX_MEMBERS] = {NULL};
+  int activeCount = 0;
+  for (int i = 0; i < db->memberCount; i++) {
+    if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_ACTIVE) {
+      sorted[activeCount++] = &db->members[i];
+    }
+  }
+
+  sortMemberPointersByViolationCount(db, sorted, activeCount, 0); /* descending */
+
+  uiDrawMenuRow(COLOR_BOLD COLOR_YELLOW "  [TOP 5 THANH VIEN VI PHAM NHIEU NHAT]" COLOR_RESET);
+
+  int showCount = activeCount < 5 ? activeCount : 5;
+  if (showCount == 0) {
+    uiDrawMenuRow("  - Khong co du lieu thanh vien hoat dong.");
+  } else {
+    for (int i = 0; i < showCount; i++) {
+      int count = countMemberViolations(db, sorted[i]->studentId);
+      char temp[128];
+      snprintf(temp, sizeof(temp), "    %d. %s (%s) - %d lan", i + 1, sorted[i]->fullName, sorted[i]->studentId, count);
+      uiDrawMenuRowFmt("  %-66.66s", temp);
+    }
+  }
+
+  uiDrawSeparator();
+
+  /* 3. Reason Breakdown */
+  uiDrawMenuRow(COLOR_BOLD COLOR_YELLOW "  [PHAN TICH LY DO VI PHAM]" COLOR_RESET);
+
+  if (totalViolations == 0) {
+    uiDrawMenuRow("  - Khong co vi pham nao ghi nhan.");
+  } else {
+    double pJacket = ((double)jacketCount / totalViolations) * 100.0;
+    double pAbsent = ((double)absentCount / totalViolations) * 100.0;
+    double pActivity = ((double)activityCount / totalViolations) * 100.0;
+    double pViolence = ((double)violenceCount / totalViolations) * 100.0;
+
+    char temp1[128], temp2[128], temp3[128], temp4[128];
+    snprintf(temp1, sizeof(temp1), "    + Khong mac ao CLB:      %3d lan (%5.1f%%)", jacketCount, pJacket);
+    snprintf(temp2, sizeof(temp2), "    + Vang hop/Train-C:      %3d lan (%5.1f%%)", absentCount, pAbsent);
+    snprintf(temp3, sizeof(temp3), "    + Khong tham gia HD:     %3d lan (%5.1f%%)", activityCount, pActivity);
+    snprintf(temp4, sizeof(temp4), "    + Bao luc (Out CLB):     %3d lan (%5.1f%%)", violenceCount, pViolence);
+
+    uiDrawMenuRowFmt("  %-66.66s", temp1);
+    uiDrawMenuRowFmt("  %-66.66s", temp2);
+    uiDrawMenuRowFmt("  %-66.66s", temp3);
+    uiDrawMenuRowFmt("  %-66.66s", temp4);
+  }
+
+  uiDrawSeparator();
+
+  /* 4. Fine Collection Progress */
+  uiDrawMenuRow(COLOR_BOLD COLOR_YELLOW "  [TIEN DO THU TIEN PHAT]" COLOR_RESET);
+
+  char issuedStr[128];
+  snprintf(issuedStr, sizeof(issuedStr), "    - Tong tien phat da phat: %.0f VND", totalIssued);
+
+  uiDrawMenuRowFmt("  %-66.66s", issuedStr);
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf("    - Tong tien phat da thu:  ");
+  printf(COLOR_GREEN "%.0f VND" COLOR_RESET, totalPaid);
+
+  char digits[32];
+  snprintf(digits, sizeof(digits), "%.0f", totalPaid);
+  int printedLen = 30 + (int)strlen(digits) + 4;
+  for (int i = printedLen; i < 68; i++) {
+    printf(" ");
+  }
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  double progress = 0.0;
+  if (totalIssued > 0.0) {
+    progress = (totalPaid / totalIssued) * 100.0;
+  }
+
+  int filledBlocks = (int)(progress / 5.0);
+  if (filledBlocks > 20) filledBlocks = 20;
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf("    Tien do: [");
+  printf(COLOR_GREEN);
+  for (int i = 0; i < filledBlocks; i++) {
+    printf("\xE2\x96\x88");
+  }
+  printf(COLOR_GRAY);
+  for (int i = filledBlocks; i < 20; i++) {
+    printf("\xE2\x96\x91");
+  }
+  printf(COLOR_RESET);
+  printf("] %5.1f%%", progress);
+
+  int printedBarLen = 14 + 20 + 2 + 6;
+  if (progress >= 100.0) printedBarLen++;
+  for (int i = printedBarLen; i < 68; i++) {
+    printf(" ");
+  }
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  uiDrawSeparator();
+  printf("\n");
 }

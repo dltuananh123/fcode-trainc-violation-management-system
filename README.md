@@ -1,21 +1,25 @@
 # F-Code TrainC Violation Management System
 
-Hệ thống quản lý vi phạm thành viên của CLB F-Code, được phát triển bằng ngôn ngữ C và chạy trên môi trường terminal/CLI.
+Hệ thống quản lý vi phạm thành viên của CLB F-Code, được phát triển bằng ngôn ngữ C thuần (C17) và chạy trên môi trường terminal/CLI.
 
 ## Tổng quan
 
-Dự án giải quyết bài toán theo dõi thành viên CLB F-Code vi phạm nội quy, ghi nhận mức phạt, theo dõi công nợ và hỗ trợ Ban Chủ Nhiệm xử lý minh bạch, nhất quán hơn.
+Dự án giải quyết bài toán theo dõi thành viên CLB F-Code vi phạm nội quy, ghi nhận mức phạt, theo dõi công nợ và hỗ trợ Ban Chủ Nhiệm (BCN) xử lý minh bạch.
 
-Theo tài liệu yêu cầu, hệ thống hướng tới các chức năng chính:
-
-- Đăng nhập, đăng xuất, đổi mật khẩu
-- Quản lý thành viên: thêm, sửa, xóa, xem danh sách
-- Ghi nhận lịch sử vi phạm và tính mức phạt theo vai trò
-- Theo dõi trạng thái đã thu/chưa thu tiền phạt
-- Cảnh báo ngưỡng Out CLB và xuất báo cáo ra file
-- Lưu dữ liệu xuống file để tránh mất dữ liệu khi thoát chương trình
-
-Hiện tại, repo đang ở giai đoạn scaffold ban đầu: đã có `Makefile`, cấu trúc thư mục cơ bản, công cụ format/tidy và `src/main.c` tối thiểu để xác nhận luồng build.
+**Chức năng chính:**
+- Đăng nhập, đăng xuất, đổi/reset mật khẩu (Salted FNV-1a key stretching)
+- Quản lý thành viên: thêm, sửa, tìm kiếm & xem chi tiết, kick/khôi phục, xem danh sách (phân trang)
+- Ghi nhận vi phạm và tính mức phạt theo vai trò (member: 20k, leader: 50k)
+- Thu tiền phạt (đơn lẻ hoặc bulk), theo dõi công nợ
+- Cảnh báo và tự động Out CLB khi vắng >= 4 buổi liên tiếp
+- Bảng điều khiển kỷ luật (Discipline Dashboard) với biểu đồ thanh
+- Xem/thống kê vi phạm theo ban, lý do, trạng thái (phân trang)
+- Tìm kiếm vi phạm theo khoảng ngày (phân trang)
+- Sắp xếp thành viên theo số lần vi phạm
+- Xuất báo cáo ra file .txt
+- Nhật ký hệ thống (audit log) với tô màu và phân trang
+- Lưu trữ dữ liệu mã hóa XOR + Magic Header `FCE1`
+- Seed data với 72 thành viên thật từ Challenge 3, 76 vi phạm
 
 ## Công nghệ và ràng buộc
 
@@ -91,74 +95,75 @@ Lưu ý quan trọng trên Windows:
 * Khi dùng `cmd`, cần bảo đảm `C:\tools\msys64\ucrt64\bin` có trong PATH
 * Không nên dùng `C:\tools\msys64\usr\bin\make.exe`, vì dễ trộn môi trường MSYS và UCRT64
 
-## Cách build và chạy
+## Cách build và chạy (Nhanh)
 
-Mở `cmd`, vào thư mục repo, rồi chạy:
+Sử dụng script `run.bat` để build + seed data + chạy chỉ 1 lần:
+
+```cmd
+run.bat
+```
+
+Hoặc từng bước:
 
 ```cmd
 set "PATH=C:\tools\msys64\ucrt64\bin;%PATH%"
 mingw32-make
-```
-
-Sau khi build thành công, file output sẽ nằm tại một trong các đường dẫn sau:
-
-```text
-bin/fcode-trainc
-bin/fcode-trainc.exe
-```
-
-Chạy chương trình trên Windows:
-
-```cmd
-.\bin\fcode-trainc.exe
+bin\seed_data.exe
+bin\violation-management-system.exe
 ```
 
 ## Các lệnh hỗ trợ
 
-Build project:
+| Lệnh | Mô tả |
+|------|-------|
+| `mingw32-make` | Build project |
+| `mingw32-make clean` | Xóa file build |
+| `mingw32-make format` | Format code (clang-format) |
+| `mingw32-make tidy` | Phân tích tĩnh (clang-tidy) |
+| `bin\seed_data.exe` | Ghi seed data (72 members, 76 violations) |
+| `bin\seed_data.exe clear` | Xóa sạch data |
+| `run.bat` | Build + seed + chạy tự động |
 
-```cmd
-set "PATH=C:\tools\msys64\ucrt64\bin;%PATH%"
-mingw32-make
-```
+## Tài khoản Demo
 
-Xóa các file/thư mục sinh ra khi build:
+### BCN (Admin)
 
-```cmd
-set "PATH=C:\tools\msys64\ucrt64\bin;%PATH%"
-mingw32-make clean
-```
+| MSSV | Mật khẩu | Ghi chú |
+|------|----------|---------|
+| SE203055 | `Phuc@2006` | Super Admin (BCN), không thể bị kick |
+| BCN001 | MSSV (`BCN001`) | Legacy BCN (tự động tạo) |
+| BCN002 | MSSV (`BCN002`) | Legacy BCN (tự động tạo) |
 
-Format source code:
+### Thành viên
 
-```cmd
-set "PATH=C:\tools\msys64\ucrt64\bin;%PATH%"
-mingw32-make format
-```
+Tất cả tài khoản thành viên có mật khẩu mặc định là **MSSV của chính họ** (vd: SE201018 có mật khẩu `SE201018`). Seed data gồm **70 thành viên thật** từ lớp Challenge 3, chia đều 4 ban:
+- **Học thuật** (Academic): 20 thành viên
+- **Kế hoạch** (Planning): 15 thành viên
+- **Nhân sự** (HR): 15 thành viên
+- **Truyền thông** (Media): 18 thành viên
+- **BCN**: 2 legacy (BCN001, BCN002)
 
-Phân tích tĩnh bằng `clang-tidy`:
-
-```cmd
-set "PATH=C:\tools\msys64\ucrt64\bin;%PATH%"
-mingw32-make tidy
-```
+Trong đó 3 thành viên đã bị kick (SE210946, SE210117, SE203367).
 
 ## Tài liệu liên quan
 
-* Yêu cầu nghiệp vụ: `docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md`
-* Kiến trúc và định hướng module: `docs/planning/architecture.md`
-* Danh sách story: `docs/stories/`
-* Quy trình làm việc nhóm: `CONTRIBUTING.md`
-* Các guideline bổ sung: `docs/guidelines/`
+* Yêu cầu nghiệp vụ: [`docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md`](docs/requirement-docs/QuanLyViPhamCLBFCode_V1.md)
+* Kiến trúc chi tiết: [`docs/planning/architecture.md`](docs/planning/architecture.md)
+* Technical updates (v2.0-v2.3): [`docs/planning/technical_updates.md`](docs/planning/technical_updates.md)
+* Danh sách story: [`docs/stories/`](docs/stories/)
+* Hướng dẫn test: [`docs/test/demo-and-test-guide.md`](docs/test/demo-and-test-guide.md)
+* Quy trình làm việc nhóm: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+* Code review: [`docs/code-review/`](docs/code-review/)
 
-## Định hướng kiến trúc
+## Cấu trúc module
 
-Theo thiết kế hiện tại, dự án dự kiến tách thành các module sau:
-
-* `main`: điều hướng menu và vòng lặp chính của chương trình
-* `auth`: đăng nhập, đăng xuất, đổi/reset mật khẩu
-* `member`: CRUD thành viên
-* `violation`: ghi nhận vi phạm, tính mức phạt, cảnh báo Out CLB
-* `fileio`: đọc/ghi `members.dat`, `violations.dat`, `accounts.dat`
-* `report`: thống kê và xuất báo cáo
-* `utils`: validate và các hàm dùng chung
+| Module | Vai trò |
+|--------|---------|
+| `main` | Điều hướng menu chính |
+| `auth` | Đăng nhập, đổi/reset mật khẩu, session |
+| `member` | Thêm, sửa, tìm kiếm chi tiết, kick/restore, danh sách (phân trang) |
+| `violation` | Ghi nhận vi phạm, thu tiền, Out CLB, xem DS (phân trang) |
+| `fileio` | Đọc/ghi file `.dat` mã hóa XOR |
+| `report` | Thống kê ban, sort, discipline dashboard, xuất báo cáo |
+| `utils` | Validate (email, phone, password), audit log, date parser |
+| `ui` | Vẽ khung menu, breadcrumb, separator |

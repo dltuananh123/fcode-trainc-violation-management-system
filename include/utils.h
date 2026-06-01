@@ -32,6 +32,29 @@ void readString(char *buffer, size_t size);
  */
 int readInt(int *value);
 
+/**
+ * @brief Reads a password with masked input (shows **** on screen).
+ *
+ * Uses _getch() on Windows for character-by-character input.
+ * Each typed character shows as '*'. Backspace deletes.
+ *
+ * @param buffer The buffer to store the password.
+ * @param size The maximum size of the buffer.
+ */
+void readPassword(char *buffer, size_t size);
+
+/**
+ * @brief Reads a menu choice with immediate re-prompt on invalid input.
+ *
+ * Loops until the user enters a valid integer within [min, max].
+ *
+ * @param prompt The prompt text to display.
+ * @param min Minimum valid value.
+ * @param max Maximum valid value.
+ * @return The valid integer choice.
+ */
+int readMenuChoice(const char *prompt, int min, int max);
+
 /* ============================================================
  * VALIDATION HELPERS
  * ============================================================ */
@@ -139,5 +162,36 @@ const char *reasonName(int reasonId);
  * @param size The size of the buffer.
  */
 void getExeDir(char *buffer, size_t size);
+
+/**
+ * @brief Salter and Hasher for passwords using key stretched FNV-1a.
+ * 
+ * @param password The plain text password.
+ * @param salt The salt value.
+ * @param outHashHex 32-character buffer to hold output hex string.
+ */
+void hashPassword(const char *password, const char *salt, char *outHashHex);
+
+/**
+ * @brief Generates a random salt.
+ * 
+ * @param salt The output salt buffer.
+ * @param size Size of the buffer.
+ */
+void generateSalt(char *salt, size_t size);
+
+/**
+ * @brief Logs an administrative action to data/system_audit.log and triggers a simulated webhook to data/simulated_webhooks.log.
+ * 
+ * @param actor The actor (e.g. BCN's student ID or username).
+ * @param action The action performed.
+ * @param target The target member or ID.
+ */
+void logSystemAction(const char *actor, const char *action, const char *target);
+
+/**
+ * @brief View system audit log with pagination and color-coded display.
+ */
+void viewSystemLogs(void);
 
 #endif /* UTILS_H */

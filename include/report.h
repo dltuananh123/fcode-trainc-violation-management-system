@@ -44,4 +44,13 @@ void reportSortMembersByViolations(const AppDatabase *db);
  */
 void reportExportTxt(const AppDatabase *db);
 
+/**
+ * @brief Displays a comprehensive, beautiful discipline and financial dashboard.
+ *
+ * Includes top 5 violators, violation reason analysis, and fine collection progress.
+ *
+ * @param db Pointer to the global database.
+ */
+void reportDashboard(const AppDatabase *db);
+
 #endif /* REPORT_H */

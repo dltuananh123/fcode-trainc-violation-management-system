@@ -610,6 +610,56 @@ nen doi ngay sau khi dang nhap dau tien.
 
 ---
 
+---
+
+## 19. Audit Log & Log Viewer voi Color-coded Parsing (utils.c)
+
+### Ky thuat: Ghi 2 file + Doc phan tich cu phap + To mau
+
+**Ghi log:** Moi thao tac quan trong deu goi `logSystemAction()` de ghi nhan:
+```c
+// utils.c:447-448
+fprintf(fa, "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n",
+        timeBuf, actor, action, target);
+```
+
+Ghi dong thoi vao **2 file**: `system_audit.log` (nhat ky text) va `simulated_webhooks.log` (mo phong webhook). Dam bao tinh kha dung cho ca nguoi dung truc tiep lan tich hop ben ngoai.
+
+**Doc log voi phan tich cu phap (parsing):**
+```c
+// utils.c:509-510
+int parsed = sscanf(line, "[%63[^]]] [%63[^]]] ACTION: %63[^|]| TARGET: %255[^\n]",
+                    timePart, actorPart, actionPart, targetPart);
+```
+
+`sscanf` voi format `%[^]]` (doc den dau `]`) cho phep trich xuat tung thanh phan trong log ma khong can xu ly chuoi thu cong. Day la cach doc cac truong co dinh trong C ma khong can dung `strtok` (de gay bug).
+
+**Xu ly fallback:** Neu `parsed != 4` (dinh dang khong dung chuan), in nguyen dong goc:
+```c
+// utils.c:518-519
+} else {
+    printf("%s", line);
+}
+```
+Dam bao khong mat data neu co dong log la do hoac dinh dang moi.
+
+**Phan trang 20 dong:**
+```c
+// utils.c:524-538
+if (lineCount % pageSize == 0) {
+    printf("-- Nhan Enter de xem tiep (hoac 'q' + Enter de thoat) --");
+    char ch = getchar();
+    if (ch == 'q' || ch == 'Q') break;
+    while (getchar() != '\n');
+    // In lai header
+}
+```
+Dung `getchar()` de cho nguoi dung bam Enter giua cac trang. `q` cho phep thoat som.
+
+**Vi sao dat trong utils.c:** Vi `logSystemAction()` da nam trong `utils.c`, viec dat `viewSystemLogs()` cung module la hop ly. `utils.h` chua ca khai bao, khong can header moi. Menu dispatch nam trong `main.c:269-271`.
+
+---
+
 ## Tom tat cac ky thuat theo loai
 
 | Loai | Ky thuat | Vi tri |
@@ -640,3 +690,7 @@ nen doi ngay sau khi dang nhap dau tien.
 | Build | 30+ compiler warnings | Makefile |
 | UX | Pagination 20 dong | member.c |
 | UX | Enter de giu nguyen khi edit | member.c |
+| UX | Pagination + to mau log viewer | utils.c |
+| Audit | Dual-file audit log (log + webhook) | utils.c |
+| Audit | Color-coded log parsing (sscanf format) | utils.c |
+| Audit | Fallback display cho log khong chuan | utils.c |

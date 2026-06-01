@@ -22,11 +22,13 @@
 #define MAX_VIOLATIONS 10000
 
 #define MAX_NAME_LEN 50
-#define MAX_MSSV_LEN 10
-#define MAX_EMAIL_LEN 50
+#define MAX_MSSV_LEN 12
+#define MAX_EMAIL_LEN 100
 #define MAX_PHONE_LEN 15
-#define MAX_NOTE_LEN 100
-#define MAX_PASS_LEN 20
+#define MAX_NOTE_LEN 256
+#define MAX_PASS_LEN 32
+#define MAX_SALT_LEN 17
+#define HASH_LEN 65
 
 /* ============================================================
  * DOMAIN CONSTANTS
@@ -67,8 +69,10 @@ typedef struct {
   int role;
   int isLocked;
   int failCount;
+  int isDefaultPassword;
   char studentId[MAX_MSSV_LEN];
   char password[MAX_PASS_LEN];
+  char salt[MAX_SALT_LEN];
 } Account;
 
 /**
@@ -80,8 +84,10 @@ typedef struct {
   int team;
   int role;
   int isActive;
+  int isDeleted;
   int consecutiveAbsences;
   int violationCount;
+  time_t deletedAt;
   char studentId[MAX_MSSV_LEN];
   char fullName[MAX_NAME_LEN];
   char email[MAX_EMAIL_LEN];

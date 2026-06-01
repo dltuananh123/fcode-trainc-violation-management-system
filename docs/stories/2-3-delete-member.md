@@ -1,68 +1,33 @@
-# Story 2.3: Delete Member
+# Story 2.3: Search and View Member Details (Replacing Delete Member)
 
 Status: done
 
 ## Story
 
 As a BCN admin,
-I want to remove a member from the system,
-so that departed members no longer appear in the database.
+I want to search for a member by Name or MSSV and view their complete detailed profile and history,
+so that I can easily assess their status, contact details, role, and discipline/violation history in one place, since member deletion is already handled securely via Kick/Restore.
 
 ## Acceptance Criteria
 
-1. **Given** BCN selects Delete Member and enters a valid MSSV  
-   **When** the system shows the member info and confirmation is accepted  
-   **Then** the member is removed from `members[]`, their violations are removed from `violations[]`, and their account is removed from `accounts[]`  
-   **And** all three `.dat` files are saved
-2. **Given** BCN cancels deletion  
-   **When** confirmation is declined  
-   **Then** no data is modified and the menu is shown again
+1. **Given** BCN selects Option 3: "Tim kiem & xem CT TV"
+   **When** they enter a valid MSSV or a fuzzy Name keyword
+   **Then** the system retrieves and lists matching members (if multiple) or navigates directly to the profile details (if single match)
+2. **Given** BCN is viewing the member details card
+   **When** the details are displayed
+   **Then** the card shows Full Name, MSSV, Email, Phone, Team, Role, Active Status, Consecutive Absences, Violation count, and Total Fines
+   **And** it lists all recorded violations of this member with their timestamp, reason, fine, notes, and payment status
+   **And** the UI box aligns perfectly with a width of exactly 70 characters.
 
 ## Tasks / Subtasks
 
-- [x] Implement delete-member lookup and confirmation
-- [x] Remove member record by shifting array
-- [x] Remove all related violations by shifting array
-- [x] Remove related account by shifting array
-- [x] Persist all three stores
-- [x] Keep cancel path side-effect free
+- [x] Remove the redundant soft-delete function (`memberDelete`)
+- [x] Implement fuzzy search by name and exact search by MSSV (`memberSearchDetails`)
+- [x] Design a premium detailed member dashboard card aligning perfectly to 70 character width
+- [x] Retrieve and output the list of all violations matching the searched member
+- [x] Wire Option 3 in the BCN Menu to the new function in `main.c`
 
 ## Dev Notes
 
-- Delete is cascade delete by design. There is no separate delete-violation story.
-- Follow the architecture's delete-member data flow exactly rather than inventing per-file deletion behavior. [Source: _bmad-output/planning-artifacts/architecture.md#Data-Flow--Delete-Member]
-
-### References
-
-- Story definition: [Source: _bmad-output/planning-artifacts/epics.md#Story-23-Delete-Member]
-- Delete-member data flow: [Source: _bmad-output/planning-artifacts/architecture.md#Data-Flow--Delete-Member]
-- Test cases T13, T14: [Source: _bmad-output/planning-artifacts/architecture.md#Test-Plan]
-
-## Dev Agent Record
-
-### Agent Model Used
-
-gpt-5
-
-### Completion Notes List
-
-- Story prepared with cascade-delete requirement explicit
-
-### Post-Implementation Fixes
-
-#### Fix #1: Save order — accounts trước, members sau
-- **Problem:** Save theo thứ tự members → violations → accounts. Nếu accounts save fail → member đã xóa khỏi file nhưng account vẫn còn → user đã bị xóa vẫn đăng nhập được.
-- **Fix:** Đổi thứ tự: accounts → violations → members. Revoke access trước, xóa data sau. Nếu fail giữa chừng, worst case member record vẫn tồn tại nhưng user không login được → an toàn hơn.
-
-#### Fix #2: Hiện đầy đủ thông tin trước khi confirm xóa
-- **Problem:** Chỉ hiện tên, ban, chức vụ. BCN cần thấy đủ thông tin để quyết định xóa.
-- **Fix:** Hiện thêm email, phone, trạng thái, số violation, totalFine trước confirmation prompt.
-
-#### Fix #3: Ngăn BCN tự xóa account của chính mình
-- **Problem:** BCN nhập MSSV của mình → xóa chính mình → logout → không còn account nào để quản lý hệ thống.
-- **Fix:** Check session studentId vs target studentId, reject nếu trùng với thông báo yêu cầu BCN khác thực hiện.
-
-### File List
-
-- `_bmad-output/implementation-artifacts/2-3-delete-member.md`
-
+- The old "Delete Member" was redundant because BCN uses **Kick and Restore** (Option 18) to soft-delete and restore members, while maintaining full history.
+- The new `memberSearchDetails` allows BCN to safely view any member's detailed profile (including private info like email and phone, which are hidden from the public member list).

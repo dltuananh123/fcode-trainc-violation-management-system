@@ -73,19 +73,19 @@ int memberValidateInput(const Member *m, const AppDatabase *db);
 int memberEdit(AppDatabase *db);
 
 /* ============================================================
- * Story 2.3 — Delete Member
+ * Story 2.3 — Search and View Member Details
  * ============================================================ */
 
 /**
- * @brief Delete a member and all associated data.
+ * @brief Search for a member by Name or MSSV and display their complete details.
  *
- * Cascades: member, violations, account records.
- * Requires BCN confirmation before deletion.
+ * Provides a detailed summary including contact info, role, active status,
+ * consecutive absences, violation statistics, and recent violations history.
  *
  * @param db Pointer to the AppDatabase
  * @return 0 on success, -1 on failure
  */
-int memberDelete(AppDatabase *db);
+int memberSearchDetails(AppDatabase *db);
 
 /* ============================================================
  * Story 2.4 — View Member List
@@ -102,6 +102,14 @@ int memberDelete(AppDatabase *db);
 void memberViewProfile(AppDatabase *db);
 
 /**
+ * @brief Display personal statistics dashboard for current user.
+ *
+ * Shows total violations, paid/unpaid fines, violation breakdown by reason.
+ * @param db Pointer to the AppDatabase
+ */
+void memberViewStats(AppDatabase *db);
+
+/**
  * @brief Display list of all members.
  *
  * Shows: fullName, studentId, team, role only.
@@ -111,5 +119,26 @@ void memberViewProfile(AppDatabase *db);
  * @param db Pointer to the AppDatabase
  */
 void memberListAll(AppDatabase *db);
+
+/**
+ * @brief View archived (soft-deleted) members and restore them.
+ *
+ * @param db Pointer to the AppDatabase.
+ */
+void memberViewArchive(AppDatabase *db);
+
+/**
+ * @brief Kick a member (forces Out CLB + locks account) or restore/readmit them.
+ *
+ * @param db Pointer to the AppDatabase.
+ */
+void memberKickOrRestore(AppDatabase *db);
+
+/**
+ * @brief View the list of all kicked (Out CLB) members with reasons.
+ *
+ * @param db Pointer to the AppDatabase.
+ */
+void memberViewKicked(AppDatabase *db);
 
 #endif /* MEMBER_H */
