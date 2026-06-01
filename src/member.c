@@ -1692,7 +1692,7 @@ void memberViewKicked(AppDatabase *db) {
 
     for (int line = 0; line < lines; line++) {
       char buf[25] = {0};
-      strncpy(buf, reason + line * chunk, (size_t)chunk);
+      strncpy(buf, reason + (line * chunk), (size_t)chunk);
 
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
       if (line == 0) {

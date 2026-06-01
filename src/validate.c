@@ -942,15 +942,15 @@ int validateDateRange(const char *start, const char *end) {
   }
 
   /* Parse both dates and compare */
-  int sDay = (start[0] - '0') * 10 + (start[1] - '0');
-  int sMonth = (start[3] - '0') * 10 + (start[4] - '0');
-  int sYear = (start[6] - '0') * 1000 + (start[7] - '0') * 100 +
-              (start[8] - '0') * 10 + (start[9] - '0');
+  int sDay = ((start[0] - '0') * 10) + (start[1] - '0');
+  int sMonth = ((start[3] - '0') * 10) + (start[4] - '0');
+  int sYear = ((start[6] - '0') * 1000) + ((start[7] - '0') * 100) +
+              ((start[8] - '0') * 10) + (start[9] - '0');
 
-  int eDay = (end[0] - '0') * 10 + (end[1] - '0');
-  int eMonth = (end[3] - '0') * 10 + (end[4] - '0');
-  int eYear = (end[6] - '0') * 1000 + (end[7] - '0') * 100 +
-              (end[8] - '0') * 10 + (end[9] - '0');
+  int eDay = ((end[0] - '0') * 10) + (end[1] - '0');
+  int eMonth = ((end[3] - '0') * 10) + (end[4] - '0');
+  int eYear = ((end[6] - '0') * 1000) + ((end[7] - '0') * 100) +
+              ((end[8] - '0') * 10) + (end[9] - '0');
 
   if (sYear > eYear || (sYear == eYear && sMonth > eMonth) ||
       (sYear == eYear && sMonth == eMonth && sDay > eDay)) {
