@@ -119,7 +119,8 @@ static void printViolationRow(const Member *member, const Violation *v) {
 
   /* Time pending calculation */
   char pendingBuf[32];
-  if (v->penalty == PENALTY_OUT_CLB || v->isPaid || v->fine <= 0) {
+  if (v->isVoided || v->penalty == PENALTY_OUT_CLB || v->isPaid ||
+      v->fine <= 0) {
     snprintf(pendingBuf, sizeof(pendingBuf), "-");
   } else {
     time_t now = time(NULL);
@@ -149,7 +150,9 @@ static void printViolationRow(const Member *member, const Violation *v) {
   uiTableCellFmt(12, "", "%.0f", v->fine);
   uiTableCell(pendingBuf, 15, "");
 
-  if (v->penalty == PENALTY_OUT_CLB) {
+  if (v->isVoided) {
+    uiTableCell("Da huy", 12, COLOR_GRAY);
+  } else if (v->penalty == PENALTY_OUT_CLB) {
     uiTableCell("OUT CLB", 12, COLOR_RED);
   } else if (v->isPaid) {
     uiTableCell("Da thu", 12, COLOR_GREEN);
@@ -170,6 +173,9 @@ static int violationMatchesReason(const Violation *v, int expectedReason) {
 }
 
 static int violationMatchesPayment(const Violation *v, int expectedPayment) {
+  if (v->isVoided) {
+    return 0;
+  }
   if (expectedPayment == 0) {
     return v->isPaid == 0;
   }
@@ -459,11 +465,15 @@ int violationRecord(AppDatabase *db) {
   Violation newViolation;
   memset(&newViolation, 0, sizeof(Violation));
 
+  newViolation.id = db->nextViolationId++;
   strncpy(newViolation.studentId, member->studentId, MAX_MSSV_LEN - 1);
   newViolation.studentId[MAX_MSSV_LEN - 1] = '\0';
   newViolation.reason = reason;
   newViolation.violationTime = time(NULL);
   newViolation.isPaid = 0;
+  newViolation.paidAt = 0;
+  newViolation.isVoided = 0;
+  newViolation.voidedAt = 0;
 
   switch (reason) {
   case REASON_VIOLENCE:
@@ -717,7 +727,9 @@ void violationViewOwn(AppDatabase *db) {
       printf(COLOR_CYAN LINE_V COLOR_RESET);
       printf("%-10.0f", v->fine);
       printf(COLOR_CYAN LINE_V COLOR_RESET);
-      if (v->penalty == PENALTY_OUT_CLB) {
+      if (v->isVoided) {
+        printf(COLOR_GRAY "%-13s" COLOR_RESET, "Da huy");
+      } else if (v->penalty == PENALTY_OUT_CLB) {
         printf(COLOR_RED "%-13s" COLOR_RESET, "OUT CLB");
       } else if (v->isPaid) {
         printf(COLOR_GREEN "%-13s" COLOR_RESET, "Da thu");
@@ -806,7 +818,7 @@ void violationViewFines(AppDatabase *db) {
   for (int i = 0; i < db->violationCount; i++) {
     Violation *v = &db->violations[i];
     if (strcmp(v->studentId, session->studentId) == 0 && v->isPaid == 0 &&
-        v->fine > 0) {
+        v->fine > 0 && v->isVoided == 0) {
       char timeBuf[20];
       formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -902,7 +914,7 @@ void violationViewPaymentHistory(AppDatabase *db) {
   for (int i = 0; i < db->violationCount; i++) {
     Violation *v = &db->violations[i];
     if (strcmp(v->studentId, session->studentId) == 0 && v->isPaid == 1 &&
-        v->fine > 0) {
+        v->fine > 0 && v->isVoided == 0) {
       char timeBuf[20];
       formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
@@ -1012,7 +1024,7 @@ int violationMarkPaid(AppDatabase *db) {
   }
 
   Member *m = &db->members[memberIdx];
-  int unpaidIndices[MAX_VIOLATIONS];
+  int unpaidIds[MAX_VIOLATIONS];
   int unpaidCount = 0;
 
   printf("\n");
@@ -1061,8 +1073,8 @@ int violationMarkPaid(AppDatabase *db) {
   for (int i = 0; i < db->violationCount; i++) {
     Violation *v = &db->violations[i];
     if (strcmp(v->studentId, m->studentId) == 0 && v->isPaid == 0 &&
-        v->fine > 0) {
-      unpaidIndices[unpaidCount] = i;
+        v->fine > 0 && v->isVoided == 0) {
+      unpaidIds[unpaidCount] = v->id;
       char timeBuf[20];
       formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", unpaidCount + 1);
@@ -1100,7 +1112,7 @@ int violationMarkPaid(AppDatabase *db) {
   }
 
   char choiceStr[128];
-  int selectedIndices[MAX_VIOLATIONS];
+  int selectedIds[MAX_VIOLATIONS];
   int selectedCount = 0;
 
   while (1) {
@@ -1117,7 +1129,7 @@ int violationMarkPaid(AppDatabase *db) {
     if (strcmp(choiceStr, "99") == 0) {
       selectedCount = unpaidCount;
       for (int i = 0; i < unpaidCount; i++) {
-        selectedIndices[i] = unpaidIndices[i];
+        selectedIds[i] = unpaidIds[i];
       }
       break;
     }
@@ -1168,11 +1180,11 @@ int violationMarkPaid(AppDatabase *db) {
         break;
       }
 
-      /* Check for duplicates in selectedIndices */
+      /* Check for duplicates in selectedIds */
       int dup = 0;
-      int realIdxVal = unpaidIndices[val - 1];
+      int realIdVal = unpaidIds[val - 1];
       for (int i = 0; i < selectedCount; i++) {
-        if (selectedIndices[i] == realIdxVal) {
+        if (selectedIds[i] == realIdVal) {
           dup = 1;
           break;
         }
@@ -1180,7 +1192,7 @@ int violationMarkPaid(AppDatabase *db) {
 
       if (!dup) {
         if (selectedCount < MAX_VIOLATIONS) {
-          selectedIndices[selectedCount++] = realIdxVal;
+          selectedIds[selectedCount++] = realIdVal;
         }
       }
 
@@ -1197,32 +1209,60 @@ int violationMarkPaid(AppDatabase *db) {
 
   /* Save old states for restoration in case of save failure */
   double oldTotalFine = m->totalFine;
+  int oldConsecutiveAbsences = m->consecutiveAbsences;
   int oldPaidStates[MAX_VIOLATIONS];
+  time_t oldPaidAt[MAX_VIOLATIONS];
   for (int i = 0; i < db->violationCount; i++) {
     oldPaidStates[i] = db->violations[i].isPaid;
+    oldPaidAt[i] = db->violations[i].paidAt;
   }
 
   /* Mark selected violations as paid */
+  time_t paidTime = time(NULL);
   for (int i = 0; i < selectedCount; i++) {
-    db->violations[selectedIndices[i]].isPaid = 1;
+    int targetId = selectedIds[i];
+    for (int j = 0; j < db->violationCount; j++) {
+      if (db->violations[j].id == targetId) {
+        db->violations[j].isPaid = 1;
+        db->violations[j].paidAt = paidTime;
+        break;
+      }
+    }
   }
 
   /* Recalculate total fine */
   double newTotal = 0.0;
   for (int i = 0; i < db->violationCount; i++) {
     Violation *v = &db->violations[i];
-    if (strcmp(v->studentId, m->studentId) == 0 && v->isPaid == 0) {
+    if (strcmp(v->studentId, m->studentId) == 0 && v->isPaid == 0 &&
+        v->isVoided == 0) {
       newTotal += v->fine;
     }
   }
   m->totalFine = newTotal;
 
+  /* Reset consecutive absences if all absent violations are paid/voided */
+  int hasUnpaidAbsent = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, m->studentId) == 0 && v->reason == REASON_ABSENT &&
+        v->isPaid == 0 && v->isVoided == 0) {
+      hasUnpaidAbsent = 1;
+      break;
+    }
+  }
+  if (!hasUnpaidAbsent) {
+    m->consecutiveAbsences = 0;
+  }
+
   if (fileioSaveViolations(db) != 0) {
     /* Restore old states */
     for (int i = 0; i < db->violationCount; i++) {
       db->violations[i].isPaid = oldPaidStates[i];
+      db->violations[i].paidAt = oldPaidAt[i];
     }
     m->totalFine = oldTotalFine;
+    m->consecutiveAbsences = oldConsecutiveAbsences;
     printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
     return -1;
   }
@@ -1231,8 +1271,10 @@ int violationMarkPaid(AppDatabase *db) {
     /* Restore old states */
     for (int i = 0; i < db->violationCount; i++) {
       db->violations[i].isPaid = oldPaidStates[i];
+      db->violations[i].paidAt = oldPaidAt[i];
     }
     m->totalFine = oldTotalFine;
+    m->consecutiveAbsences = oldConsecutiveAbsences;
     (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu sau khi thu tien!\n");
     return -1;
@@ -1532,4 +1574,321 @@ date_input:
       goto date_input;
     }
   }
+}
+
+int violationVoid(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");
+    return -1;
+  }
+  if (session->role != ACCOUNT_ROLE_BCN) {
+    printf(ERR_LOI "Chi BCN moi co quyen huy vi pham!\n");
+    return -1;
+  }
+
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Huy vi pham (Void)");
+
+  /* Search member by MSSV or name with re-prompt */
+  char input[MAX_NAME_LEN];
+  int memberIdx = -1;
+  while (1) {
+    printf(COLOR_CYAN
+           "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
+    readString(input, sizeof(input));
+    trimSpaces(input);
+    if (strcmp(input, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return -1;
+    }
+    if (!validateNotEmpty(input)) {
+      continue;
+    }
+    if (!sanitizeInput(input)) {
+      continue;
+    }
+
+    memberIdx = memberFindById(db, input);
+    if (memberIdx == -1) {
+      int indices[MAX_MEMBERS];
+      int count = memberSearchByName(db, input, indices, MAX_MEMBERS);
+      if (count == 0) {
+        printf(ERR_INFO "Khong tim thay thanh vien! Vui long thu lai.\n");
+        continue;
+      }
+      if (count == 1) {
+        memberIdx = indices[0];
+      } else {
+        printf("\n" COLOR_BOLD "  Tim thay %d thanh vien:\n" COLOR_RESET,
+               count);
+        for (int i = 0; i < count; i++) {
+          Member *m = &db->members[indices[i]];
+          printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
+                 teamName(m->team));
+        }
+        int choice =
+            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        memberIdx = indices[choice - 1];
+      }
+    }
+    if (memberIdx != -1) {
+      break;
+    }
+  }
+
+  Member *m = &db->members[memberIdx];
+  int activeViolIndices[MAX_VIOLATIONS];
+  int activeViolCount = 0;
+
+  printf("\n");
+  printf(COLOR_BOLD "  Danh sach vi pham cua %s:\n" COLOR_RESET, m->fullName);
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < 6; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 18; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 25; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 12; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET
+                    " STT  " COLOR_CYAN LINE_V COLOR_RESET
+                    " Thoi gian        " COLOR_CYAN LINE_V COLOR_RESET
+                    " Ly do                   " COLOR_CYAN LINE_V COLOR_RESET
+                    " Tien phat (VND) " COLOR_CYAN LINE_V COLOR_RESET
+                    " Trang thai " COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
+  for (int i = 0; i < 6; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 18; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 25; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 17; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_DOWN);
+  for (int i = 0; i < 12; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, m->studentId) == 0 && v->isVoided == 0) {
+      activeViolIndices[activeViolCount] = i;
+      char timeBuf[20];
+      formatTime(v->violationTime, timeBuf, sizeof(timeBuf));
+      printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-4d ", activeViolCount + 1);
+      printf(COLOR_CYAN LINE_V COLOR_RESET " %-16s ", timeBuf);
+      printf(COLOR_CYAN LINE_V COLOR_RESET " %-23s ", reasonName(v->reason));
+      printf(COLOR_CYAN LINE_V COLOR_RESET " %-15.0f ", v->fine);
+
+      if (v->penalty == PENALTY_OUT_CLB) {
+        printf(COLOR_CYAN LINE_V COLOR_RESET
+               " " COLOR_RED "OUT CLB    " COLOR_RESET
+               " " COLOR_CYAN LINE_V COLOR_RESET "\n");
+      } else if (v->isPaid) {
+        printf(COLOR_CYAN LINE_V COLOR_RESET
+               " " COLOR_GREEN "Da thu     " COLOR_RESET
+               " " COLOR_CYAN LINE_V COLOR_RESET "\n");
+      } else {
+        printf(COLOR_CYAN LINE_V COLOR_RESET
+               " " COLOR_RED "Chua thu   " COLOR_RESET
+               " " COLOR_CYAN LINE_V COLOR_RESET "\n");
+      }
+      activeViolCount++;
+    }
+  }
+
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < 6; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_UP);
+  for (int i = 0; i < 18; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_UP);
+  for (int i = 0; i < 25; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_UP);
+  for (int i = 0; i < 17; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_UP);
+  for (int i = 0; i < 12; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  if (activeViolCount == 0) {
+    printf(ERR_OK "Thanh vien nay khong co vi pham nao de huy.\n\n");
+    return 0;
+  }
+
+  int choice = readMenuChoice(
+      COLOR_CYAN "  Chon STT vi pham can huy (0 de quay lai): " COLOR_RESET, 0,
+      activeViolCount);
+  if (choice == 0) {
+    printf(ERR_INFO "Da huy thao tac.\n\n");
+    return 0;
+  }
+
+  int selectedIdx = activeViolIndices[choice - 1];
+  Violation *target = &db->violations[selectedIdx];
+
+  char reason[MAX_NOTE_LEN];
+  while (1) {
+    printf(COLOR_CYAN "  Nhap ly do huy vi pham (bat buoc): " COLOR_RESET);
+    readString(reason, sizeof(reason));
+    trimSpaces(reason);
+    if (strlen(reason) == 0) {
+      printf(ERR_LOI "Ly do huy khong duoc de trong!\n");
+      continue;
+    }
+    if (sanitizeInput(reason)) {
+      break;
+    }
+  }
+
+  /* Confirm voiding */
+  printf("\n");
+  uiDrawSeparator();
+  printf(COLOR_BOLD "  XAC NHAN HUY VI PHAM\n" COLOR_RESET);
+  printf("  Thanh vien:  %s (%s)\n", m->fullName, m->studentId);
+  printf("  ID vi pham:  #%d\n", target->id);
+  printf("  Loi vi pham: %s\n", reasonName(target->reason));
+  printf("  Ly do huy:   %s\n", reason);
+  uiDrawSeparator();
+
+  while (1) {
+    printf(COLOR_CYAN
+           "  Ban co chac chan muon huy vi pham nay? (Y/N): " COLOR_RESET);
+    char confirm[4];
+    readString(confirm, sizeof(confirm));
+    if (confirm[0] == 'y' || confirm[0] == 'Y') {
+      break;
+    }
+    if (confirm[0] == 'n' || confirm[0] == 'N') {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return 0;
+    }
+    printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
+  }
+
+  /* Backup states for restoration on failure */
+  int oldIsVoided = target->isVoided;
+  time_t oldVoidedAt = target->voidedAt;
+  char oldVoidReason[MAX_NOTE_LEN];
+  strncpy(oldVoidReason, target->voidReason, sizeof(oldVoidReason) - 1);
+  oldVoidReason[sizeof(oldVoidReason) - 1] = '\0';
+
+  double oldTotalFine = m->totalFine;
+  int oldViolationCount = m->violationCount;
+  int oldConsecutiveAbsences = m->consecutiveAbsences;
+
+  /* Apply void */
+  target->isVoided = 1;
+  target->voidedAt = time(NULL);
+  strncpy(target->voidReason, reason, MAX_NOTE_LEN - 1);
+  target->voidReason[MAX_NOTE_LEN - 1] = '\0';
+
+  /* Recalculate member states */
+  double newTotal = 0.0;
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, m->studentId) == 0 && v->isPaid == 0 &&
+        v->isVoided == 0) {
+      newTotal += v->fine;
+    }
+  }
+  m->totalFine = newTotal;
+
+  int newViolCount = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    Violation *v = &db->violations[i];
+    if (strcmp(v->studentId, m->studentId) == 0 && v->isVoided == 0) {
+      newViolCount++;
+    }
+  }
+  m->violationCount = newViolCount;
+
+  /* Recalculate consecutive absences if target was an absent violation */
+  if (target->reason == REASON_ABSENT) {
+    int hasUnpaidAbsent = 0;
+    for (int i = 0; i < db->violationCount; i++) {
+      Violation *v = &db->violations[i];
+      if (strcmp(v->studentId, m->studentId) == 0 &&
+          v->reason == REASON_ABSENT && v->isPaid == 0 && v->isVoided == 0) {
+        hasUnpaidAbsent = 1;
+        break;
+      }
+    }
+    if (!hasUnpaidAbsent) {
+      m->consecutiveAbsences = 0;
+    }
+  }
+
+  /* Save to files */
+  if (fileioSaveViolations(db) != 0) {
+    /* Restore */
+    target->isVoided = oldIsVoided;
+    target->voidedAt = oldVoidedAt;
+    strncpy(target->voidReason, oldVoidReason, sizeof(target->voidReason) - 1);
+    target->voidReason[sizeof(target->voidReason) - 1] = '\0';
+    m->totalFine = oldTotalFine;
+    m->violationCount = oldViolationCount;
+    m->consecutiveAbsences = oldConsecutiveAbsences;
+    printf(ERR_LOI "Khong the luu du lieu vi pham!\n");
+    return -1;
+  }
+
+  if (fileioSaveMembers(db) != 0) {
+    /* Restore */
+    target->isVoided = oldIsVoided;
+    target->voidedAt = oldVoidedAt;
+    strncpy(target->voidReason, oldVoidReason, sizeof(target->voidReason) - 1);
+    target->voidReason[sizeof(target->voidReason) - 1] = '\0';
+    m->totalFine = oldTotalFine;
+    m->violationCount = oldViolationCount;
+    m->consecutiveAbsences = oldConsecutiveAbsences;
+    (void)fileioSaveViolations(db);
+    printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
+    return -1;
+  }
+
+  printf(ERR_OK "Da huy vi pham #%d thanh cong!\n\n", target->id);
+  char logMsg[512];
+  snprintf(logMsg, sizeof(logMsg), "Huy vi pham #%d, ly do: %s", target->id,
+           reason);
+  logSystemAction(session->studentId, logMsg, m->studentId);
+
+  return 0;
 }

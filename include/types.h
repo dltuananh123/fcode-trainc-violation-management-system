@@ -99,13 +99,18 @@ typedef struct {
  * @brief Represents a single recorded violation incident.
  */
 typedef struct {
+  int id; /* Unique violation ID */
   time_t violationTime;
+  time_t paidAt; /* Timestamp when violation is marked as paid */
   double fine;
   int reason;
   int isPaid;
   int penalty;
+  int isVoided;    /* 1 = voided (incorrect record) */
+  time_t voidedAt; /* Timestamp when voided */
   char studentId[MAX_MSSV_LEN];
   char note[MAX_NOTE_LEN];
+  char voidReason[MAX_NOTE_LEN]; /* Reason for voiding */
 } Violation;
 
 /**
@@ -128,6 +133,7 @@ typedef struct {
   int memberCount;
   int violationCount;
   int accountCount;
+  int nextViolationId; /* Next auto-increment ID for violations */
   MemberIndex memberIndexes[MAX_MEMBERS]; /* Sorted member index */
   int memberIndexCount;                   /* Number of elements in the index */
 } AppDatabase;

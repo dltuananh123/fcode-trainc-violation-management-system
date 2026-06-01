@@ -48,4 +48,6 @@ void violationViewByMSSV(AppDatabase *db);
 
 void violationSearchByDate(AppDatabase *db);
 
+int violationVoid(AppDatabase *db);
+
 #endif /* VIOLATION_H */

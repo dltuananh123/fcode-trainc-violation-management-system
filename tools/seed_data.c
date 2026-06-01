@@ -135,12 +135,15 @@ static time_t dateSec(int y, int m, int d) {
 static void makeViolation(Violation *v, const char *id, time_t t,
                            int reason, double fine, int isPaid, int penalty,
                            const char *note) {
+    static int currentId = 1;
     memset(v, 0, sizeof(Violation));
+    v->id = currentId++;
     strncpy(v->studentId, id, MAX_MSSV_LEN - 1);
     v->violationTime = t;
     v->reason  = reason;
     v->fine    = fine;
     v->isPaid  = isPaid;
+    v->paidAt  = isPaid ? t : 0;
     v->penalty = penalty;
     strncpy(v->note, note, MAX_NOTE_LEN - 1);
 }
