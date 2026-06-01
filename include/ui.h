@@ -66,7 +66,7 @@
 #define LINE_T_LEFT "\xE2\x94\xA4"  /* ┤ */
 #define LINE_T_DOWN "\xE2\x94\xAC"  /* ┬ */
 #define LINE_T_UP "\xE2\x94\xB4"    /* ┴ */
-#define LINE_cross "\xE2\x94\xBC"   /* ┼ */
+#define LINE_CROSS "\xE2\x94\xBC"   /* ┼ */
 #define LINE_TL2 "\xE2\x95\x94"     /* ╔ (double) */
 #define LINE_V2 "\xE2\x95\x91"      /* ║ (double) */
 

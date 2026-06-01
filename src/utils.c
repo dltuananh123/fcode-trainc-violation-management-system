@@ -407,14 +407,14 @@ void hashPassword(const char *password, const char *salt, char *outHashHex) {
 }
 
 void generateSalt(char *salt, size_t size) {
-  const char charset[] =
+  const char CHARSET[] =
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   if (size == 0) {
     return;
   }
   for (size_t n = 0; n < size - 1; n++) {
-    int key = rand() % (int)(sizeof(charset) - 1);
-    salt[n] = charset[key];
+    int key = rand() % (int)(sizeof(CHARSET) - 1);
+    salt[n] = CHARSET[key];
   }
   salt[size - 1] = '\0';
 }

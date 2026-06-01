@@ -35,8 +35,8 @@ static void memberMenu(void) {
     /* Title */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM " MENU THANH VIEN ");
-    int _breadcrumbLen = (int)strlen(" MENU THANH VIEN ");
-    for (int i = _breadcrumbLen; i < MENU_CONTENT_W; i++) {
+    int breadcrumbLen = (int)strlen(" MENU THANH VIEN ");
+    for (int i = breadcrumbLen; i < MENU_CONTENT_W; i++) {
       printf(" ");
     }
     printf(COLOR_RESET);
@@ -130,8 +130,8 @@ static void adminMenu(void) {
     /* Title */
     printf(COLOR_BLUE BOX_V COLOR_RESET);
     printf(COLOR_DIM " MENU BAN CHU NHIEM ");
-    int _breadcrumbLen = (int)strlen(" MENU BAN CHU NHIEM ");
-    for (int i = _breadcrumbLen; i < MENU_CONTENT_W; i++) {
+    int breadcrumbLen = (int)strlen(" MENU BAN CHU NHIEM ");
+    for (int i = breadcrumbLen; i < MENU_CONTENT_W; i++) {
       printf(" ");
     }
     printf(COLOR_RESET);
