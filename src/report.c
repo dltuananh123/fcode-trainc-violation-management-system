@@ -107,7 +107,7 @@ void reportTeamStats(const AppDatabase *db) {
   aggregateTeamTotals(db, collected, outstanding);
 
   uiClear();
-  uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Tien phat theo ban");
+  uiDrawBreadcrumb("[3] Quan ly bao cao -> [1] Thong ke tien phat theo ban");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) {
     printf(LINE_H);
@@ -232,11 +232,11 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
   while (1) {
     uiClear();
-    uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Sap xep theo so lan vi pham");
+    uiDrawBreadcrumb("[3] Quan ly bao cao -> [2] Sap xep theo so lan vi pham");
     uiDrawMenuRow("  1. Tang dan");
     uiDrawMenuRow("  2. Giam dan");
     uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
-    uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
+    // uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
     uiDrawSeparator();
 
     int choice =
@@ -270,7 +270,8 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
     while (currentPage < totalPages) {
       uiClear();
-      uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Sap xep theo so lan vi pham");
+      uiDrawBreadcrumb(
+          "[3] Quan ly bao cao -> [2] Sap xep theo so lan vi pham");
       printf(COLOR_BOLD
              "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
       static const TableColumn RANKING_COLS[] = {
@@ -437,7 +438,7 @@ void reportDashboard(const AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Dashboard ky luat");
+  uiDrawBreadcrumb("[3] Quan ly bao cao -> [4] Xem Dashboard ky luat");
 
   /* 1. Calculate general stats */
   int totalViolations = 0;

@@ -149,7 +149,7 @@ int memberAdd(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Them thanh vien moi");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> [1] Them thanh vien moi");
 
   Member newMember;
   memset(&newMember, 0, sizeof(Member));
@@ -324,7 +324,7 @@ int memberEdit(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Sua thong tin");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> [2] Sua thong tin thanh vien");
 
   /* Find member by MSSV with re-prompt */
   char studentId[MAX_MSSV_LEN];
@@ -516,7 +516,8 @@ int memberSearchDetails(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Tim kiem & Chi tiet");
+  uiDrawBreadcrumb(
+      "[1] Quan ly thanh vien -> [3] Tim kiem va xem chi tiet thanh vien");
 
   char input[100];
   int memberIndex = -1;
@@ -1050,7 +1051,8 @@ void memberListAll(AppDatabase *db) {
 
   while (currentPage < totalPages) {
     uiClear();
-    uiDrawBreadcrumb("[1] Quan ly thanh vien -> Danh sach hoat dong");
+    uiDrawBreadcrumb("[1] Quan ly thanh vien -> [4] Xem danh sach thanh vien "
+                     "dang hoat dong");
 
     static const TableColumn MEMBER_COLS[] = {{12, "MSSV"},  {22, "Ho va ten"},
                                               {26, "Email"}, {14, "SDT"},
@@ -1230,7 +1232,8 @@ int memberKickOrRestore(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Kick / Khoi phuc");
+  uiDrawBreadcrumb(
+      "[1] Quan ly thanh vien -> [5] Kick hoac khoi phuc thanh vien");
 
   char studentId[MAX_MSSV_LEN];
   int memberIdx = -1;
@@ -1520,7 +1523,8 @@ int memberViewKicked(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Danh sach da kick");
+  uiDrawBreadcrumb(
+      "[1] Quan ly thanh vien -> [6] Xem danh sach thanh vien da kick");
 
   int kickedIndices[MAX_MEMBERS];
   int kickedCount = 0;

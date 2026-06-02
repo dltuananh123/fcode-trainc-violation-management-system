@@ -45,7 +45,7 @@ static void memberMenu(void) {
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
                      " Xem tong tien phat con no");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
-                     " Lich su nop tien phat");
+                     " Xem lich su nop tien phat");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET " Thong ke ca nhan");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET " Doi mat khau");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET " Dang xuat");
@@ -93,8 +93,7 @@ static void adminMenu(void) {
 
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET " Quan ly thanh vien");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET " Quan ly vi pham");
-    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
-                     " Bao cao va thong ke");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET " Quan ly bao cao");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET " Quan ly he thong");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET
                      " Xem profile ca nhan");
@@ -213,14 +212,15 @@ static void violationManagementMenu(void) {
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[2]" COLOR_RESET
                      " Danh dau da thu tien phat");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET
-                     " Xem danh sach vi pham (co loc)");
+                     " Xem danh sach vi pham");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
                      " Xem lich su vi pham theo thanh vien");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET
-                     " Tim kiem vi pham theo khoang ngay");
+                     " Tim kiem vi pham theo ngay");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
                      " Kiem tra nguong Out CLB");
-    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Huy vi pham (Void)");
+    // uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Huy vi pham
+    // (Void)");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
                      " Quay lai menu chinh");
 
@@ -250,10 +250,10 @@ static void violationManagementMenu(void) {
       violationCheckAllOutClb(&gDb);
       uiPause();
       break;
-    case 7:
-      violationVoid(&gDb);
-      uiPause();
-      break;
+    // case 7:
+    //   violationVoid(&gDb);
+    //   uiPause();
+    //   break;
     default:
       break;
     }
@@ -264,7 +264,7 @@ static void violationManagementMenu(void) {
 static void reportsAndStatsMenu(void) {
   int choice;
   do {
-    uiDrawMenuBoxBegin("MENU BAN CHU NHIEM -> [3] BAO CAO VA THONG KE");
+    uiDrawMenuBoxBegin("MENU BAN CHU NHIEM -> [3] QUAN LY BAO CAO");
 
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[1]" COLOR_RESET
                      " Thong ke tien phat theo ban");
@@ -423,10 +423,9 @@ static void setupFirstRun(AppDatabase *db) {
   printf("\xE2\x95\xA3" COLOR_RESET "\n");
 
   uiDrawMenuRow("  He thong chua co du lieu tai khoan.");
-  uiDrawMenuRow("  Vui long khoi tao tai khoan Ban Chu Nhiem");
-  uiDrawMenuRow("  (Director) de bat dau.");
+  uiDrawMenuRow("  Vui long khoi tao tai khoan Ban Chu Nhiem de bat dau.");
   uiDrawMenuRow("");
-  uiDrawMenuRow(COLOR_DIM "  Nhap 0 hoac q tai bat ky de thoat." COLOR_RESET);
+  uiDrawMenuRow(COLOR_DIM "  Nhap 0 de thoat." COLOR_RESET);
 
   printf(COLOR_BLUE BOX_BL);
   for (int i = 0; i < MENU_BOX_W - 2; i++) {
@@ -440,8 +439,7 @@ static void setupFirstRun(AppDatabase *db) {
 
   /* MSSV loop */
   while (1) {
-    printf(COLOR_CYAN
-           "  [1/6] Nhap MSSV (Dang XY123456, 0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  [1/6] Nhap MSSV (0 de thoat): " COLOR_RESET);
     readString(newAdmin.studentId, MAX_MSSV_LEN);
     trimSpaces(newAdmin.studentId);
     mssvAutoUpper(newAdmin.studentId);
