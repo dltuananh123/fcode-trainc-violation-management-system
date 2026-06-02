@@ -75,9 +75,43 @@
 #define LINE_TL2 "\xE2\x95\x94"     /* ╔ (double) */
 #define LINE_V2 "\xE2\x95\x91"      /* ║ (double) */
 
+#define MENU_BOX_W 70
+
 /* ============================================================
  * UI FUNCTION DECLARATIONS
  * ============================================================ */
+
+/**
+ * @brief Set the current active box width for TUI borders.
+ * @param width The total box width.
+ */
+void uiSetBoxWidth(int width);
+
+/**
+ * @brief Begin a menu box by drawing the top border, title, and separator.
+ * @param title The title text to display.
+ */
+void uiDrawMenuBoxBegin(const char *title);
+
+/**
+ * @brief End a menu box by drawing the bottom border.
+ */
+void uiDrawMenuBoxEnd(void);
+
+/**
+ * @brief Print a UTF-8 string padded to a specific visible column width.
+ * @param text The input string.
+ * @param width The target column width.
+ * @param leftAlign If 1, left align. If 0, right align.
+ */
+void printUtf8Padded(const char *text, int width, int leftAlign);
+
+/**
+ * @brief Count the number of visible columns (code points) in a UTF-8 string.
+ * @param s The input string.
+ * @return Number of visible columns.
+ */
+int utf8Len(const char *s);
 
 /**
  * @brief Initialize UI subsystem (enable ANSI on Windows).

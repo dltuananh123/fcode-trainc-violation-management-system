@@ -107,7 +107,7 @@ void reportTeamStats(const AppDatabase *db) {
   aggregateTeamTotals(db, collected, outstanding);
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thong ke tien phat theo ban");
+  uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Tien phat theo ban");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) {
     printf(LINE_H);
@@ -232,7 +232,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
   while (1) {
     uiClear();
-    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
+    uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Sap xep theo so lan vi pham");
     uiDrawMenuRow("  1. Tang dan");
     uiDrawMenuRow("  2. Giam dan");
     uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
@@ -270,7 +270,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
     while (currentPage < totalPages) {
       uiClear();
-      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sap xep theo so lan vi pham");
+      uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Sap xep theo so lan vi pham");
       printf(COLOR_BOLD
              "  DANH SACH THANH VIEN THEO SO LAN VI PHAM\n" COLOR_RESET);
       static const TableColumn RANKING_COLS[] = {
@@ -437,7 +437,7 @@ void reportDashboard(const AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Dashboard thong ke ky luat CLB");
+  uiDrawBreadcrumb("[3] Bao cao & Thong ke -> Dashboard ky luat");
 
   /* 1. Calculate general stats */
   int totalViolations = 0;
@@ -560,7 +560,7 @@ void reportDashboard(const AppDatabase *db) {
   char digits[32];
   snprintf(digits, sizeof(digits), "%.0f", totalPaid);
   int printedLen = 30 + (int)strlen(digits) + 4;
-  for (int i = printedLen; i < 68; i++) {
+  for (int i = printedLen; i < UI_TERM_WIDTH - 2; i++) {
     printf(" ");
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -592,7 +592,7 @@ void reportDashboard(const AppDatabase *db) {
   if (progress >= 100.0) {
     printedBarLen++;
   }
-  for (int i = printedBarLen; i < 68; i++) {
+  for (int i = printedBarLen; i < UI_TERM_WIDTH - 2; i++) {
     printf(" ");
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");

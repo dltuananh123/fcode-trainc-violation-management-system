@@ -51,11 +51,18 @@
 #define PENALTY_OUT_CLB 1
 
 #define ACCOUNT_ROLE_MEMBER 0
-#define ACCOUNT_ROLE_BCN 1
+#define ACCOUNT_ROLE_DIRECTOR 1
 
 #define MEMBER_ROLE_MEMBER 0
 #define MEMBER_ROLE_LEADER 1
-#define MEMBER_ROLE_BCN 2
+#define MEMBER_ROLE_DIRECTOR 2
+
+/* Default rates and system constants */
+#define FINE_RATE_MEMBER 20000.0
+#define FINE_RATE_LEADER 50000.0
+#define FINE_RATE_DIRECTOR 50000.0
+#define AUTO_PURGE_RETENTION_DAYS 90
+#define MAX_FAILED_ATTEMPTS 3
 
 /* ============================================================
  * ERROR CODES

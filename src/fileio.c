@@ -431,58 +431,8 @@ static int loadAccounts(AppDatabase *db) {
       }
     }
   }
-
-  /* First-run: create default admin account if none loaded */
-  if (!loaded || db->accountCount == 0) {
-    strcpy(db->accounts[0].studentId, "SE203055");
-    generateSalt(db->accounts[0].salt, sizeof(db->accounts[0].salt));
-
-    char defaultPass[9];
-    char lower[] = "abcdefghijklmnopqrstuvwxyz";
-    char upper[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    char digits[] = "0123456789";
-    char special[] = "@$!%*?&";
-
-    defaultPass[0] = lower[(size_t)rand() % (sizeof(lower) - 1)];
-    defaultPass[1] = lower[(size_t)rand() % (sizeof(lower) - 1)];
-    defaultPass[2] = upper[(size_t)rand() % (sizeof(upper) - 1)];
-    defaultPass[3] = upper[(size_t)rand() % (sizeof(upper) - 1)];
-    defaultPass[4] = digits[(size_t)rand() % (sizeof(digits) - 1)];
-    defaultPass[5] = digits[(size_t)rand() % (sizeof(digits) - 1)];
-    defaultPass[6] = special[(size_t)rand() % (sizeof(special) - 1)];
-    defaultPass[7] = special[(size_t)rand() % (sizeof(special) - 1)];
-    defaultPass[8] = '\0';
-
-    for (int i = 0; i < 8; i++) {
-      int target = rand() % 8;
-      char temp = defaultPass[i];
-      defaultPass[i] = defaultPass[target];
-      defaultPass[target] = temp;
-    }
-
-    hashPassword(defaultPass, db->accounts[0].salt, db->accounts[0].password);
-
-    printf("\n");
-    printf("==================================================================="
-           "==\n");
-    printf("[CANH BAO] Khong tim thay co so du lieu tai khoan.\n");
-    printf("He thong da tao tai khoan Ban Chu Nhiem mac dinh:\n");
-    printf("  MSSV: SE203055\n");
-    printf("  Mat khau tam thoi: %s\n", defaultPass);
-    printf("LUU Y: Vui long ghi lai mat khau nay. Ban se bi bat buoc doi mat "
-           "khau\n");
-    printf("ngay trong lan dang nhap dau tien de bao mat he thong.\n");
-    printf("==================================================================="
-           "==\n");
-    printf("\n");
-
-    secureZero(defaultPass, sizeof(defaultPass));
-
-    db->accounts[0].role = ACCOUNT_ROLE_BCN;
-    db->accounts[0].isLocked = 0;
-    db->accounts[0].failCount = 0;
-    db->accounts[0].isDefaultPassword = 1;
-    db->accountCount = 1;
+  if (!loaded) {
+    db->accountCount = 0;
     if (fileioSaveAccounts(db) != 0) {
       return -1;
     }
@@ -668,7 +618,7 @@ int fileioLoadAll(AppDatabase *db) {
     return -1;
   }
   memberRebuildIndex(db);
-  memberPurgeExpired(db, 90);
+  memberPurgeExpired(db, AUTO_PURGE_RETENTION_DAYS);
   verifyDataIntegrity(db);
   return 0;
 }

@@ -185,7 +185,7 @@ unsigned int calculateCrc32(const unsigned char *data, size_t length);
  * @brief Logs an administrative action to data/system_audit.log and triggers a
  * simulated webhook to data/simulated_webhooks.log.
  *
- * @param actor The actor (e.g. BCN's student ID or username).
+ * @param actor The actor (e.g. director's student ID or username).
  * @param action The action performed.
  * @param target The target member or ID.
  */
