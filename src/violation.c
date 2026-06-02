@@ -200,13 +200,13 @@ int violationViewAllFiltered(AppDatabase *db) {
     /* Filter selection loop */
     while (1) {
       uiClear();
-      uiDrawBreadcrumb("[2] Quan ly vi pham -> Danh sach vi pham");
+      uiDrawBreadcrumb("[2] Quan ly vi pham -> [3] Xem danh sach vi pham");
       uiDrawMenuRow("  1. Loc theo ban");
       uiDrawMenuRow("  2. Loc theo ly do vi pham");
       uiDrawMenuRow("  3. Loc theo trang thai thu tien");
       uiDrawMenuRow("  4. Xem tat ca, khong loc");
       uiDrawMenuRow(COLOR_DIM "  0. Quay lai" COLOR_RESET);
-      uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
+      // uiDrawMenuRow(COLOR_DIM " -1. Ve menu" COLOR_RESET);
       uiDrawSeparator();
       filterType =
           readMenuChoice(COLOR_CYAN "  Nhap loai loc: " COLOR_RESET, -1, 4);
@@ -381,7 +381,7 @@ int violationRecord(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Ghi nhan vi pham");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [1] Ghi nhan vi pham moi");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -965,7 +965,7 @@ int violationMarkPaid(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Thu tien phat");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [2] Danh dau da thu tien phat ");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -1305,7 +1305,8 @@ int violationViewByMSSV(AppDatabase *db) {
   int memberIdx = -1;
   while (1) {
     uiClear();
-    uiDrawBreadcrumb("[2] Quan ly vi pham -> Lich su theo MSSV");
+    uiDrawBreadcrumb(
+        "[2] Quan ly vi pham -> [4] Xem lich su vi pham theo thanh vien");
 
     printf(COLOR_CYAN
            "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
@@ -1465,7 +1466,7 @@ int violationSearchByDate(AppDatabase *db) {
   time_t end;
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Tim kiem theo khoang ngay");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [5] Tim kiem vi pham theo ngay");
 
 date_input:
   while (1) {
