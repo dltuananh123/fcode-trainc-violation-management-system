@@ -22,6 +22,110 @@
 #include <time.h>
 
 /* Terminal width used for centering */
+static int currentBoxWidth = UI_TERM_WIDTH;
+
+void uiSetBoxWidth(int width) { currentBoxWidth = width; }
+
+int utf8Len(const char *s) {
+  int len = 0;
+  if (s == NULL) {
+    return 0;
+  }
+  while (*s) {
+    /* Continuation bytes start with 10xxxxxx (0x80 to 0xBF) */
+    if ((*s & 0xC0) != 0x80) {
+      len++;
+    }
+    s++;
+  }
+  return len;
+}
+
+void printUtf8Padded(const char *text, int width, int leftAlign) {
+  if (text == NULL) {
+    text = "";
+  }
+  int len = utf8Len(text);
+  int pad = width - len;
+  if (pad < 0) {
+    pad = 0;
+  }
+
+  if (leftAlign) {
+    if (len > width) {
+      int printedCols = 0;
+      while (*text && printedCols < width) {
+        if ((*text & 0xC0) != 0x80) {
+          if (printedCols + 1 > width) {
+            break;
+          }
+          printedCols++;
+        }
+        putchar(*text++);
+      }
+    } else {
+      printf("%s", text);
+      for (int i = 0; i < pad; i++) {
+        putchar(' ');
+      }
+    }
+  } else {
+    for (int i = 0; i < pad; i++) {
+      putchar(' ');
+    }
+    if (len > width) {
+      int printedCols = 0;
+      while (*text && printedCols < width) {
+        if ((*text & 0xC0) != 0x80) {
+          if (printedCols + 1 > width) {
+            break;
+          }
+          printedCols++;
+        }
+        putchar(*text++);
+      }
+    } else {
+      printf("%s", text);
+    }
+  }
+}
+
+void uiDrawMenuBoxBegin(const char *title) {
+  uiClear();
+  uiSetBoxWidth(MENU_BOX_W);
+
+  /* Top border */
+  printf(COLOR_BLUE BOX_TL);
+  for (int i = 0; i < MENU_BOX_W - 2; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_TR COLOR_RESET "\n");
+
+  /* Title */
+  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_DIM " %s", title);
+  int titleLen = (int)strlen(title) + 1; /* include leading space */
+  for (int i = titleLen; i < MENU_BOX_W - 2; i++) {
+    printf(" ");
+  }
+  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+  /* Separator */
+  printf(COLOR_BLUE "\xE2\x95\xA0");
+  for (int i = 0; i < MENU_BOX_W - 2; i++) {
+    printf(BOX_H);
+  }
+  printf("\xE2\x95\xA3" COLOR_RESET "\n");
+}
+
+void uiDrawMenuBoxEnd(void) {
+  printf(COLOR_BLUE BOX_BL);
+  for (int i = 0; i < MENU_BOX_W - 2; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_BR COLOR_RESET "\n");
+}
+
 /* ============================================================
  * INITIALIZATION
  * ============================================================ */
@@ -178,6 +282,16 @@ void uiDrawStatusBar(const char *user, const char *role) {
 }
 
 void uiDrawBreadcrumb(const char *path) {
+  uiSetBoxWidth(UI_TERM_WIDTH);
+
+  /* Top border of the screen box */
+  printf(COLOR_BLUE BOX_TL);
+  for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {
+    printf(BOX_H);
+  }
+  printf(BOX_TR COLOR_RESET "\n");
+
+  /* Breadcrumb path row */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   printf(COLOR_DIM " %s ", path);
   int used = (int)strlen(path) + 2;
@@ -290,7 +404,7 @@ void uiDrawMenuRow(const char *text) {
   printf(COLOR_BLUE BOX_V COLOR_RESET);
   int visible = uiVisibleLen(text);
   printf("%s", text);
-  for (int i = visible; i < UI_TERM_WIDTH - 2; i++) {
+  for (int i = visible; i < currentBoxWidth - 2; i++) {
     printf(" ");
   }
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
@@ -371,7 +485,9 @@ void uiTableRowEnd(void) { printf(COLOR_CYAN LINE_V COLOR_RESET "\n"); }
 
 void uiTableCell(const char *text, int width, const char *color) {
   printf(COLOR_CYAN LINE_V COLOR_RESET);
-  printf(" %s%-*.*s " COLOR_RESET, color, width - 2, width - 2, text);
+  printf(" %s", color);
+  printUtf8Padded(text, width - 2, 1);
+  printf(" " COLOR_RESET);
 }
 
 void uiTableCellFmt(int width, const char *color, const char *fmt, ...) {
@@ -382,7 +498,8 @@ void uiTableCellFmt(int width, const char *color, const char *fmt, ...) {
   char buf[256];
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  printf("%-*.*s " COLOR_RESET, width - 2, width - 2, buf);
+  printUtf8Padded(buf, width - 2, 1);
+  printf(" " COLOR_RESET);
 }
 
 void uiPause(void) {
@@ -486,7 +603,7 @@ void uiDrawHelp(void) {
   uiDrawMenuRow("  - p: Xem trang truoc do");
   uiDrawMenuRow("  - q: Thoat che do xem danh sach");
   uiDrawMenuRow("");
-  uiDrawMenuRow("  THU TIEN PHAT (BCN)");
+  uiDrawMenuRow("  THU TIEN PHAT (BAN CHU NHIEM)");
   uiDrawMenuRow(
       "  - Nhap so thu tu (STT) cach nhau boi dau phay (vd: 1,3,5) de thu.");
   uiDrawMenuRow(
