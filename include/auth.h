@@ -44,12 +44,13 @@ Account *authGetSession(void);
  * @brief Allow the logged-in user to change their own password.
  *
  * @param db Pointer to the AppDatabase.
+ * @param isFirstLogin If 1, bypass old password prompt (forced flow).
  * @return 0 on success, -1 on failure.
  */
-int authChangePassword(AppDatabase *db);
+int authChangePassword(AppDatabase *db, int isFirstLogin);
 
 /**
- * @brief BCN only: reset a member's password to their MSSV.
+ * @brief Director only: reset a member's password to their MSSV.
  *
  * @param db Pointer to the AppDatabase.
  * @param targetStudentId The student ID of the account to reset.
@@ -57,13 +58,13 @@ int authChangePassword(AppDatabase *db);
  */
 int authResetPassword(AppDatabase *db, const char *targetStudentId);
 
-#define REQUIRE_BCN(session)                                                   \
+#define REQUIRE_DIRECTOR(session)                                              \
   do {                                                                         \
     if ((session) == NULL) {                                                   \
       printf(ERR_LOI "Ban phai dang nhap de thuc hien!\n");                    \
       return RC_ERR_AUTH;                                                      \
     }                                                                          \
-    if ((session)->role != ACCOUNT_ROLE_BCN) {                                 \
+    if ((session)->role != ACCOUNT_ROLE_DIRECTOR) {                            \
       printf(ERR_LOI "Chi Ban Chu Nhiem moi co quyen thuc hien!\n");           \
       return RC_ERR_AUTH;                                                      \
     }                                                                          \
