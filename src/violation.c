@@ -18,9 +18,12 @@
 
 static double calculateFine(int memberRole) {
   if (memberRole == MEMBER_ROLE_MEMBER) {
-    return 20000.0;
+    return FINE_RATE_MEMBER;
   }
-  return 50000.0;
+  if (memberRole == MEMBER_ROLE_LEADER) {
+    return FINE_RATE_LEADER;
+  }
+  return FINE_RATE_DIRECTOR;
 }
 
 static int selectViolationReason(int *reason) {
@@ -188,7 +191,7 @@ int violationViewAllFiltered(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   int filterType = 0;
   int filterValue = 0;
@@ -197,7 +200,7 @@ int violationViewAllFiltered(AppDatabase *db) {
     /* Filter selection loop */
     while (1) {
       uiClear();
-      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem danh sach vi pham");
+      uiDrawBreadcrumb("[2] Quan ly vi pham -> Danh sach vi pham");
       uiDrawMenuRow("  1. Loc theo ban");
       uiDrawMenuRow("  2. Loc theo ly do vi pham");
       uiDrawMenuRow("  3. Loc theo trang thai thu tien");
@@ -370,7 +373,7 @@ int violationRecord(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   if (db->violationCount >= MAX_VIOLATIONS) {
     printf(ERR_LOI "Da dat gioi han so luong vi pham (%d)!\n", MAX_VIOLATIONS);
@@ -378,7 +381,7 @@ int violationRecord(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Ghi nhan vi pham");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> Ghi nhan vi pham");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -607,7 +610,7 @@ int violationCheckAllOutClb(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   printf("\nKIEM TRA NGUONG OUT CLB\n");
   printf("+------------+----------------------+-----------+------------+\n");
@@ -648,7 +651,7 @@ int violationCheckAllOutClb(AppDatabase *db) {
   printf("\nChu thich:\n");
   printf("  Theo doi  : Vang 2 buoi lien tiep\n");
   printf("  CANH BAO  : Vang 3 buoi lien tiep (them 1 buoi -> Out)\n");
-  printf("  QUA NGUONG: Vang qua 3 buoi, cho BCN xu ly\n");
+  printf("  QUA NGUONG: Vang qua 3 buoi, cho Ban chu nhiem xu ly\n");
   printf("  Out CLB   : Da bi Out CLB\n\n");
   return RC_OK;
 }
@@ -669,7 +672,7 @@ void violationViewOwn(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU THANH VIEN > Danh sach vi pham cua ban");
+  uiDrawBreadcrumb("MENU THANH VIEN -> Danh sach vi pham");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) {
     printf(LINE_H);
@@ -778,7 +781,7 @@ void violationViewFines(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU THANH VIEN > Cac khoan phat chua dong");
+  uiDrawBreadcrumb("MENU THANH VIEN -> Cac khoan phat chua dong");
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) {
     printf(LINE_H);
@@ -871,7 +874,7 @@ void violationViewPaymentHistory(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU THANH VIEN > Lich su nop tien phat");
+  uiDrawBreadcrumb("MENU THANH VIEN -> Lich su nop tien phat");
 
   printf(COLOR_CYAN "  " LINE_TL);
   for (int i = 0; i < 16; i++) {
@@ -959,10 +962,10 @@ int violationMarkPaid(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Thu tien phat");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> Thu tien phat");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -1296,13 +1299,13 @@ int violationViewByMSSV(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   char input[MAX_NAME_LEN];
   int memberIdx = -1;
   while (1) {
     uiClear();
-    uiDrawBreadcrumb("MENU BAN CHU NHIEM > Xem lich su VP theo MSSV");
+    uiDrawBreadcrumb("[2] Quan ly vi pham -> Lich su theo MSSV");
 
     printf(COLOR_CYAN
            "  Nhap MSSV hoac ten thanh vien (0 de quay lai): " COLOR_RESET);
@@ -1449,7 +1452,7 @@ int violationSearchByDate(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   if (db->violationCount == 0) {
     printf(ERR_INFO "Khong co vi pham nao trong du lieu.\n");
@@ -1462,7 +1465,7 @@ int violationSearchByDate(AppDatabase *db) {
   time_t end;
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem vi pham theo khoang ngay");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> Tim kiem theo khoang ngay");
 
 date_input:
   while (1) {
@@ -1572,10 +1575,10 @@ int violationVoid(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Huy vi pham (Void)");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> Huy vi pham");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
