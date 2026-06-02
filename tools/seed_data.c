@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
       {"SE211927", "Hoang Minh Trong", TEAM_PLANNING, MEMBER_ROLE_MEMBER},
       {"SE211615", "Nguyen Thanh Triet", TEAM_PLANNING, MEMBER_ROLE_MEMBER},
       {"SE210043", "Nguyen Van Phu", TEAM_PLANNING, MEMBER_ROLE_MEMBER},
-      {"SE203055", "Nguyen Ngoc Phuc", TEAM_PLANNING, MEMBER_ROLE_BCN},
+      {"SE203055", "Nguyen Ngoc Phuc", TEAM_PLANNING, MEMBER_ROLE_DIRECTOR},
       {"SE210768", "Ngo Xuan Huyen", TEAM_PLANNING, MEMBER_ROLE_MEMBER},
       {"SE211766", "Vo Pham Hoang Nam", TEAM_PLANNING, MEMBER_ROLE_MEMBER},
       {"SE211156", "Do Thiet Thach", TEAM_PLANNING, MEMBER_ROLE_MEMBER},
@@ -252,9 +252,9 @@ int main(int argc, char *argv[]) {
       {"SE210777", "Nguyen Ngoc My Vy", TEAM_MEDIA, MEMBER_ROLE_MEMBER},
       {"SE212030", "Du Dong Ngoc Hao", TEAM_MEDIA, MEMBER_ROLE_MEMBER},
 
-      /* BCN members */
-      {"BCN001", "Tran Quoc Bao", TEAM_ACADEMIC, MEMBER_ROLE_BCN},
-      {"BCN002", "Pham Thi Cuc", TEAM_PLANNING, MEMBER_ROLE_BCN},
+      /* DIRECTOR members */
+      {"BCN001", "Tran Quoc Bao", TEAM_ACADEMIC, MEMBER_ROLE_DIRECTOR},
+      {"BCN002", "Pham Thi Cuc", TEAM_PLANNING, MEMBER_ROLE_DIRECTOR},
   };
 
   for (int i = 0; i < (int)(sizeof(seedMembers) / sizeof(seedMembers[0]));
@@ -296,10 +296,10 @@ int main(int argc, char *argv[]) {
       hashPassword(members[i].studentId, accounts[ac].salt,
                    accounts[ac].password);
       accounts[ac].isDefaultPassword =
-          (members[i].role == MEMBER_ROLE_BCN) ? 0 : 1;
+          (members[i].role == MEMBER_ROLE_DIRECTOR) ? 0 : 1;
     }
-    accounts[ac].role = (members[i].role == MEMBER_ROLE_BCN)
-                            ? ACCOUNT_ROLE_BCN
+    accounts[ac].role = (members[i].role == MEMBER_ROLE_DIRECTOR)
+                            ? ACCOUNT_ROLE_DIRECTOR
                             : ACCOUNT_ROLE_MEMBER;
     accounts[ac].isLocked = (members[i].isActive == STATUS_OUT_CLB) ? 1 : 0;
     accounts[ac].failCount = 0;

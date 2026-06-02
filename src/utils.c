@@ -229,7 +229,7 @@ const char *memberRoleName(int roleId) {
     return "Thanh vien";
   case MEMBER_ROLE_LEADER:
     return "Truong nhom/Pho nhom";
-  case MEMBER_ROLE_BCN:
+  case MEMBER_ROLE_DIRECTOR:
     return "Ban chu nhiem";
   default:
     return "Khong xac dinh";
@@ -240,7 +240,7 @@ const char *accountRoleName(int roleId) {
   switch (roleId) {
   case ACCOUNT_ROLE_MEMBER:
     return "Thanh vien";
-  case ACCOUNT_ROLE_BCN:
+  case ACCOUNT_ROLE_DIRECTOR:
     return "Ban chu nhiem";
   default:
     return "Khong xac dinh";
