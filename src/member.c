@@ -149,7 +149,7 @@ int memberAdd(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Them thanh vien moi");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Them thanh vien moi");
 
   Member newMember;
   memset(&newMember, 0, sizeof(Member));
@@ -220,8 +220,8 @@ int memberAdd(AppDatabase *db) {
   /* Role selection with re-prompt */
   newMember.role =
       readMenuChoice(COLOR_CYAN "  Chon chuc vu (0-Thanh vien, 1-Truong nhom, "
-                                "2-BCN): " COLOR_RESET,
-                     MEMBER_ROLE_MEMBER, MEMBER_ROLE_BCN);
+                                "2-Ban chu nhiem): " COLOR_RESET,
+                     MEMBER_ROLE_MEMBER, MEMBER_ROLE_DIRECTOR);
 
   /* Set defaults */
   newMember.violationCount = 0;
@@ -241,8 +241,8 @@ int memberAdd(AppDatabase *db) {
   newAccount.studentId[MAX_MSSV_LEN - 1] = '\0';
   generateSalt(newAccount.salt, sizeof(newAccount.salt));
   hashPassword(newMember.studentId, newAccount.salt, newAccount.password);
-  if (newMember.role == MEMBER_ROLE_BCN) {
-    newAccount.role = ACCOUNT_ROLE_BCN;
+  if (newMember.role == MEMBER_ROLE_DIRECTOR) {
+    newAccount.role = ACCOUNT_ROLE_DIRECTOR;
   } else {
     newAccount.role = ACCOUNT_ROLE_MEMBER;
   }
@@ -270,6 +270,8 @@ int memberAdd(AppDatabase *db) {
   printf(ERR_OK "Them thanh vien thanh cong!\n");
   printf(COLOR_BOLD "  MSSV:    " COLOR_RESET "%s\n", newMember.studentId);
   printf(COLOR_BOLD "  Ten:     " COLOR_RESET "%s\n", newMember.fullName);
+  printf(COLOR_BOLD "  Email:   " COLOR_RESET "%s\n", newMember.email);
+  printf(COLOR_BOLD "  Sdt:     " COLOR_RESET "%s\n", newMember.phone);
   printf(COLOR_BOLD "  Ban:     " COLOR_RESET "%s\n", teamName(newMember.team));
   printf(COLOR_BOLD "  Chuc vu: " COLOR_RESET "%s\n",
          memberRoleName(newMember.role));
@@ -322,7 +324,7 @@ int memberEdit(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Sua thong tin thanh vien");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Sua thong tin");
 
   /* Find member by MSSV with re-prompt */
   char studentId[MAX_MSSV_LEN];
@@ -430,7 +432,8 @@ int memberEdit(AppDatabase *db) {
   int oldRole = m->role;
   while (1) {
     printf(COLOR_CYAN "  Chuc vu moi (0-Thanh vien, 1-Truong nhom, "
-                      "2-BCN)" COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET,
+                      "2-Ban chu nhiem)" COLOR_RESET COLOR_DIM
+                      " [%d]: " COLOR_RESET,
            m->role);
     char buf[32];
     readString(buf, sizeof(buf));
@@ -440,7 +443,7 @@ int memberEdit(AppDatabase *db) {
     }
     int val = 0;
     if (sscanf(buf, "%d", &val) == 1 && val >= MEMBER_ROLE_MEMBER &&
-        val <= MEMBER_ROLE_BCN) {
+        val <= MEMBER_ROLE_DIRECTOR) {
       m->role = val;
       break;
     }
@@ -452,14 +455,20 @@ int memberEdit(AppDatabase *db) {
     /* Update account role */
     for (int i = 0; i < db->accountCount; i++) {
       if (strcmp(db->accounts[i].studentId, m->studentId) == 0) {
-        db->accounts[i].role = (m->role == MEMBER_ROLE_BCN)
-                                   ? ACCOUNT_ROLE_BCN
+        db->accounts[i].role = (m->role == MEMBER_ROLE_DIRECTOR)
+                                   ? ACCOUNT_ROLE_DIRECTOR
                                    : ACCOUNT_ROLE_MEMBER;
         break;
       }
     }
     /* Recalculate fines */
-    double newFineRate = (m->role == MEMBER_ROLE_MEMBER) ? 20000.0 : 50000.0;
+    double newFineRate = FINE_RATE_MEMBER;
+    if (m->role == MEMBER_ROLE_LEADER) {
+      newFineRate = FINE_RATE_LEADER;
+    } else if (m->role == MEMBER_ROLE_DIRECTOR) {
+      newFineRate = FINE_RATE_DIRECTOR;
+      newFineRate += 0.0;
+    }
     m->totalFine = 0.0;
     for (int i = 0; i < db->violationCount; i++) {
       Violation *v = &db->violations[i];
@@ -507,7 +516,7 @@ int memberSearchDetails(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem & Xem chi tiet thanh vien");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Tim kiem & Chi tiet");
 
   char input[100];
   int memberIndex = -1;
@@ -579,7 +588,7 @@ int memberSearchDetails(AppDatabase *db) {
 
   /* Display member details in a premium card */
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Tim kiem > Chi tiet thanh vien");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Chi tiet thanh vien");
 
   printf("\n");
   printf(COLOR_CYAN "  " LINE_TL);
@@ -602,8 +611,9 @@ int memberSearchDetails(AppDatabase *db) {
 #define PRINT_DETAIL_ROW(label, value, val_color)                              \
   do {                                                                         \
     printf(COLOR_CYAN "  " LINE_V COLOR_RESET);                                \
-    printf(" %-20s %s%-48s" COLOR_RESET, label, val_color, value);             \
-    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");                                \
+    printf(" %-20s %s", label, val_color);                                     \
+    printUtf8Padded(value, 48, 1);                                             \
+    printf(COLOR_RESET COLOR_CYAN LINE_V COLOR_RESET "\n");                    \
   } while (0)
 
   PRINT_DETAIL_ROW("Ho va ten:", m->fullName, COLOR_BOLD);
@@ -701,18 +711,18 @@ void memberViewProfile(AppDatabase *db) {
 
   uiClear();
 
-  // tu ve breadcrum
   /* Top border */
-  printf(COLOR_BLUE BOX_V COLOR_RESET);
+  printf(COLOR_BLUE BOX_TL);
   for (int i = 0; i < 68; i++) {
     printf(BOX_H);
   }
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  printf(BOX_TR COLOR_RESET "\n");
 
   /* Title row */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_DIM " %-67s" COLOR_RESET, "MENU > Thong tin ca nhan");
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  printf(COLOR_DIM " ");
+  printUtf8Padded("Thong tin profile ca nhan", 66, 1);
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   /* Separator */
   printf(COLOR_BLUE "\xE2\x95\xA0");
@@ -724,10 +734,9 @@ void memberViewProfile(AppDatabase *db) {
 /* Helper to print a row with borders */
 #define PRINT_PROFILE_ROW(label, value, color)                                 \
   do {                                                                         \
-    printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET color            \
-                                        "%-54s" COLOR_RESET,                   \
-           label, value);                                                      \
-    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");                                 \
+    printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET color, label);   \
+    printUtf8Padded(value, 54, 1);                                             \
+    printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");                     \
   } while (0)
 
   PRINT_PROFILE_ROW("MSSV:", m->studentId, "");
@@ -739,27 +748,31 @@ void memberViewProfile(AppDatabase *db) {
 
   printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET, "Trang thai:");
   if (m->isActive) {
-    printf(COLOR_GREEN "%-54s" COLOR_RESET, "Hoat dong");
+    printf(COLOR_GREEN);
+    printUtf8Padded("Hoat dong", 54, 1);
   } else {
-    printf(COLOR_RED "%-54s" COLOR_RESET, "Da Out CLB");
+    printf(COLOR_RED);
+    printUtf8Padded("Da Out CLB", 54, 1);
   }
-  printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+  printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
 
   /* Last row with two fields */
-  char fineStr[32];
-  snprintf(fineStr, sizeof(fineStr), "%.0f", m->totalFine);
-  printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET
-                                      "%-5d     Tong phat: " COLOR_PURPLE
-                                      "%-33s" COLOR_RESET,
-         "So lan VP:", m->violationCount, fineStr);
+  char valBuf[128];
+  char vpStr[32];
+  snprintf(vpStr, sizeof(vpStr), "%d", m->violationCount);
+  snprintf(valBuf, sizeof(valBuf), "%-5s     Tong phat: %.0f VND", vpStr,
+           m->totalFine);
+
+  printf(COLOR_BLUE BOX_V COLOR_RESET "  %-12s" COLOR_RESET, "So lan VP:");
+  printUtf8Padded(valBuf, 54, 1);
   printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
 
-  /* Separator */
-  printf(COLOR_BLUE "\xE2\x95\xA0");
+  /* Bottom border */
+  printf(COLOR_BLUE BOX_BL);
   for (int i = 0; i < 68; i++) {
     printf(BOX_H);
   }
-  printf("\xE2\x95\xA3" COLOR_RESET "\n");
+  printf(BOX_BR COLOR_RESET "\n");
 
   printf("\n");
 }
@@ -791,7 +804,7 @@ void memberViewStats(AppDatabase *db) {
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU THANH VIEN > Thong ke ca nhan");
+  uiDrawBreadcrumb("MENU THANH VIEN -> Thong ke ca nhan");
 
   /* Calculate statistics */
   int totalViolations = 0;
@@ -1037,7 +1050,7 @@ void memberListAll(AppDatabase *db) {
 
   while (currentPage < totalPages) {
     uiClear();
-    uiDrawBreadcrumb("MENU > Danh sach thanh vien");
+    uiDrawBreadcrumb("[1] Quan ly thanh vien -> Danh sach hoat dong");
 
     static const TableColumn MEMBER_COLS[] = {{12, "MSSV"},  {22, "Ho va ten"},
                                               {26, "Email"}, {14, "SDT"},
@@ -1108,10 +1121,10 @@ int memberViewArchive(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kho luu tru");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Kho luu tru");
 
   int archivedIndices[MAX_MEMBERS];
   int archivedCount = 0;
@@ -1214,10 +1227,10 @@ int memberKickOrRestore(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Kick / Khoi phuc thanh vien");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Kick / Khoi phuc");
 
   char studentId[MAX_MSSV_LEN];
   int memberIdx = -1;
@@ -1263,14 +1276,17 @@ int memberKickOrRestore(AppDatabase *db) {
     }
   }
 
-  /* Role permission check (BCN protection)
-     Super Admin accounts (admin or SE203055) can kick any BCN,
-     but standard BCN accounts can NOT kick another BCN! */
-  int isSuperAdmin = (strcmp(session->studentId, "admin") == 0 ||
-                      strcmp(session->studentId, "SE203055") == 0);
-  if (m->role == MEMBER_ROLE_BCN && !isSuperAdmin) {
-    printf(ERR_LOI "Chi Super Admin (admin/SE203055) moi co quyen kick/khoi "
-                   "phuc thanh vien BCN khac!\n");
+  /* Role permission check (DIRECTOR protection)
+     Super Admin accounts can kick any DIRECTOR, but standard DIRECTOR
+     accounts can NOT kick another DIRECTOR! */
+  int isSuperAdmin =
+      (db->accountCount > 0 &&
+       strcmp(session->studentId, db->accounts[0].studentId) == 0) ||
+      strcmp(session->studentId, "admin") == 0 ||
+      strcmp(session->studentId, "SE203055") == 0;
+  if (m->role == MEMBER_ROLE_DIRECTOR && !isSuperAdmin) {
+    printf(ERR_LOI "Chi Super Admin moi co quyen kick/khoi "
+                   "phuc thanh vien Ban chu nhiem khac!\n");
     return RC_ERR_AUTH;
   }
 
@@ -1501,10 +1517,10 @@ int memberViewKicked(AppDatabase *db) {
   }
 
   Account *session = authGetSession();
-  REQUIRE_BCN(session);
+  REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Danh sach thanh vien da kick");
+  uiDrawBreadcrumb("[1] Quan ly thanh vien -> Danh sach da kick");
 
   int kickedIndices[MAX_MEMBERS];
   int kickedCount = 0;
