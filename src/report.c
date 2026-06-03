@@ -372,6 +372,7 @@ void reportExportTxt(const AppDatabase *db) {
   FILE *fp = fopen(filePath, "w");
   if (fp == NULL) {
     printf("[LOI] Khong the tao file bao cao %s\n", filePath);
+    uiPause();
     return;
   }
 
