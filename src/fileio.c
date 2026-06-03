@@ -720,7 +720,8 @@ int fileioExportArchive(AppDatabase *db) {
 
   FILE *fp = fopen(outPath, "wb");
   if (fp == NULL) {
-    printf(ERR_LOI "Khong the mo file de ghi: %s\n", outPath);
+    printf(ERR_LOI "Khong the khoi tao hoac mo file de ghi: %s\n", filename);
+    printf(ERR_INFO "Hay dam bao thu muc du lieu ton tai va co quyen ghi: %s\n", dataDir);
     uiPause();
     return -1;
   }
@@ -816,7 +817,8 @@ int fileioExportArchive(AppDatabase *db) {
     logSystemAction(session->studentId, "Export du lieu", filename);
   }
 
-  printf("\n" ERR_OK "Xuat file du lieu thanh cong tai: %s\n", outPath);
+  printf("\n" ERR_OK "Xuat file du lieu thanh cong vao thu muc 'data': %s\n", filename);
+  printf(ERR_INFO "Duong dan day du: %s\n", outPath);
   printf(ERR_INFO "Vui long nho ma PIN da nhap de import duoc o may khac.\n");
   uiPause();
   return 0;
@@ -832,7 +834,7 @@ int fileioImportArchive(AppDatabase *db) {
 
   char filename[256];
   while (1) {
-    printf(COLOR_CYAN "  Nhap ten file backup de nhap (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap ten file backup can nhap tu thu muc 'data' (mac dinh: backup.bin, 0 de thoat): " COLOR_RESET);
     readString(filename, sizeof(filename));
     trimSpaces(filename);
 
@@ -842,7 +844,7 @@ int fileioImportArchive(AppDatabase *db) {
     if (strlen(filename) == 0) {
       strncpy(filename, "backup.bin", sizeof(filename) - 1);
       filename[sizeof(filename) - 1] = '\0';
-      printf(ERR_INFO "Ban khong nhap ten file. Su dung file mac dinh: " COLOR_YELLOW "backup.bin" COLOR_RESET "\n");
+      printf(ERR_INFO "Ban khong nhap ten file. He thong tim file mac dinh: " COLOR_YELLOW "data/backup.bin" COLOR_RESET "\n");
     }
 
     /* Validate path traversal or forbidden filesystem characters */
@@ -876,7 +878,8 @@ int fileioImportArchive(AppDatabase *db) {
 
   FILE *fp = fopen(inPath, "rb");
   if (fp == NULL) {
-    printf(ERR_LOI "Khong tim thay file backup: %s\n", inPath);
+    printf(ERR_LOI "Khong tim thay file backup: %s\n", filename);
+    printf(ERR_INFO "Vui long dam bao file backup nay da duoc copy vao thu muc du lieu: %s\n", dataDir);
     uiPause();
     return -1;
   }
