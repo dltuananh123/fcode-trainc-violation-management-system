@@ -164,6 +164,26 @@ new_features = [
      "Advanced", "Done",
      "Member list, violation view (all/filtered), and date search "
      "use consistent clear-screen paging: 15 rows/page, n/m/q navigation"),
+
+    ("27", "CSV Import for violations with auto-reset absences",
+     "Advanced", "Done",
+     "Import 3-column CSV violations; dry-run validates entries and filters errors; "
+     "automatically resets absences to 0 for members not absent in CSV batch"),
+
+    ("28", "Self-view Out CLB threshold and violations",
+     "Required", "Done",
+     "Members can view own active status, consecutive absences, unpaid fines count, "
+     "and read the club's Out CLB threshold rules directly from their menu"),
+
+    ("29", "Obfuscated and secure local system logging",
+     "Advanced", "Done",
+     "Saves audit logs to system_audit.log with XOR 0x5A encryption, keeping newline "
+     "characters to preserve structure; decrypts on-the-fly for admin viewing"),
+
+    ("30", "PIN-protected single-file backup export/import",
+     "Advanced", "Done",
+     "Compiles members, accounts, violations, and encrypted audit logs into a single "
+     "PIN-encrypted archive file; allows secure data migration between machines"),
 ]
 
 for feat in new_features:
@@ -400,5 +420,224 @@ if target_p:
 # ──────────────────────────────────────────────────────
 # 12. Save
 # ──────────────────────────────────────────────────────
-doc.save(DOC_PATH)
-print("report.docx updated successfully!")
+# ──────────────────────────────────────────────────────
+# 12. Save
+# ──────────────────────────────────────────────────────
+def run_update_on(doc_path):
+    global doc
+    doc = Document(doc_path)
+    
+    # 1. Update Table 2
+    t2 = doc.tables[2]
+    set_run_text(t2.rows[0].cells[1], "17 April 2026 - 1 June 2026")
+    set_run_text(t2.rows[3].cells[1], "1 June 2026")
+
+    # 3. Section 1 text updates
+    for p in doc.paragraphs:
+        if "Passwords are stored in plain text" in p.text:
+            p.runs[0].text = ""
+            for r in p.runs[1:]:
+                r.text = ""
+            p.runs[0].text = (
+                "Passwords are stored using salted FNV-1a hash with XOR obfuscation in accounts.dat. "
+                "Each password is hashed with a unique per-account salt (10 rounds of FNV-1a), "
+                "then the hash hex string is XOR-encrypted with the salt for storage. "
+                "This prevents plain-text recovery: even with file access, credentials cannot be read directly."
+            )
+            break
+
+    for p in doc.paragraphs:
+        if "auto-created ADMIN account has no corresponding Member entry" in p.text:
+            p.runs[0].text = ""
+            for r in p.runs[1:]:
+                r.text = ""
+            p.runs[0].text = (
+                "The default admin account (ADMIN/ADMIN) still has no Member entry, but the seed data "
+                "now creates SE203055 (Nguyen Ngoc Phuc) as BCN account with full admin access and "
+                "a corresponding Member record, so memberViewProfile() works correctly from BCN menu."
+            )
+            break
+
+    for p in doc.paragraphs:
+        if "as of 16 May 2026" in p.text:
+            for r in p.runs:
+                if "16 May 2026" in r.text:
+                    r.text = r.text.replace("16 May 2026", "1 June 2026")
+            break
+
+    # 4. Update Table 4
+    t4 = doc.tables[4]
+    set_run_text(t4.rows[5].cells[4],
+        "Default password = studentId; account auto-created; all "
+        "edit fields re-prompt on validation failure; \"0 de quay lai\" supported"
+    )
+    set_run_text(t4.rows[6].cells[4],
+        "Changing role recalculates unpaid fines; phone/email unique validation; "
+        "name/phone/email fields wrapped in while(1) re-prompt loops"
+    )
+    set_run_text(t4.rows[8].cells[4],
+        "Member list supports pagination (15 rows/page, n/m/q navigation); "
+        "5-column table: MSSV, Ho va ten, Email, SDT, Ban"
+    )
+    set_run_text(t4.rows[13].cells[4],
+        "Filters by team, reason, payment status; paginated with n/m/q; "
+        "\"Cho dong phat\" column 15 chars, status column 12 chars"
+    )
+    set_run_text(t4.rows[17].cells[4],
+        "Uses normalized day boundaries; paginated with n/m/q; "
+        "start/end date wrapped in outer while(1) retry loop"
+    )
+    set_run_text(t4.rows[18].cells[4],
+        "Auto-creates ADMIN/ADMIN on first run; fileio.c uses .tmp/.bak strategy; "
+        "passwords stored with FNV-1a hash + XOR encryption"
+    )
+
+    # Re-add features to t4
+    # Find features table length to prevent duplicates if run twice
+    # Clear added features rows (indexes 21 and after)
+    while len(t4.rows) > 21:
+        row = t4.rows[-1]
+        tbl_element = t4._tbl
+        tbl_element.remove(row._tr)
+
+    for feat in new_features:
+        row = t4.add_row()
+        for i, text in enumerate(feat):
+            set_run_text(row.cells[i], text)
+
+    # 5. Update Table 5
+    t5 = doc.tables[5]
+    while len(t5.rows) > 13: # Keep original 13 rows
+        row = t5.rows[-1]
+        tbl_element = t5._tbl
+        tbl_element.remove(row._tr)
+
+    row = t5.add_row()
+    set_run_text(row.cells[0], "run.bat")
+    set_run_text(row.cells[1],
+        "One-click build-and-run script. Calls mingw32-make, compiles seed_data.exe, "
+        "runs seed, then launches the application."
+    )
+    row2 = t5.add_row()
+    set_run_text(row2.cells[0], "report/")
+    set_run_text(row2.cells[1],
+        "Defense report template (report.docx) and update script."
+    )
+    set_run_text(t5.rows[8].cells[1],
+        "Standalone generator for deterministic seed data: 72 members (70 real Challenge 3 students "
+        "+ SE203055 + ADMIN), 72 accounts, 76 violations, 3 kicked members, 1 OUT_CLB case."
+    )
+    set_run_text(t5.rows[9].cells[1],
+        "Repository-level binary seed files: accounts.dat, members.dat, violations.dat with real data."
+    )
+
+    # 6. Table 6
+    t6 = doc.tables[6]
+    set_run_text(t6.rows[5].cells[2],
+        "Salted FNV-1a hash (10 rounds) with per-account random salt, "
+        "XOR-encrypted with the salt for storage. Not recoverable as plain text."
+    )
+
+    # 7. Table 11
+    t11 = doc.tables[11]
+    while len(t11.rows) > 1:
+        row = t11.rows[-1]
+        tbl_element = t11._tbl
+        tbl_element.remove(row._tr)
+    for step in demo_steps:
+        row = t11.add_row()
+        for i, text in enumerate(step):
+            set_run_text(row.cells[i], text)
+
+    # 8. Table 12
+    t12 = doc.tables[12]
+    while len(t12.rows) > 1:
+        row = t12.rows[-1]
+        tbl_element = t12._tbl
+        tbl_element.remove(row._tr)
+    for issue in known_issues:
+        row = t12.add_row()
+        for i, text in enumerate(issue):
+            set_run_text(row.cells[i], text)
+
+    # 10. Paragraph 100
+    for p in doc.paragraphs:
+        if "includes both engineering documents" in p.text:
+            p.runs[0].text = ""
+            for r in p.runs[1:]:
+                r.text = ""
+            p.runs[0].text = (
+                "The repository includes both engineering documents (architecture.md, epics.md, story files), "
+                "operational documents (demo-and-test-guide.md, technical_updates.md), "
+                "and a defense report (report/report.docx)."
+            )
+            break
+
+    # 11. Add new algorithm sections if not already present
+    already_has_hashing = False
+    for p in doc.paragraphs:
+        if "Password hashing with FNV-1a" in p.text:
+            already_has_hashing = True
+            break
+            
+    if not already_has_hashing:
+        target_p = None
+        for p in doc.paragraphs:
+            if "deterministic presentation path for defense day" in p.text:
+                target_p = p
+                break
+        if target_p:
+            p_spacer1 = insert_paragraph_after(target_p, "", style=target_p.style)
+            p_title = insert_paragraph_after(p_spacer1, "3.3.10.  Password hashing with FNV-1a + XOR encryption", style="Heading 3")
+            p_body = insert_paragraph_after(p_title, "", style="Normal")
+            p_body.runs[0].text = (
+                "Passwords are not stored as plain text. The auth module hashes each password using FNV-1a "
+                "(Fowler-Noll-Vo) hash with a per-account random salt. The hash undergoes 10 rounds of FNV-1a "
+                "with the salt XOR-mixed at each round. The final 64-bit hash is converted to a hex string, "
+                "then XOR-encrypted with the salt bytes for storage. On login, the stored salt is used to "
+                "recompute the hash from the entered password and compare against the stored obfuscated value. "
+                "This ensures that even if accounts.dat is compromised, passwords cannot be recovered as plain text."
+            )
+            
+            p_title2 = insert_paragraph_after(p_body, "3.3.11.  Member kick (deactivation) and restore", style="Heading 3")
+            p_body2 = insert_paragraph_after(p_title2, "", style="Normal")
+            p_body2.runs[0].text = (
+                "The system supports soft-deactivation of members through a kick operation. "
+                "Kicking a member sets isDeleted=1, isActive=0, records a deletedAt timestamp, "
+                "and preserves all violation history. The corresponding account is locked to prevent login. "
+                "Restore reverses the operation: sets isDeleted=0, isActive=1, clears deletedAt, "
+                "and unlocks the account. This allows the club to track former members without "
+                "permanently removing their records. The discipline dashboard provides visibility "
+                "into currently kicked members."
+            )
+            
+            p_title3 = insert_paragraph_after(p_body2, "3.3.12.  Input validation and re-prompt loops", style="Heading 3")
+            p_body3 = insert_paragraph_after(p_title3, "", style="Normal")
+            p_body3.runs[0].text = (
+                "All mutation operations use defensive while(1) loops that re-prompt on validation failure. "
+                "If the user presses Enter without input, the existing value is kept. If input is invalid, "
+                "an error message is shown and the prompt repeats. All student ID prompts support \"0 de quay lai\" "
+                "(zero to go back) to cancel the operation and return to the previous menu. "
+                "Email validation is particularly strict: it rejects commas, invalid TLD characters, "
+                "dots at the start or end of the local part, consecutive dots, and enforces a minimum "
+                "2-letter TLD. Phone numbers are normalized to 10 digits and checked for uniqueness."
+            )
+            
+            p_title4 = insert_paragraph_after(p_body3, "3.3.13.  Pagination for list views", style="Heading 3")
+            p_body4 = insert_paragraph_after(p_title4, "", style="Normal")
+            p_body4.runs[0].text = (
+                "Member list, violation view (all/filtered), and date search all use a consistent "
+                "pagination system. Each view displays 15 rows per page (ROWS_PER_PAGE from include/ui.h). "
+                "The user navigates with n (next page), m (previous page), and q (quit back to menu). "
+                "The screen is cleared between pages for clean presentation. Violation list uses a "
+                "two-pass approach: the first pass collects matching indices into a matchIdx[] array, "
+                "and the second pass renders the current page from that index array."
+            )
+
+    doc.save(doc_path)
+    print(f"Updated: {doc_path}")
+
+# Run update on both documents
+run_update_on(r"C:\Users\Admin\Desktop\GIT CLONE edu\fcode-trainc-violation-management-system\report\report.docx")
+run_update_on(r"C:\Users\Admin\Desktop\GIT CLONE edu\fcode-trainc-violation-management-system\report\report v2.docx")
+
