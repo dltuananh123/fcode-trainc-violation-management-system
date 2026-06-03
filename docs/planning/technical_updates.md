@@ -418,3 +418,30 @@ bin\seed_data.exe
 bin\violation-management-system.exe
 ```
 
+---
+
+## 9. Các Bản Cập Nhật Nghiệp Vụ Mới (v2.4 Business Logic & Data Transfer Updates)
+
+### 9.1. Nhập Vi Phạm Hàng Loạt từ file CSV (CSV Import)
+Để tránh việc nhập thủ công từng thành viên, hệ thống hỗ trợ import nhanh vi phạm từ file CSV (chứa 3 cột: `studentId,reasonCode,notes`).
+* **Dry-run validation**: Hệ thống kiểm tra trước toàn bộ file CSV, phân loại và in ra trạng thái từng dòng (`[OK]` hoặc `[FAIL - lý do lỗi]`).
+* **Xử lý chọn lọc**: Admin xác nhận chỉ ghi nhận những dòng `[OK]`, tự động bỏ qua những dòng `[FAIL]` thay vì hủy bỏ cả file.
+* **Thời gian ghi nhận**: Tự động gán thời gian thực hiện qua `time(NULL)` tại thời điểm import.
+* **Tự động Reset vắng**: Bất kỳ thành viên nào không bị ghi nhận lỗi vắng họp (`reasonCode = 1`) trong file CSV import sẽ tự động được reset số buổi vắng liên tiếp (`consecutiveAbsences`) về `0` và in ra thông báo chi tiết.
+
+### 9.2. Xem Ngưỡng Out CLB của Bản Thân (Self-view Out Threshold)
+Thêm chức năng `[6] Xem nguong Out CLB & Vi pham` vào Menu Thành viên:
+* Cho phép thành viên tự theo dõi trạng thái hoạt động và số buổi vắng họp liên tiếp hiện tại trên tổng số tối đa (`consecutiveAbsences` / 3 buổi).
+* Thống kê số lượng vi phạm chưa nộp phạt thực tế.
+* Hiển thị chi tiết bảng quy chế Out CLB để thành viên đối chiếu và chủ động đi họp chuyên cần.
+
+### 9.3. Mã Hóa Nhật Ký Hệ Thống (Encrypted Audit Logging)
+* Để nâng cao tính bảo mật, nội dung ghi vào file `data/system_audit.log` giờ đây được tự động mã hóa XOR với khóa `0x5A` (giữ lại ký tự xuống dòng `\n` để bảo vệ cấu trúc file).
+* Khi xem nhật ký qua giao diện hệ thống (`viewSystemLogs`), chương trình tự động giải mã để hiển thị trực quan thông tin gốc.
+
+### 9.4. Đóng gói & Di Chuyển Dữ Liệu (PIN-protected Export/Import Archive)
+Hệ thống cho phép export/import dữ liệu dễ dàng giữa các máy tính khác nhau thông qua một tệp nén duy nhất bảo mật bằng mã PIN 4 số:
+* **Export (Menu Hệ thống -> [5])**: Đóng gói toàn bộ cơ sở dữ liệu (`accounts.dat`, `members.dat`, `violations.dat`) và file nhật ký hành trình (`system_audit.log`) vào một file backup duy nhất. Dữ liệu được mã hóa bằng khóa byte sinh ra từ mã PIN bảo mật 4 chữ số do admin tự đặt.
+* **Import (Menu Hệ thống -> [6])**: Yêu cầu nhập mã PIN bảo mật. Nếu mã PIN khớp với chữ ký hash ghi nhận trong file, hệ thống sẽ tiến hành giải mã, phục hồi toàn bộ cơ sở dữ liệu cục bộ và phục hồi lại cả file nhật ký lịch sử `system_audit.log` trên máy tính mới.
+
+
