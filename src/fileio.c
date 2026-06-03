@@ -745,6 +745,34 @@ int fileioExportArchive(AppDatabase *db) {
     }
   }
 
+  /* Encrypt and write system_audit.log */
+  char auditPath[1024];
+  snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
+  FILE *fLog = fopen(auditPath, "rb");
+  int logSize = 0;
+  unsigned char *logBuf = NULL;
+  if (fLog != NULL) {
+    fseek(fLog, 0, SEEK_END);
+    logSize = (int)ftell(fLog);
+    fseek(fLog, 0, SEEK_SET);
+    if (logSize > 0) {
+      logBuf = malloc((size_t)logSize);
+      if (logBuf) {
+        fread(logBuf, 1, (size_t)logSize, fLog);
+        for (int i = 0; i < logSize; i++) {
+          logBuf[i] ^= pinByte;
+        }
+      }
+    }
+    fclose(fLog);
+  }
+  
+  fwrite(&logSize, sizeof(int), 1, fp);
+  if (logSize > 0 && logBuf != NULL) {
+    fwrite(logBuf, 1, (size_t)logSize, fp);
+    free(logBuf);
+  }
+
   fclose(fp);
   printf("\n" ERR_OK "Xuat file du lieu thanh cong tai: %s\n", outPath);
   printf(ERR_INFO "Vui long nho ma PIN da nhap de import duoc o may khac.\n");
@@ -879,6 +907,24 @@ int fileioImportArchive(AppDatabase *db) {
     for (size_t i = 0; i < sz; i++) ((unsigned char *)tempViolations)[i] ^= pinByte;
   }
 
+  /* Read system_audit.log */
+  int logSize = 0;
+  unsigned char *logBuf = NULL;
+  if (fread(&logSize, sizeof(int), 1, fp) == 1 && logSize > 0) {
+    logBuf = malloc((size_t)logSize);
+    if (logBuf) {
+      if (fread(logBuf, 1, (size_t)logSize, fp) == (size_t)logSize) {
+        for (int i = 0; i < logSize; i++) {
+          logBuf[i] ^= pinByte;
+        }
+      } else {
+        free(logBuf);
+        logBuf = NULL;
+        logSize = 0;
+      }
+    }
+  }
+
   fclose(fp);
 
   /* Import data to RAM database */
@@ -898,8 +944,21 @@ int fileioImportArchive(AppDatabase *db) {
   /* Save RAM database back locally */
   if (fileioSaveAccounts(db) != 0 || fileioSaveMembers(db) != 0 || fileioSaveViolations(db) != 0) {
     printf(ERR_LOI "Khong the ghi du lieu ra o dia goc!\n");
+    if (logBuf) free(logBuf);
     uiPause();
     return -1;
+  }
+
+  /* Restore system_audit.log */
+  if (logSize > 0 && logBuf != NULL) {
+    char destAuditPath[1024];
+    snprintf(destAuditPath, sizeof(destAuditPath), "%s/data/system_audit.log", exeDir);
+    FILE *fdLog = fopen(destAuditPath, "wb");
+    if (fdLog != NULL) {
+      fwrite(logBuf, 1, (size_t)logSize, fdLog);
+      fclose(fdLog);
+    }
+    free(logBuf);
   }
 
   memberRebuildIndex(db);
