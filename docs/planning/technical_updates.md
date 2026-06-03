@@ -200,9 +200,8 @@ Mỗi thao tác nghiệp vụ quan trọng (thêm/sửa/xóa thành viên, ghi n
 [dd/mm/yyyy HH:MM:SS] [actor    ] ACTION: action                   | TARGET: target
 ```
 
-Hàm ghi đồng thời vào **2 file**:
-- `data/system_audit.log` — nhật ký dạng text thuần túy, dễ đọc
-- `data/simulated_webhooks.log` — mô phỏng webhook cho các hệ thống tích hợp bên ngoài
+Hàm ghi nhận trực tiếp vào file nhật ký hệ thống đã được mã hóa XOR:
+- `data/system_audit.log` — nhật ký hệ thống bảo mật
 
 ### 6.2. Chức năng Xem nhật ký (`viewSystemLogs`)
 

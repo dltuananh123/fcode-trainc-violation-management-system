@@ -182,8 +182,7 @@ void secureZero(void *ptr, size_t len);
 unsigned int calculateCrc32(const unsigned char *data, size_t length);
 
 /**
- * @brief Logs an administrative action to data/system_audit.log and triggers a
- * simulated webhook to data/simulated_webhooks.log.
+ * @brief Logs an administrative action to data/system_audit.log.
  *
  * @param actor The actor (e.g. director's student ID or username).
  * @param action The action performed.
