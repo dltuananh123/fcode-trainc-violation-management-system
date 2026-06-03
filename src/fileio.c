@@ -1,6 +1,7 @@
 #include "fileio.h"
 #include "member.h"
 #include "types.h"
+#include "auth.h"
 #include "ui.h"
 #include "utils.h"
 #include "validate.h"
@@ -774,6 +775,12 @@ int fileioExportArchive(AppDatabase *db) {
   }
 
   fclose(fp);
+
+  Account *session = authGetSession();
+  if (session != NULL) {
+    logSystemAction(session->studentId, "Export du lieu", filename);
+  }
+
   printf("\n" ERR_OK "Xuat file du lieu thanh cong tai: %s\n", outPath);
   printf(ERR_INFO "Vui long nho ma PIN da nhap de import duoc o may khac.\n");
   uiPause();
@@ -962,6 +969,11 @@ int fileioImportArchive(AppDatabase *db) {
   }
 
   memberRebuildIndex(db);
+
+  Account *session = authGetSession();
+  if (session != NULL) {
+    logSystemAction(session->studentId, "Import du lieu", filename);
+  }
 
   printf("\n" ERR_OK "Nhap (Import) va khoi phuc du lieu thanh cong vao may tinh nay!\n");
   uiPause();
