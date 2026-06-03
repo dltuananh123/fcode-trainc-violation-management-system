@@ -513,18 +513,13 @@ void logSystemAction(const char *actor, const char *action,
                      const char *target) {
   char exeDir[512];
   char auditPath[1024];
-  char webhookPath[1024];
 
   getExeDir(exeDir, sizeof(exeDir));
 
 #ifdef _WIN32
   snprintf(auditPath, sizeof(auditPath), "%s\\data\\system_audit.log", exeDir);
-  snprintf(webhookPath, sizeof(webhookPath), "%s\\data\\simulated_webhooks.log",
-           exeDir);
 #else
   snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
-  snprintf(webhookPath, sizeof(webhookPath), "%s/data/simulated_webhooks.log",
-           exeDir);
 #endif
 
   time_t now = time(NULL);
@@ -552,16 +547,6 @@ void logSystemAction(const char *actor, const char *action,
     }
     fwrite(logLine, 1, lineLen, fa);
     fclose(fa);
-  }
-
-  /* 2. Append to simulated webhook log */
-  FILE *fw = fopen(webhookPath, "a");
-  if (fw != NULL) {
-    fprintf(fw,
-            "[WEBHOOK TRIGGER] [%s] Event: %s | Payload: { actor: \"%s\", "
-            "target: \"%s\" }\n",
-            timeBuf, action, actor, target);
-    fclose(fw);
   }
 }
 
