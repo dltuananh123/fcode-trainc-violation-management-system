@@ -565,6 +565,7 @@ void viewSystemLogs(void) {
   if (f == NULL) {
     printf(ERR_LOI "Khong tim thay file nhat ky he thong!\n");
     printf(ERR_INFO "Thuong truc tai: %s\n", auditPath);
+    uiPause();
     return;
   }
 
