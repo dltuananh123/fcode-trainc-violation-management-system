@@ -1028,6 +1028,102 @@ void memberViewStats(AppDatabase *db) {
   }
 }
 
+void memberViewOutThreshold(AppDatabase *db) {
+  if (db == NULL) {
+    return;
+  }
+
+  Account *session = authGetSession();
+  if (session == NULL) {
+    printf(ERR_LOI "Chua dang nhap!\n");
+    return;
+  }
+
+  /* Find current member */
+  Member *m = NULL;
+  for (int i = 0; i < db->memberCount; i++) {
+    if (strcmp(db->members[i].studentId, session->studentId) == 0 &&
+        !db->members[i].isDeleted) {
+      m = &db->members[i];
+      break;
+    }
+  }
+
+  if (m == NULL) {
+    printf(ERR_LOI "Khong tim thay thong tin thanh vien!\n");
+    return;
+  }
+
+  uiClear();
+  uiDrawBreadcrumb("MENU THANH VIEN -> Xem nguong Out CLB & Vi pham");
+
+  printf(COLOR_CYAN "  " LINE_TL);
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_TR "\n" COLOR_RESET);
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD "%-*s" COLOR_RESET, DETAIL_CARD_W - 3,
+         "TRANG THAI & NGUONG OUT CLB ");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_T_RIGHT);
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+  /* Row 1: Current Status */
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD "%-25s" COLOR_RESET "%-45s" COLOR_RESET,
+         "Trang thai hien tai:", m->isActive == STATUS_ACTIVE ? COLOR_GREEN "Dang hoat dong" COLOR_RESET : COLOR_RED "Da Out CLB" COLOR_RESET);
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  /* Row 2: Consecutive Absences */
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  char absBuf[64];
+  if (m->consecutiveAbsences >= 3) {
+    snprintf(absBuf, sizeof(absBuf), COLOR_RED "%d / 3 buoi (CANH BAO NGUONG OUT)" COLOR_RESET, m->consecutiveAbsences);
+  } else {
+    snprintf(absBuf, sizeof(absBuf), "%d / 3 buoi", m->consecutiveAbsences);
+  }
+  printf(" " COLOR_BOLD "%-25s" COLOR_RESET "%-54s" COLOR_RESET,
+         "Vang hop lien tiep:", absBuf);
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  /* Row 3: Total unpaid violations count */
+  int unpaidViolations = 0;
+  for (int i = 0; i < db->violationCount; i++) {
+    if (strcmp(db->violations[i].studentId, m->studentId) == 0 &&
+        !db->violations[i].isPaid && !db->violations[i].isVoided) {
+      unpaidViolations++;
+    }
+  }
+
+  printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+  printf(" " COLOR_BOLD "%-25s" COLOR_RESET "%d vi pham",
+         "Vi pham chua nop phat:", unpaidViolations);
+  printf("%-35s", "");
+  printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+  printf(COLOR_CYAN "  " LINE_BL);
+  for (int i = 0; i < DETAIL_CARD_W; i++) {
+    printf(LINE_H);
+  }
+  printf(LINE_BR "\n" COLOR_RESET);
+
+  printf("\n" COLOR_BOLD "  QUY DINH NGUONG OUT CLB:" COLOR_RESET "\n");
+  printf("  1. " COLOR_YELLOW "Vang hop lien tiep" COLOR_RESET ":\n");
+  printf("     - Vang tu " COLOR_RED "2 buoi" COLOR_RESET " lien tiep: Nhan tin nhan canh bao tu he thong.\n");
+  printf("     - Vang tu " COLOR_RED "3 buoi" COLOR_RESET " lien tiep: Canh bao nguy dong sat nut nguong.\n");
+  printf("     - Vang den " COLOR_RED "4 buoi" COLOR_RESET " lien tiep: He thong tu dong yeu cau Ban chu nhiem xac nhan cho ra khoi CLB (Out CLB).\n");
+  printf("  2. " COLOR_YELLOW "Loi vi pham nghiem trong" COLOR_RESET ":\n");
+  printf("     - Vi pham hanh vi " COLOR_RED "Bao luc (Violence)" COLOR_RESET ": Thuc hien Out CLB ngay lap tuc sau khi ghi nhan ma khong can canh bao truoc.\n\n");
+
+  uiPause();
+}
+
 void memberListAll(AppDatabase *db) {
   if (db == NULL) {
     return;

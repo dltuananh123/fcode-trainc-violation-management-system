@@ -47,12 +47,13 @@ static void memberMenu(void) {
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
                      " Xem lich su nop tien phat");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET " Thong ke ca nhan");
-    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET " Doi mat khau");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET " Xem nguong Out CLB & Vi pham");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Doi mat khau");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET " Dang xuat");
 
     uiDrawMenuBoxEnd();
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 6);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 7);
 
     switch (choice) {
     case 1:
@@ -73,6 +74,9 @@ static void memberMenu(void) {
       uiPause();
       break;
     case 6:
+      memberViewOutThreshold(&gDb);
+      break;
+    case 7:
       authChangePassword(&gDb, 0);
       uiPause();
       break;

@@ -2176,8 +2176,8 @@ int violationImportCsv(AppDatabase *db) {
     newViolation.violationTime = currentTime;
     newViolation.isPaid = 0;
     newViolation.isVoided = 0;
-    strncpy(newViolation.notes, rec->notes, MAX_NOTE_LEN - 1);
-    newViolation.notes[MAX_NOTE_LEN - 1] = '\0';
+    strncpy(newViolation.note, rec->notes, MAX_NOTE_LEN - 1);
+    newViolation.note[MAX_NOTE_LEN - 1] = '\0';
 
     double rate = FINE_RATE_MEMBER;
     if (m->role == MEMBER_ROLE_LEADER) rate = FINE_RATE_LEADER;
