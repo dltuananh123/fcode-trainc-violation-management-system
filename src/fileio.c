@@ -658,12 +658,39 @@ int fileioExportArchive(AppDatabase *db) {
   uiDrawBreadcrumb("MENU BAN CHU NHIEM -> [4] QUAN LY HE THONG -> Xuat du lieu (Export)");
 
   char filename[256];
-  printf(COLOR_CYAN "  Nhap ten file backup de xuat (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
-  readString(filename, sizeof(filename));
-  trimSpaces(filename);
+  while (1) {
+    printf(COLOR_CYAN "  Nhap ten file backup de xuat (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
+    readString(filename, sizeof(filename));
+    trimSpaces(filename);
 
-  if (strcmp(filename, "0") == 0 || strlen(filename) == 0) {
-    return -1;
+    if (strcmp(filename, "0") == 0) {
+      return -1;
+    }
+    if (strlen(filename) == 0) {
+      printf(ERR_LOI "Ten file khong duoc de trong!\n");
+      continue;
+    }
+
+    /* Validate path traversal or forbidden filesystem characters */
+    int is_valid = 1;
+    for (int i = 0; filename[i] != '\0'; i++) {
+      char c = filename[i];
+      if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
+        is_valid = 0;
+        break;
+      }
+    }
+    if (!is_valid) {
+      printf(ERR_LOI "Ten file chua ky tu dac biet khong hop le (/, \\, :, *, ?, \", <, >, |)!\n");
+      continue;
+    }
+
+    if (strcmp(filename, "system_audit.log") == 0 || strcmp(filename, "members.dat") == 0 ||
+        strcmp(filename, "violations.dat") == 0 || strcmp(filename, "accounts.dat") == 0) {
+      printf(ERR_LOI "Ten file trung lap voi file he thong dang dung!\n");
+      continue;
+    }
+    break;
   }
 
   char pin[16];
@@ -796,12 +823,33 @@ int fileioImportArchive(AppDatabase *db) {
   uiDrawBreadcrumb("MENU BAN CHU NHIEM -> [4] QUAN LY HE THONG -> Nhap du lieu (Import)");
 
   char filename[256];
-  printf(COLOR_CYAN "  Nhap ten file backup de nhap (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
-  readString(filename, sizeof(filename));
-  trimSpaces(filename);
+  while (1) {
+    printf(COLOR_CYAN "  Nhap ten file backup de nhap (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
+    readString(filename, sizeof(filename));
+    trimSpaces(filename);
 
-  if (strcmp(filename, "0") == 0 || strlen(filename) == 0) {
-    return -1;
+    if (strcmp(filename, "0") == 0) {
+      return -1;
+    }
+    if (strlen(filename) == 0) {
+      printf(ERR_LOI "Ten file khong duoc de trong!\n");
+      continue;
+    }
+
+    /* Validate path traversal or forbidden filesystem characters */
+    int is_valid = 1;
+    for (int i = 0; filename[i] != '\0'; i++) {
+      char c = filename[i];
+      if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
+        is_valid = 0;
+        break;
+      }
+    }
+    if (!is_valid) {
+      printf(ERR_LOI "Ten file chua ky tu dac biet khong hop le (/, \\, :, *, ?, \", <, >, |)!\n");
+      continue;
+    }
+    break;
   }
 
   /* Target path */
