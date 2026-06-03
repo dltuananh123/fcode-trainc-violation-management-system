@@ -2200,13 +2200,48 @@ int violationImportCsv(AppDatabase *db) {
     importedCount++;
   }
 
+  /* Automatic reset for active members not absent in this CSV batch */
+  int resetCount = 0;
+  for (int i = 0; i < db->memberCount; i++) {
+    Member *m = &db->members[i];
+    if (m->isDeleted || m->isActive != STATUS_ACTIVE) {
+      continue;
+    }
+
+    /* Check if this member is in the CSV with REASON_ABSENT */
+    int isAbsentInCsv = 0;
+    for (int j = 0; j < count; j++) {
+      CsvRecord *rec = &records[j];
+      if (rec->isValid && strcmp(rec->studentId, m->studentId) == 0 && rec->reasonCode == REASON_ABSENT) {
+        isAbsentInCsv = 1;
+        break;
+      }
+    }
+
+    /* If they are not absent in the CSV and had consecutive absences, reset them */
+    if (!isAbsentInCsv && m->consecutiveAbsences > 0) {
+      int oldAbs = m->consecutiveAbsences;
+      m->consecutiveAbsences = 0;
+      resetCount++;
+
+      /* Log action */
+      char descBuf[256];
+      snprintf(descBuf, sizeof(descBuf), "Tu dong reset vang khi import CSV (%d -> 0)", oldAbs);
+      logSystemAction(session->studentId, descBuf, m->studentId);
+    }
+  }
+
   (void)fileioSaveViolations(db);
   (void)fileioSaveMembers(db);
 
   printf(ERR_OK "Import thanh cong %d vi pham vao database!\n", importedCount);
+  if (resetCount > 0) {
+    printf(ERR_OK "Da tu dong reset vang lien tiep ve 0 cho %d thanh vien di hop day du!\n", resetCount);
+  }
   logSystemAction(session->studentId, "Import CSV vi pham", filepath);
 
   free(records);
   uiPause();
   return RC_OK;
 }
+
