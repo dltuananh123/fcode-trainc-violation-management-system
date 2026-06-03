@@ -538,11 +538,19 @@ void logSystemAction(const char *actor, const char *action,
     snprintf(timeBuf, sizeof(timeBuf), "Unknown Time");
   }
 
-  /* 1. Append to audit log */
-  FILE *fa = fopen(auditPath, "a");
+  /* 1. Append to audit log (Encrypted with XOR) */
+  FILE *fa = fopen(auditPath, "ab");
   if (fa != NULL) {
-    fprintf(fa, "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor,
+    char logLine[1024];
+    snprintf(logLine, sizeof(logLine), "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor,
             action, target);
+    
+    /* Encrypt line with a simple fixed key or machine key */
+    size_t lineLen = strlen(logLine);
+    for (size_t i = 0; i < lineLen - 1; i++) { /* Keep newline unencrypted to preserve line-by-line structure */
+      logLine[i] = (char)(logLine[i] ^ 0x5A);
+    }
+    fwrite(logLine, 1, lineLen, fa);
     fclose(fa);
   }
 
@@ -568,7 +576,7 @@ void viewSystemLogs(void) {
   snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
 #endif
 
-  FILE *f = fopen(auditPath, "r");
+  FILE *f = fopen(auditPath, "rb");
   if (f == NULL) {
     printf(ERR_LOI "Khong tim thay file nhat ky he thong!\n");
     printf(ERR_INFO "Thuong truc tai: %s\n", auditPath);
@@ -584,8 +592,19 @@ void viewSystemLogs(void) {
 
   while (fgets(line, sizeof(line), f) != NULL) {
     size_t len = strlen(line);
+    if (len > 0) {
+      /* Decrypt line */
+      for (size_t i = 0; i < len; i++) {
+        if (line[i] != '\n' && line[i] != '\r') {
+          line[i] = (char)(line[i] ^ 0x5A);
+        }
+      }
+    }
     if (len > 0 && line[len - 1] == '\n') {
       line[len - 1] = '\0';
+    }
+    if (len > 1 && line[len - 2] == '\r') {
+      line[len - 2] = '\0';
     }
 
     lineCount++;
