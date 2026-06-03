@@ -657,42 +657,41 @@ int fileioExportArchive(AppDatabase *db) {
   uiClear();
   uiDrawBreadcrumb("MENU BAN CHU NHIEM -> [4] QUAN LY HE THONG -> Xuat du lieu (Export)");
 
+  Account *session = authGetSession();
   char filename[256];
-  while (1) {
-    printf(COLOR_CYAN "  Nhap ten file backup de xuat (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
-    readString(filename, sizeof(filename));
-    trimSpaces(filename);
-
-    if (strcmp(filename, "0") == 0) {
-      return -1;
-    }
-    if (strlen(filename) == 0) {
-      strncpy(filename, "backup.bin", sizeof(filename) - 1);
-      filename[sizeof(filename) - 1] = '\0';
-      printf(ERR_INFO "Ban khong nhap ten file. Su dung file mac dinh: " COLOR_YELLOW "backup.bin" COLOR_RESET "\n");
-    }
-
-    /* Validate path traversal or forbidden filesystem characters */
-    int is_valid = 1;
-    for (int i = 0; filename[i] != '\0'; i++) {
-      char c = filename[i];
-      if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
-        is_valid = 0;
-        break;
-      }
-    }
-    if (!is_valid) {
-      printf(ERR_LOI "Ten file chua ky tu dac biet khong hop le (/, \\, :, *, ?, \", <, >, |)!\n");
-      continue;
-    }
-
-    if (strcmp(filename, "system_audit.log") == 0 || strcmp(filename, "members.dat") == 0 ||
-        strcmp(filename, "violations.dat") == 0 || strcmp(filename, "accounts.dat") == 0) {
-      printf(ERR_LOI "Ten file trung lap voi file he thong dang dung!\n");
-      continue;
-    }
-    break;
+  
+  /* Get timestamp */
+  time_t now = time(NULL);
+  struct tm *t = localtime(&now);
+  char timeStr[32];
+  if (t != NULL) {
+    strftime(timeStr, sizeof(timeStr), "%Y%m%d_%H%M%S", t);
+  } else {
+    snprintf(timeStr, sizeof(timeStr), "unknown");
   }
+
+  /* Get computer name hash */
+  char compName[128] = "unknown_pc";
+#ifdef _WIN32
+  DWORD cSize = sizeof(compName);
+  if (!GetComputerNameA(compName, &cSize)) {
+    strncpy(compName, "win_pc", sizeof(compName) - 1);
+  }
+#endif
+  /* Clean compName from space and special characters */
+  for (int i = 0; compName[i] != '\0'; i++) {
+    if (compName[i] == ' ' || compName[i] == '/' || compName[i] == '\\' || compName[i] == ':') {
+      compName[i] = '_';
+    }
+  }
+
+  /* Generate filename */
+  snprintf(filename, sizeof(filename), "backup_%s_%s_%s.bin",
+           timeStr,
+           (session ? session->studentId : "unknown"),
+           compName);
+
+  printf(ERR_INFO "He thong tu dong dat ten file backup: " COLOR_YELLOW "%s" COLOR_RESET "\n\n", filename);
 
   char pin[16];
   while (1) {
@@ -804,7 +803,6 @@ int fileioExportArchive(AppDatabase *db) {
 
   fclose(fp);
 
-  Account *session = authGetSession();
   if (session != NULL) {
     logSystemAction(session->studentId, "Export du lieu", filename);
   }
