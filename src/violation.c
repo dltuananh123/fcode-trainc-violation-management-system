@@ -1897,18 +1897,37 @@ int violationImportCsv(AppDatabase *db) {
   uiDrawBreadcrumb("[2] Quan ly vi pham -> Import vi pham tu file CSV");
 
   char filepath[512];
-  printf(COLOR_CYAN "  Nhap duong dan file CSV (vd: template.csv, 0 de quay lai): " COLOR_RESET);
-  readString(filepath, sizeof(filepath));
-  trimSpaces(filepath);
-  if (strcmp(filepath, "0") == 0) {
-    printf(ERR_INFO "Da huy thao tac.\n");
-    return RC_ERR_CANCELLED;
-  }
+  FILE *fp = NULL;
+  while (1) {
+    printf(COLOR_CYAN "  Nhap duong dan file CSV (vd: template.csv, 0 de quay lai): " COLOR_RESET);
+    readString(filepath, sizeof(filepath));
+    trimSpaces(filepath);
+    
+    if (strcmp(filepath, "0") == 0 || strlen(filepath) == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return RC_ERR_CANCELLED;
+    }
 
-  FILE *fp = fopen(filepath, "r");
-  if (fp == NULL) {
-    printf(ERR_LOI "Khong the mo file: %s!\n", filepath);
-    return RC_ERR_IO;
+    /* Check for malicious characters in path to prevent OS command injection or directory issues */
+    int is_valid = 1;
+    for (int i = 0; filepath[i] != '\0'; i++) {
+      char c = filepath[i];
+      if (c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
+        is_valid = 0;
+        break;
+      }
+    }
+    if (!is_valid) {
+      printf(ERR_LOI "Duong dan file chua ky tu khong hop le (*, ?, \", <, >, |)!\n");
+      continue;
+    }
+
+    fp = fopen(filepath, "r");
+    if (fp == NULL) {
+      printf(ERR_LOI "Khong tim thay hoac khong the mo file: %s!\n", filepath);
+      continue;
+    }
+    break;
   }
 
   /* Dry-run validation records */
