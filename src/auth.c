@@ -58,18 +58,27 @@ int authLogin(AppDatabase *db) {
 
   char studentId[MAX_MSSV_LEN];
   char password[MAX_PASS_LEN];
+  char errMsg[512] = "";
 
   /* Loop until success or account lockout */
   while (1) {
-    printLoginBanner();
-
     /* MSSV input with re-prompt */
-    while (1) {
+    int mssvValid = 0;
+    while (!mssvValid) {
+      uiClear();
+      if (strlen(errMsg) > 0) {
+        printf("%s\n", errMsg);
+        errMsg[0] = '\0';
+      }
+      printLoginBanner();
+
       printf(COLOR_CYAN "  MSSV: " COLOR_RESET);
       readString(studentId, sizeof(studentId));
       trimSpaces(studentId);
       if (validateNotEmpty(studentId)) {
-        break;
+        mssvValid = 1;
+      } else {
+        snprintf(errMsg, sizeof(errMsg), ERR_LOI "MSSV khong duoc de trong!");
       }
     }
 
@@ -78,14 +87,14 @@ int authLogin(AppDatabase *db) {
     readPassword(password, sizeof(password));
 
     if (strlen(password) == 0) {
-      printf(ERR_LOI "Mat khau khong duoc de trong!\n");
+      snprintf(errMsg, sizeof(errMsg), ERR_LOI "Mat khau khong duoc de trong!");
       secureZero(password, sizeof(password));
       continue;
     }
 
     int idx = findAccountIndex(db, studentId);
     if (idx == -1) {
-      printf(ERR_LOI "Tai khoan khong ton tai!\n");
+      snprintf(errMsg, sizeof(errMsg), ERR_LOI "Tai khoan khong ton tai!");
       secureZero(password, sizeof(password));
       continue;
     }
@@ -93,8 +102,7 @@ int authLogin(AppDatabase *db) {
     Account *acc = &db->accounts[idx];
 
     if (acc->isLocked) {
-      printf(ERR_LOI "Tai khoan da bi khoa! "
-                     "Vui long lien he Ban chu nhiem de mo khoa.\n");
+      snprintf(errMsg, sizeof(errMsg), ERR_LOI "Tai khoan da bi khoa! Vui long lien he Ban chu nhiem de mo khoa.");
       secureZero(password, sizeof(password));
       continue;
     }
@@ -114,21 +122,21 @@ int authLogin(AppDatabase *db) {
     hashPassword(password, acc->salt, inputHashed);
     if (strcmp(acc->password, inputHashed) != 0) {
       acc->failCount++;
-      printf(ERR_LOI "Mat khau sai!\n");
 
       if (acc->failCount >= MAX_FAILED_ATTEMPTS) {
         acc->isLocked = 1;
+        (void)fileioSaveAccounts(db);
         printf(ERR_CANH_BAO "Tai khoan da bi khoa sau %d lan nhap sai! "
                             "Lien he Ban chu nhiem de mo khoa.\n",
                MAX_FAILED_ATTEMPTS);
-        (void)fileioSaveAccounts(db);
         secureZero(password, sizeof(password));
+        uiPause();
         return -1;
       }
 
       (void)fileioSaveAccounts(db);
-      printf(ERR_INFO "Con %d lan thu.\n",
-             MAX_FAILED_ATTEMPTS - acc->failCount);
+      snprintf(errMsg, sizeof(errMsg), ERR_LOI "Mat khau sai! Con %d lan thu.",
+               MAX_FAILED_ATTEMPTS - acc->failCount);
       secureZero(password, sizeof(password));
       continue;
     }
