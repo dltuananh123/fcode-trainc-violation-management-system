@@ -4,8 +4,7 @@ chcp 65001 >nul
 if exist bin rmdir /S /Q bin
 
 mingw32-make
-
-gcc -std=c17 -m64 -Wall -Iinclude tools/seed_data.c -o bin/seed_data.exe
+mingw32-make seed
 
 bin\seed_data.exe
 bin\violation-management-system.exe

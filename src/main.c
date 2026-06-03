@@ -219,14 +219,16 @@ static void violationManagementMenu(void) {
                      " Tim kiem vi pham theo ngay");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
                      " Kiem tra nguong Out CLB");
-    // uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Huy vi pham
-    // (Void)");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET
+                     " Huy vi pham (Void)");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[8]" COLOR_RESET
+                     " Import vi pham tu file CSV");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
                      " Quay lai menu chinh");
 
     uiDrawMenuBoxEnd();
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 7);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 8);
 
     switch (choice) {
     case 1:
@@ -250,10 +252,13 @@ static void violationManagementMenu(void) {
       violationCheckAllOutClb(&gDb);
       uiPause();
       break;
-    // case 7:
-    //   violationVoid(&gDb);
-    //   uiPause();
-    //   break;
+    case 7:
+      violationVoid(&gDb);
+      uiPause();
+      break;
+    case 8:
+      violationImportCsv(&gDb);
+      break;
     default:
       break;
     }

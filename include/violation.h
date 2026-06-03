@@ -50,4 +50,6 @@ int violationSearchByDate(AppDatabase *db);
 
 int violationVoid(AppDatabase *db);
 
+int violationImportCsv(AppDatabase *db);
+
 #endif /* VIOLATION_H */
