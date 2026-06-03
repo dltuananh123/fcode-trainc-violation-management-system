@@ -647,6 +647,7 @@ void viewSystemLogs(void) {
     printf("\n" COLOR_GREEN "  Tong cong: %d dong nhat ky." COLOR_RESET "\n",
            lineCount);
   }
+  uiPause();
 }
 
 unsigned int calculateCrc32(const unsigned char *data, size_t length) {

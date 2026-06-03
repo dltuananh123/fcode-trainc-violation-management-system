@@ -669,7 +669,7 @@ int fileioExportArchive(AppDatabase *db) {
   char pin[16];
   while (1) {
     printf(COLOR_CYAN "  Nhap ma PIN bao mat (4 ky tu so): " COLOR_RESET);
-    readString(pin, sizeof(pin));
+    readPassword(pin, sizeof(pin));
     trimSpaces(pin);
     if (strlen(pin) == 4 && isdigit((unsigned char)pin[0]) && isdigit((unsigned char)pin[1]) &&
         isdigit((unsigned char)pin[2]) && isdigit((unsigned char)pin[3])) {
@@ -835,7 +835,7 @@ int fileioImportArchive(AppDatabase *db) {
 
   char pin[16];
   printf(COLOR_CYAN "  Nhap ma PIN bao mat cua file (4 ky tu so): " COLOR_RESET);
-  readString(pin, sizeof(pin));
+  readPassword(pin, sizeof(pin));
   trimSpaces(pin);
 
   if (hashPin(pin) != filePinHash) {
