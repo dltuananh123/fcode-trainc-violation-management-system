@@ -1139,6 +1139,7 @@ void memberListAll(AppDatabase *db) {
 
   if (activeCount == 0) {
     printf(ERR_INFO "Chua co thanh vien dang hoat dong nao trong du lieu.\n");
+    uiPause();
     return;
   }
 
@@ -1635,6 +1636,7 @@ int memberViewKicked(AppDatabase *db) {
   if (kickedCount == 0) {
     uiDrawMenuRow("  Khong co thanh vien nao trong danh sach da kick.");
     uiDrawSeparator();
+    uiPause();
     return RC_OK;
   }
 
@@ -1769,6 +1771,7 @@ int memberViewKicked(AppDatabase *db) {
   printf("  Tong cong: " COLOR_BOLD "%d" COLOR_RESET
          " thanh vien da bi kick khoi CLB.\n\n",
          kickedCount);
+  uiPause();
   return RC_OK;
 }
 

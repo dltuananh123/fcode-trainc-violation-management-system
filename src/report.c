@@ -227,6 +227,7 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
   if (db->memberCount == 0) {
     printf(ERR_INFO "Chua co thanh vien nao trong du lieu\n");
+    uiPause();
     return;
   }
 

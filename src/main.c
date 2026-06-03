@@ -412,6 +412,7 @@ int main(void) {
   }
 
   printf(ERR_OK "Thoat chuong trinh. Hen gap lai!\n");
+  uiPause();
   return 0;
 }
 

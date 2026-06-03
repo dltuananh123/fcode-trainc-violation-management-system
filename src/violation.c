@@ -298,11 +298,8 @@ int violationViewAllFiltered(AppDatabase *db) {
     }
 
     if (found == 0) {
-      printf("  Khong co vi pham nao\n");
-      printf("\n  Nhan Enter de tiep tuc...");
-      while (getchar() != '\n' && getchar() != EOF) {
-        ;
-      }
+      printf(ERR_INFO "Khong co vi pham nao.\n");
+      uiPause();
       continue;
     }
 
@@ -347,10 +344,7 @@ int violationViewAllFiltered(AppDatabase *db) {
           currentPage--;
         }
       } else {
-        printf("\n  Nhan Enter de tiep tuc...");
-        while (getchar() != '\n' && getchar() != EOF) {
-          ;
-        }
+        uiPause();
         exitPagination = 1;
         break;
       }
@@ -1314,6 +1308,7 @@ int violationViewByMSSV(AppDatabase *db) {
     trimSpaces(input);
     if (strcmp(input, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
+      uiPause();
       return RC_ERR_CANCELLED;
     }
     if (!validateNotEmpty(input)) {
@@ -1361,6 +1356,7 @@ int violationViewByMSSV(AppDatabase *db) {
   if (found == 0) {
     printf(ERR_INFO "Thanh vien \"%s\" (%s) khong co lich su vi pham.\n\n",
            m->fullName, m->studentId);
+    uiPause();
     return RC_OK;
   }
 
@@ -1437,6 +1433,7 @@ int violationViewByMSSV(AppDatabase *db) {
         currentPage--;
       }
     } else {
+      uiPause();
       break;
     }
   }
@@ -1457,6 +1454,7 @@ int violationSearchByDate(AppDatabase *db) {
 
   if (db->violationCount == 0) {
     printf(ERR_INFO "Khong co vi pham nao trong du lieu.\n");
+    uiPause();
     return RC_OK;
   }
 
@@ -1477,6 +1475,7 @@ date_input:
       trimSpaces(startBuf);
       if (strcmp(startBuf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
+        uiPause();
         return RC_ERR_CANCELLED;
       }
       if (validateDate(startBuf)) {
@@ -1492,6 +1491,7 @@ date_input:
       trimSpaces(endBuf);
       if (strcmp(endBuf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
+        uiPause();
         return RC_ERR_CANCELLED;
       }
       if (validateDate(endBuf)) {
@@ -1518,7 +1518,8 @@ date_input:
   }
 
   if (found == 0) {
-    printf("  Khong co vi pham nao trong khoang ngay nay\n");
+    printf(ERR_INFO "Khong co vi pham nao trong khoang ngay nay.\n");
+    uiPause();
     return RC_OK;
   }
 
@@ -1561,10 +1562,7 @@ date_input:
         currentPage--;
       }
     } else {
-      printf("\n  Nhan Enter de tiep tuc...");
-      while (getchar() != '\n' && getchar() != EOF) {
-        ;
-      }
+      uiPause();
       goto date_input;
     }
   }
@@ -1905,6 +1903,7 @@ int violationImportCsv(AppDatabase *db) {
     
     if (strcmp(filepath, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
+      uiPause();
       return RC_ERR_CANCELLED;
     }
     if (strlen(filepath) == 0) {
@@ -2150,6 +2149,7 @@ int violationImportCsv(AppDatabase *db) {
       } else if (strcmp(buf, "q") == 0 || strcmp(buf, "Q") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
         free(records);
+        uiPause();
         return RC_ERR_CANCELLED;
       }
     } else {
@@ -2161,6 +2161,7 @@ int violationImportCsv(AppDatabase *db) {
       } else {
         printf(ERR_INFO "Da huy thao tac.\n");
         free(records);
+        uiPause();
         return RC_ERR_CANCELLED;
       }
     }
