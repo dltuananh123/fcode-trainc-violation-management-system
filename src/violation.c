@@ -1903,9 +1903,14 @@ int violationImportCsv(AppDatabase *db) {
     readString(filepath, sizeof(filepath));
     trimSpaces(filepath);
     
-    if (strcmp(filepath, "0") == 0 || strlen(filepath) == 0) {
+    if (strcmp(filepath, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
       return RC_ERR_CANCELLED;
+    }
+    if (strlen(filepath) == 0) {
+      strncpy(filepath, "template.csv", sizeof(filepath) - 1);
+      filepath[sizeof(filepath) - 1] = '\0';
+      printf(ERR_INFO "Ban khong nhap duong dan. Su dung file mac dinh: " COLOR_YELLOW "template.csv" COLOR_RESET "\n");
     }
 
     /* Check for malicious characters in path to prevent OS command injection or directory issues */

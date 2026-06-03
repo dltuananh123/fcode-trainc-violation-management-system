@@ -667,8 +667,9 @@ int fileioExportArchive(AppDatabase *db) {
       return -1;
     }
     if (strlen(filename) == 0) {
-      printf(ERR_LOI "Ten file khong duoc de trong!\n");
-      continue;
+      strncpy(filename, "backup.bin", sizeof(filename) - 1);
+      filename[sizeof(filename) - 1] = '\0';
+      printf(ERR_INFO "Ban khong nhap ten file. Su dung file mac dinh: " COLOR_YELLOW "backup.bin" COLOR_RESET "\n");
     }
 
     /* Validate path traversal or forbidden filesystem characters */
@@ -832,8 +833,9 @@ int fileioImportArchive(AppDatabase *db) {
       return -1;
     }
     if (strlen(filename) == 0) {
-      printf(ERR_LOI "Ten file khong duoc de trong!\n");
-      continue;
+      strncpy(filename, "backup.bin", sizeof(filename) - 1);
+      filename[sizeof(filename) - 1] = '\0';
+      printf(ERR_INFO "Ban khong nhap ten file. Su dung file mac dinh: " COLOR_YELLOW "backup.bin" COLOR_RESET "\n");
     }
 
     /* Validate path traversal or forbidden filesystem characters */
