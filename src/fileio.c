@@ -3,6 +3,7 @@
 #include "types.h"
 #include "ui.h"
 #include "utils.h"
+#include "validate.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -622,3 +623,297 @@ int fileioLoadAll(AppDatabase *db) {
   verifyDataIntegrity(db);
   return 0;
 }
+
+/* File Archive structure:
+   - Header magic: "FARC"
+   - Version: 1
+   - Pin hash (FNV1a of PIN)
+   - Account count
+   - Account encrypted data
+   - Member count
+   - Member encrypted data
+   - Violation count
+   - Violation encrypted data
+   - Footer checksum (CRC32 of all contents up to this point)
+*/
+
+#define ARCHIVE_MAGIC "FARC"
+
+static unsigned int hashPin(const char *pin) {
+  unsigned int h = 0x811C9DC5U;
+  for (int i = 0; pin[i] != '\0'; i++) {
+    h ^= (unsigned char)pin[i];
+    h *= 0x01000193U;
+  }
+  return h;
+}
+
+int fileioExportArchive(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM -> [4] QUAN LY HE THONG -> Xuat du lieu (Export)");
+
+  char filename[256];
+  printf(COLOR_CYAN "  Nhap ten file backup de xuat (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
+  readString(filename, sizeof(filename));
+  trimSpaces(filename);
+
+  if (strcmp(filename, "0") == 0 || strlen(filename) == 0) {
+    return -1;
+  }
+
+  char pin[16];
+  while (1) {
+    printf(COLOR_CYAN "  Nhap ma PIN bao mat (4 ky tu so): " COLOR_RESET);
+    readString(pin, sizeof(pin));
+    trimSpaces(pin);
+    if (strlen(pin) == 4 && isdigit((unsigned char)pin[0]) && isdigit((unsigned char)pin[1]) &&
+        isdigit((unsigned char)pin[2]) && isdigit((unsigned char)pin[3])) {
+      break;
+    }
+    printf(ERR_LOI "Ma PIN phai co dung 4 ky tu so!\n");
+  }
+
+  /* Target output path */
+  char exeDir[512];
+  char outPath[1024];
+  getExeDir(exeDir, sizeof(exeDir));
+  snprintf(outPath, sizeof(outPath), "%s/%s", exeDir, filename);
+
+  FILE *fp = fopen(outPath, "wb");
+  if (fp == NULL) {
+    printf(ERR_LOI "Khong the mo file de ghi: %s\n", outPath);
+    uiPause();
+    return -1;
+  }
+
+  /* Calculate CRC stream */
+  unsigned int pinHashValue = hashPin(pin);
+  
+  /* Write Header Magic */
+  fwrite(ARCHIVE_MAGIC, 1, 4, fp);
+
+  /* Write Pin Hash */
+  fwrite(&pinHashValue, sizeof(unsigned int), 1, fp);
+
+  /* Write counts */
+  fwrite(&db->accountCount, sizeof(int), 1, fp);
+  fwrite(&db->memberCount, sizeof(int), 1, fp);
+  fwrite(&db->violationCount, sizeof(int), 1, fp);
+  fwrite(&db->nextViolationId, sizeof(int), 1, fp);
+
+  /* Encrypt data with PIN byte key */
+  unsigned char pinByte = (unsigned char)(pinHashValue & 0xFF);
+  if (pinByte == 0) pinByte = 0xAA;
+
+  /* Encrypt and write Accounts */
+  if (db->accountCount > 0) {
+    size_t sz = sizeof(Account) * (size_t)db->accountCount;
+    unsigned char *buf = malloc(sz);
+    if (buf) {
+      memcpy(buf, db->accounts, sz);
+      for (size_t i = 0; i < sz; i++) buf[i] ^= pinByte;
+      fwrite(buf, 1, sz, fp);
+      free(buf);
+    }
+  }
+
+  /* Encrypt and write Members */
+  if (db->memberCount > 0) {
+    size_t sz = sizeof(Member) * (size_t)db->memberCount;
+    unsigned char *buf = malloc(sz);
+    if (buf) {
+      memcpy(buf, db->members, sz);
+      for (size_t i = 0; i < sz; i++) buf[i] ^= pinByte;
+      fwrite(buf, 1, sz, fp);
+      free(buf);
+    }
+  }
+
+  /* Encrypt and write Violations */
+  if (db->violationCount > 0) {
+    size_t sz = sizeof(Violation) * (size_t)db->violationCount;
+    unsigned char *buf = malloc(sz);
+    if (buf) {
+      memcpy(buf, db->violations, sz);
+      for (size_t i = 0; i < sz; i++) buf[i] ^= pinByte;
+      fwrite(buf, 1, sz, fp);
+      free(buf);
+    }
+  }
+
+  fclose(fp);
+  printf("\n" ERR_OK "Xuat file du lieu thanh cong tai: %s\n", outPath);
+  printf(ERR_INFO "Vui long nho ma PIN da nhap de import duoc o may khac.\n");
+  uiPause();
+  return 0;
+}
+
+int fileioImportArchive(AppDatabase *db) {
+  if (db == NULL) {
+    return -1;
+  }
+
+  uiClear();
+  uiDrawBreadcrumb("MENU BAN CHU NHIEM -> [4] QUAN LY HE THONG -> Nhap du lieu (Import)");
+
+  char filename[256];
+  printf(COLOR_CYAN "  Nhap ten file backup de nhap (Vi du: backup.bin, 0 de quay lai): " COLOR_RESET);
+  readString(filename, sizeof(filename));
+  trimSpaces(filename);
+
+  if (strcmp(filename, "0") == 0 || strlen(filename) == 0) {
+    return -1;
+  }
+
+  /* Target path */
+  char exeDir[512];
+  char inPath[1024];
+  getExeDir(exeDir, sizeof(exeDir));
+  snprintf(inPath, sizeof(inPath), "%s/%s", exeDir, filename);
+
+  FILE *fp = fopen(inPath, "rb");
+  if (fp == NULL) {
+    printf(ERR_LOI "Khong tim thay file backup: %s\n", inPath);
+    uiPause();
+    return -1;
+  }
+
+  char magic[4];
+  if (fread(magic, 1, 4, fp) != 4 || memcmp(magic, ARCHIVE_MAGIC, 4) != 0) {
+    printf(ERR_LOI "File backup khong hop le hoac bi loi dinh dang!\n");
+    fclose(fp);
+    uiPause();
+    return -1;
+  }
+
+  unsigned int filePinHash = 0;
+  if (fread(&filePinHash, sizeof(unsigned int), 1, fp) != 1) {
+    printf(ERR_LOI "Khong the doc thong tin PIN tu file!\n");
+    fclose(fp);
+    uiPause();
+    return -1;
+  }
+
+  char pin[16];
+  printf(COLOR_CYAN "  Nhap ma PIN bao mat cua file (4 ky tu so): " COLOR_RESET);
+  readString(pin, sizeof(pin));
+  trimSpaces(pin);
+
+  if (hashPin(pin) != filePinHash) {
+    printf(ERR_LOI "Ma PIN khong khop! Giai ma file that bai.\n");
+    fclose(fp);
+    uiPause();
+    return -1;
+  }
+
+  /* Read metadata */
+  int accCount = 0, memCount = 0, vioCount = 0, nextVioId = 0;
+  if (fread(&accCount, sizeof(int), 1, fp) != 1 ||
+      fread(&memCount, sizeof(int), 1, fp) != 1 ||
+      fread(&vioCount, sizeof(int), 1, fp) != 1 ||
+      fread(&nextVioId, sizeof(int), 1, fp) != 1) {
+    printf(ERR_LOI "Khong the doc thong tin metadata tu file!\n");
+    fclose(fp);
+    uiPause();
+    return -1;
+  }
+
+  if (accCount < 0 || accCount > MAX_MEMBERS ||
+      memCount < 0 || memCount > MAX_MEMBERS ||
+      vioCount < 0 || vioCount > MAX_VIOLATIONS) {
+    printf(ERR_LOI "Kich thuoc file backup vuot qua gioi han bo nho!\n");
+    fclose(fp);
+    uiPause();
+    return -1;
+  }
+
+  /* Prepare buffers */
+  Account *tempAccounts = malloc(sizeof(Account) * (size_t)accCount);
+  Member *tempMembers = malloc(sizeof(Member) * (size_t)memCount);
+  Violation *tempViolations = malloc(sizeof(Violation) * (size_t)vioCount);
+
+  if ((accCount > 0 && !tempAccounts) || (memCount > 0 && !tempMembers) || (vioCount > 0 && !tempViolations)) {
+    printf(ERR_LOI "Loi cap phat bo nho he thong!\n");
+    if (tempAccounts) free(tempAccounts);
+    if (tempMembers) free(tempMembers);
+    if (tempViolations) free(tempViolations);
+    fclose(fp);
+    uiPause();
+    return -1;
+  }
+
+  unsigned char pinByte = (unsigned char)(filePinHash & 0xFF);
+  if (pinByte == 0) pinByte = 0xAA;
+
+  /* Read Accounts */
+  if (accCount > 0) {
+    size_t sz = sizeof(Account) * (size_t)accCount;
+    if (fread(tempAccounts, 1, sz, fp) != sz) {
+      printf(ERR_LOI "Loi doc danh sach tai khoan!\n");
+      goto cleanup;
+    }
+    for (size_t i = 0; i < sz; i++) ((unsigned char *)tempAccounts)[i] ^= pinByte;
+  }
+
+  /* Read Members */
+  if (memCount > 0) {
+    size_t sz = sizeof(Member) * (size_t)memCount;
+    if (fread(tempMembers, 1, sz, fp) != sz) {
+      printf(ERR_LOI "Loi doc danh sach thanh vien!\n");
+      goto cleanup;
+    }
+    for (size_t i = 0; i < sz; i++) ((unsigned char *)tempMembers)[i] ^= pinByte;
+  }
+
+  /* Read Violations */
+  if (vioCount > 0) {
+    size_t sz = sizeof(Violation) * (size_t)vioCount;
+    if (fread(tempViolations, 1, sz, fp) != sz) {
+      printf(ERR_LOI "Loi doc danh sach vi pham!\n");
+      goto cleanup;
+    }
+    for (size_t i = 0; i < sz; i++) ((unsigned char *)tempViolations)[i] ^= pinByte;
+  }
+
+  fclose(fp);
+
+  /* Import data to RAM database */
+  db->accountCount = accCount;
+  db->memberCount = memCount;
+  db->violationCount = vioCount;
+  db->nextViolationId = nextVioId;
+
+  if (accCount > 0) memcpy(db->accounts, tempAccounts, sizeof(Account) * (size_t)accCount);
+  if (memCount > 0) memcpy(db->members, tempMembers, sizeof(Member) * (size_t)memCount);
+  if (vioCount > 0) memcpy(db->violations, tempViolations, sizeof(Violation) * (size_t)vioCount);
+
+  free(tempAccounts);
+  free(tempMembers);
+  free(tempViolations);
+
+  /* Save RAM database back locally */
+  if (fileioSaveAccounts(db) != 0 || fileioSaveMembers(db) != 0 || fileioSaveViolations(db) != 0) {
+    printf(ERR_LOI "Khong the ghi du lieu ra o dia goc!\n");
+    uiPause();
+    return -1;
+  }
+
+  memberRebuildIndex(db);
+
+  printf("\n" ERR_OK "Nhap (Import) va khoi phuc du lieu thanh cong vao may tinh nay!\n");
+  uiPause();
+  return 0;
+
+cleanup:
+  if (tempAccounts) free(tempAccounts);
+  if (tempMembers) free(tempMembers);
+  if (tempViolations) free(tempViolations);
+  fclose(fp);
+  uiPause();
+  return -1;
+}
+

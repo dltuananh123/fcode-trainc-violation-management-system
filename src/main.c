@@ -324,12 +324,16 @@ static void systemSettingsMenu(void) {
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[3]" COLOR_RESET " Huong dan su dung");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
                      " Thong tin phien ban");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET
+                     " Xuat du lieu (Export)");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
+                     " Nhap du lieu (Import)");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET
                      " Quay lai menu chinh");
 
     uiDrawMenuBoxEnd();
 
-    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 4);
+    choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 6);
 
     switch (choice) {
     case 1:
@@ -348,6 +352,12 @@ static void systemSettingsMenu(void) {
       printf("\n  FCode TrainC Violation Management System\n");
       printf("  Phien ban: v2.3\n");
       uiPause();
+      break;
+    case 5:
+      fileioExportArchive(&gDb);
+      break;
+    case 6:
+      fileioImportArchive(&gDb);
       break;
     default:
       break;
