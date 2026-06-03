@@ -705,11 +705,18 @@ int fileioExportArchive(AppDatabase *db) {
     printf(ERR_LOI "Ma PIN phai co dung 4 ky tu so!\n");
   }
 
-  /* Target output path */
-  char exeDir[512];
+  /* Target output path (Save inside 'data/' folder) */
+  char dataDir[512];
   char outPath[1024];
-  getExeDir(exeDir, sizeof(exeDir));
-  snprintf(outPath, sizeof(outPath), "%s/%s", exeDir, filename);
+  char sep[2] = "/";
+#ifdef _WIN32
+  sep[0] = '\\';
+#endif
+  
+  getExeDir(dataDir, sizeof(dataDir));
+  strncat(dataDir, sep, sizeof(dataDir) - strlen(dataDir) - 1);
+  strncat(dataDir, "data", sizeof(dataDir) - strlen(dataDir) - 1);
+  snprintf(outPath, sizeof(outPath), "%s%s%s", dataDir, sep, filename);
 
   FILE *fp = fopen(outPath, "wb");
   if (fp == NULL) {
@@ -774,7 +781,9 @@ int fileioExportArchive(AppDatabase *db) {
   }
 
   /* Encrypt and write system_audit.log */
+  char exeDir[512];
   char auditPath[1024];
+  getExeDir(exeDir, sizeof(exeDir));
   snprintf(auditPath, sizeof(auditPath), "%s/data/system_audit.log", exeDir);
   FILE *fLog = fopen(auditPath, "rb");
   int logSize = 0;
@@ -852,11 +861,18 @@ int fileioImportArchive(AppDatabase *db) {
     break;
   }
 
-  /* Target path */
-  char exeDir[512];
+  /* Target path (Read from 'data/' folder) */
+  char dataDir[512];
   char inPath[1024];
-  getExeDir(exeDir, sizeof(exeDir));
-  snprintf(inPath, sizeof(inPath), "%s/%s", exeDir, filename);
+  char sep[2] = "/";
+#ifdef _WIN32
+  sep[0] = '\\';
+#endif
+
+  getExeDir(dataDir, sizeof(dataDir));
+  strncat(dataDir, sep, sizeof(dataDir) - strlen(dataDir) - 1);
+  strncat(dataDir, "data", sizeof(dataDir) - strlen(dataDir) - 1);
+  snprintf(inPath, sizeof(inPath), "%s%s%s", dataDir, sep, filename);
 
   FILE *fp = fopen(inPath, "rb");
   if (fp == NULL) {
@@ -1006,7 +1022,9 @@ int fileioImportArchive(AppDatabase *db) {
 
   /* Restore system_audit.log */
   if (logSize > 0 && logBuf != NULL) {
+    char exeDir[512];
     char destAuditPath[1024];
+    getExeDir(exeDir, sizeof(exeDir));
     snprintf(destAuditPath, sizeof(destAuditPath), "%s/data/system_audit.log", exeDir);
     FILE *fdLog = fopen(destAuditPath, "wb");
     if (fdLog != NULL) {
