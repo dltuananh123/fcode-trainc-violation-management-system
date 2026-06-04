@@ -211,4 +211,18 @@ void logSystemAction(const char *actor, const char *action, const char *target);
  */
 void viewSystemLogs(void);
 
+/* ============================================================
+ * UI/UX HELPERS - Smooth Delays
+ * ============================================================ */
+
+/**
+ * @brief Pauses execution for a specified duration to create smooth UX.
+ *
+ * Use this to add subtle delays for better visual transitions,
+ * allowing users to see ASCII art and interface changes.
+ *
+ * @param milliseconds The delay duration in milliseconds.
+ */
+void uiSleep(int milliseconds);
+
 #endif /* UTILS_H */

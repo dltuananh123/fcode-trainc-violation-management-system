@@ -308,8 +308,12 @@ void reportSortMembersByViolations(const AppDatabase *db) {
              "%d" COLOR_RESET " thanh vien\n",
              currentPage + 1, totalPages, activeCount);
 
-      printf(COLOR_DIM "  p: trang truoc | n: trang tiep | 0: thoat" COLOR_RESET
-                       " > ");
+      printf("\n");
+      printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
+      printf(COLOR_CYAN "  > " COLOR_RESET);
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
