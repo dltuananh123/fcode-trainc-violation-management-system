@@ -86,10 +86,39 @@ int authLogin(AppDatabase *db) {
         printf(ERR_INFO "Da thoat chuong trinh.\n");
         return -1;
       }
-      if (validateNotEmpty(studentId)) {
-        mssvValid = 1;
-      } else {
+      mssvAutoUpper(studentId);
+      if (!validateNotEmpty(studentId)) {
         snprintf(errMsg, sizeof(errMsg), ERR_LOI "MSSV khong duoc de trong!");
+      } else if (strlen(studentId) != 8) {
+        snprintf(errMsg, sizeof(errMsg),
+                 ERR_LOI "MSSV phai dung 8 ky tu (dang XY123456)! "
+                         "Ban nhap %d ky tu.",
+                 (int)strlen(studentId));
+      } else if (strchr("SHDCQ", studentId[0]) == NULL) {
+        snprintf(errMsg, sizeof(errMsg),
+                 ERR_LOI "Ky tu dau tien phai la Campus: "
+                         "S(HCM), H(HN), D(DN), C(CT), Q(QN)!");
+      } else if (strchr("EAS", studentId[1]) == NULL) {
+        snprintf(errMsg, sizeof(errMsg),
+                 ERR_LOI "Ky tu thu hai phai la khoi nganh: "
+                         "E(Engineering), A(Arts), S(Social)!");
+      } else if (strchr(studentId, ' ') != NULL) {
+        snprintf(errMsg, sizeof(errMsg),
+                 ERR_LOI "MSSV khong duoc chua khoang trang!");
+      } else {
+        int digitsValid = 1;
+        for (int i = 2; i < 8; i++) {
+          if (studentId[i] < '0' || studentId[i] > '9') {
+            digitsValid = 0;
+            break;
+          }
+        }
+        if (!digitsValid) {
+          snprintf(errMsg, sizeof(errMsg),
+                   ERR_LOI "6 ky tu cuoi cua MSSV phai la so!");
+        } else {
+          mssvValid = 1;
+        }
       }
     }
 

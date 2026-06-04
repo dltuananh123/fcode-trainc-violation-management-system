@@ -259,9 +259,9 @@ int validateName(const char *name) {
     return 0;
   }
 
-  /* Max 50 chars */
-  if ((int)strlen(name) > 50) {
-    printf(ERR_LOI "Ho ten khong duoc vuot qua 50 ky tu!\n");
+  /* Max 49 chars to fit in MAX_NAME_LEN including null-terminator */
+  if ((int)strlen(name) >= MAX_NAME_LEN) {
+    printf(ERR_LOI "Ho ten khong duoc vuot qua %d ky tu!\n", MAX_NAME_LEN - 1);
     return 0;
   }
 
@@ -361,8 +361,8 @@ int validateEmail(const char *email) {
   }
 
   int len = (int)strlen(email);
-  if (len > 100) {
-    printf(ERR_LOI "Email khong duoc vuot qua 100 ky tu!\n");
+  if (len >= MAX_EMAIL_LEN) {
+    printf(ERR_LOI "Email khong duoc vuot qua %d ky tu!\n", MAX_EMAIL_LEN - 1);
     return 0;
   }
 

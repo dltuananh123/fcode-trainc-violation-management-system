@@ -188,22 +188,34 @@ static void memberManagementMenu(void) {
       memberViewKicked(&gDb);
       break;
     case 7: {
-      uiClear();
-      uiDrawBreadcrumb(
-          "[1] Quan ly thanh vien -> [7] Reset mat khau thanh vien");
-      printf("\n");
-      printf(COLOR_CYAN
-             "  Nhap MSSV can reset mat khau (0 de quay lai): " COLOR_RESET);
       char targetId[MAX_MSSV_LEN];
-      readString(targetId, MAX_MSSV_LEN);
-      trimSpaces(targetId);
-      if (strcmp(targetId, "0") == 0) {
-        printf(ERR_INFO "Da huy thao tac.\n");
-      } else if (authResetPassword(&gDb, targetId) == RC_OK) {
-        Account *session = authGetSession();
-        if (session != NULL) {
-          logSystemAction(session->studentId, "Reset mat khau", targetId);
+      int done = 0;
+      while (!done) {
+        uiClear();
+        uiDrawBreadcrumb(
+            "[1] Quan ly thanh vien -> [7] Reset mat khau thanh vien");
+        printf("\n");
+        printf(COLOR_CYAN
+               "  Nhap MSSV can reset mat khau (0 de quay lai): " COLOR_RESET);
+        readString(targetId, MAX_MSSV_LEN);
+        trimSpaces(targetId);
+        if (strcmp(targetId, "0") == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n");
+          done = 1;
+          break;
         }
+        mssvAutoUpper(targetId);
+        if (validateMSSVFormat(targetId)) {
+          if (authResetPassword(&gDb, targetId) == RC_OK) {
+            Account *session = authGetSession();
+            if (session != NULL) {
+              logSystemAction(session->studentId, "Reset mat khau", targetId);
+            }
+          }
+          done = 1;
+          break;
+        }
+        uiPause();
       }
       uiPause();
       break;
