@@ -936,7 +936,10 @@ int fileioImportArchive(AppDatabase *db) {
   }
 
   /* Read metadata */
-  int accCount = 0, memCount = 0, vioCount = 0, nextVioId = 0;
+  int accCount = 0;
+  int memCount = 0;
+  int vioCount = 0;
+  int nextVioId = 0;
   if (fread(&accCount, sizeof(int), 1, fp) != 1 ||
       fread(&memCount, sizeof(int), 1, fp) != 1 ||
       fread(&vioCount, sizeof(int), 1, fp) != 1 ||
