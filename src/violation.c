@@ -2108,8 +2108,7 @@ int violationImportCsv(AppDatabase *db) {
       sep[0] = '\\';
 #endif
       getExeDir(exeDir, sizeof(exeDir));
-      snprintf(finalPath, sizeof(finalPath), "%s%s%s", exeDir, sep,
-               filepath);
+      snprintf(finalPath, sizeof(finalPath), "%s%s%s", exeDir, sep, filepath);
     }
 
     fp = fopen(finalPath, "r");

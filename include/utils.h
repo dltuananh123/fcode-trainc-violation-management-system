@@ -226,10 +226,12 @@ void viewSystemLogs(void);
 void uiSleep(int milliseconds);
 
 /**
- * @brief Truncates a string to fit within a maximum width and adds "..." if needed.
+ * @brief Truncates a string to fit within a maximum width and adds "..." if
+ * needed.
  *
  * If the string is shorter than or equal to maxWidth, it is returned unchanged.
- * If longer, it is truncated to (maxWidth - 3) characters and "..." is appended.
+ * If longer, it is truncated to (maxWidth - 3) characters and "..." is
+ * appended.
  *
  * @param src The source string to truncate.
  * @param dest The destination buffer for the truncated string.
