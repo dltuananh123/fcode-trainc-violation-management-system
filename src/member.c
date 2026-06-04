@@ -476,7 +476,7 @@ int memberEditInPlace(AppDatabase *db, Member *m, int canEditMSSV,
   /* Phone */
   if (!aborted) {
     while (1) {
-      printf(COLOR_CYAN "  So dien thoai" COLOR_RESET "[%s]: ", m->phone);
+      printf(COLOR_CYAN "  So dien thoai " COLOR_RESET "[%s]: ", m->phone);
       char buffer[256];
       readString(buffer, sizeof(buffer));
       trimSpaces(buffer);
