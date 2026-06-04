@@ -102,7 +102,10 @@ int authLogin(AppDatabase *db) {
     Account *acc = &db->accounts[idx];
 
     if (acc->isLocked) {
-      snprintf(errMsg, sizeof(errMsg), ERR_LOI "Tai khoan da bi khoa! Vui long lien he Ban chu nhiem de mo khoa.");
+      snprintf(
+          errMsg, sizeof(errMsg),
+          ERR_LOI
+          "Tai khoan da bi khoa! Vui long lien he Ban chu nhiem de mo khoa.");
       secureZero(password, sizeof(password));
       continue;
     }

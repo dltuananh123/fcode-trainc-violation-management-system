@@ -1077,14 +1077,18 @@ void memberViewOutThreshold(AppDatabase *db) {
   /* Row 1: Current Status */
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
   printf(" " COLOR_BOLD "%-25s" COLOR_RESET "%-45s" COLOR_RESET,
-         "Trang thai hien tai:", m->isActive == STATUS_ACTIVE ? COLOR_GREEN "Dang hoat dong" COLOR_RESET : COLOR_RED "Da Out CLB" COLOR_RESET);
+         "Trang thai hien tai:",
+         m->isActive == STATUS_ACTIVE ? COLOR_GREEN "Dang hoat dong" COLOR_RESET
+                                      : COLOR_RED "Da Out CLB" COLOR_RESET);
   printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
 
   /* Row 2: Consecutive Absences */
   printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
   char absBuf[64];
   if (m->consecutiveAbsences >= 3) {
-    snprintf(absBuf, sizeof(absBuf), COLOR_RED "%d / 3 buoi (CANH BAO NGUONG OUT)" COLOR_RESET, m->consecutiveAbsences);
+    snprintf(absBuf, sizeof(absBuf),
+             COLOR_RED "%d / 3 buoi (CANH BAO NGUONG OUT)" COLOR_RESET,
+             m->consecutiveAbsences);
   } else {
     snprintf(absBuf, sizeof(absBuf), "%d / 3 buoi", m->consecutiveAbsences);
   }
@@ -1115,11 +1119,17 @@ void memberViewOutThreshold(AppDatabase *db) {
 
   printf("\n" COLOR_BOLD "  QUY DINH NGUONG OUT CLB:" COLOR_RESET "\n");
   printf("  1. " COLOR_YELLOW "Vang hop lien tiep" COLOR_RESET ":\n");
-  printf("     - Vang tu " COLOR_RED "2 buoi" COLOR_RESET " lien tiep: Nhan tin nhan canh bao tu he thong.\n");
-  printf("     - Vang tu " COLOR_RED "3 buoi" COLOR_RESET " lien tiep: Canh bao nguy dong sat nut nguong.\n");
-  printf("     - Vang den " COLOR_RED "4 buoi" COLOR_RESET " lien tiep: He thong tu dong yeu cau Ban chu nhiem xac nhan cho ra khoi CLB (Out CLB).\n");
+  printf("     - Vang tu " COLOR_RED "2 buoi" COLOR_RESET
+         " lien tiep: Nhan tin nhan canh bao tu he thong.\n");
+  printf("     - Vang tu " COLOR_RED "3 buoi" COLOR_RESET
+         " lien tiep: Canh bao nguy dong sat nut nguong.\n");
+  printf("     - Vang den " COLOR_RED "4 buoi" COLOR_RESET
+         " lien tiep: He thong tu dong yeu cau Ban chu nhiem xac nhan cho ra "
+         "khoi CLB (Out CLB).\n");
   printf("  2. " COLOR_YELLOW "Loi vi pham nghiem trong" COLOR_RESET ":\n");
-  printf("     - Vi pham hanh vi " COLOR_RED "Bao luc (Violence)" COLOR_RESET ": Thuc hien Out CLB ngay lap tuc sau khi ghi nhan ma khong can canh bao truoc.\n\n");
+  printf("     - Vi pham hanh vi " COLOR_RED "Bao luc (Violence)" COLOR_RESET
+         ": Thuc hien Out CLB ngay lap tuc sau khi ghi nhan ma khong can canh "
+         "bao truoc.\n\n");
 
   uiPause();
 }

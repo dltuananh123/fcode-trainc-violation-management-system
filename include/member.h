@@ -118,11 +118,11 @@ void memberViewProfile(AppDatabase *db);
 void memberViewStats(AppDatabase *db);
 
 /**
- * @brief Display the Out CLB threshold and current violation count/absences status for current user.
+ * @brief Display the Out CLB threshold and current violation count/absences
+ * status for current user.
  * @param db Pointer to the AppDatabase
  */
 void memberViewOutThreshold(AppDatabase *db);
-
 
 /**
  * @brief Display list of all members.

@@ -57,8 +57,8 @@ int fileioSaveAccounts(AppDatabase *db);
 void xorBuffer(unsigned char *data, size_t size);
 
 /**
- * @brief Export all database files (members, violations, accounts) into a single archive file.
- * Encrypts the archive data using a 4-digit PIN.
+ * @brief Export all database files (members, violations, accounts) into a
+ * single archive file. Encrypts the archive data using a 4-digit PIN.
  */
 int fileioExportArchive(AppDatabase *db);
 

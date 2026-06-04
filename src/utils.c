@@ -537,12 +537,15 @@ void logSystemAction(const char *actor, const char *action,
   FILE *fa = fopen(auditPath, "ab");
   if (fa != NULL) {
     char logLine[1024];
-    snprintf(logLine, sizeof(logLine), "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor,
-            action, target);
-    
+    snprintf(logLine, sizeof(logLine),
+             "[%s] [%-10s] ACTION: %-25s | TARGET: %s\n", timeBuf, actor,
+             action, target);
+
     /* Encrypt line with a simple fixed key or machine key */
     size_t lineLen = strlen(logLine);
-    for (size_t i = 0; i < lineLen - 1; i++) { /* Keep newline unencrypted to preserve line-by-line structure */
+    for (size_t i = 0; i < lineLen - 1;
+         i++) { /* Keep newline unencrypted to preserve line-by-line structure
+                 */
       logLine[i] = (char)(logLine[i] ^ 0x5A);
     }
     fwrite(logLine, 1, lineLen, fa);

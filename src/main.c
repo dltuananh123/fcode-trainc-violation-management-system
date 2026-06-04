@@ -47,7 +47,8 @@ static void memberMenu(void) {
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[4]" COLOR_RESET
                      " Xem lich su nop tien phat");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[5]" COLOR_RESET " Thong ke ca nhan");
-    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET " Xem nguong Out CLB & Vi pham");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
+                     " Xem nguong Out CLB & Vi pham");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Doi mat khau");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET " Dang xuat");
 
@@ -223,8 +224,7 @@ static void violationManagementMenu(void) {
                      " Tim kiem vi pham theo ngay");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[6]" COLOR_RESET
                      " Kiem tra nguong Out CLB");
-    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET
-                     " Huy vi pham (Void)");
+    uiDrawMenuRowFmt("  " COLOR_YELLOW "[7]" COLOR_RESET " Huy vi pham (Void)");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[8]" COLOR_RESET
                      " Import vi pham tu file CSV");
     uiDrawMenuRowFmt("  " COLOR_YELLOW "[0]" COLOR_RESET

@@ -1897,10 +1897,11 @@ int violationImportCsv(AppDatabase *db) {
   char filepath[512];
   FILE *fp = NULL;
   while (1) {
-    printf(COLOR_CYAN "  Nhap duong dan file CSV (vd: template.csv, 0 de quay lai): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap duong dan file CSV (vd: template.csv, 0 de quay "
+                      "lai): " COLOR_RESET);
     readString(filepath, sizeof(filepath));
     trimSpaces(filepath);
-    
+
     if (strcmp(filepath, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
       uiPause();
@@ -1909,20 +1910,25 @@ int violationImportCsv(AppDatabase *db) {
     if (strlen(filepath) == 0) {
       strncpy(filepath, "template.csv", sizeof(filepath) - 1);
       filepath[sizeof(filepath) - 1] = '\0';
-      printf(ERR_INFO "Ban khong nhap duong dan. Su dung file mac dinh: " COLOR_YELLOW "template.csv" COLOR_RESET "\n");
+      printf(ERR_INFO
+             "Ban khong nhap duong dan. Su dung file mac dinh: " COLOR_YELLOW
+             "template.csv" COLOR_RESET "\n");
     }
 
-    /* Check for malicious characters in path to prevent OS command injection or directory issues */
+    /* Check for malicious characters in path to prevent OS command injection or
+     * directory issues */
     int is_valid = 1;
     for (int i = 0; filepath[i] != '\0'; i++) {
       char c = filepath[i];
-      if (c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
+      if (c == '*' || c == '?' || c == '"' || c == '<' || c == '>' ||
+          c == '|') {
         is_valid = 0;
         break;
       }
     }
     if (!is_valid) {
-      printf(ERR_LOI "Duong dan file chua ky tu khong hop le (*, ?, \", <, >, |)!\n");
+      printf(ERR_LOI
+             "Duong dan file chua ky tu khong hop le (*, ?, \", <, >, |)!\n");
       continue;
     }
 
@@ -1986,7 +1992,8 @@ int violationImportCsv(AppDatabase *db) {
     char *comma1 = strchr(token, ',');
     if (comma1 == NULL) {
       rec->isValid = 0;
-      strncpy(rec->errorMsg, "Thieu thong tin loi vi pham", sizeof(rec->errorMsg) - 1);
+      strncpy(rec->errorMsg, "Thieu thong tin loi vi pham",
+              sizeof(rec->errorMsg) - 1);
     } else {
       *comma1 = '\0';
       strncpy(rec->studentId, token, MAX_MSSV_LEN - 1);
@@ -2005,10 +2012,12 @@ int violationImportCsv(AppDatabase *db) {
       int reasonVal = -1;
       if (sscanf(reasonPart, "%d", &reasonVal) != 1) {
         rec->isValid = 0;
-        strncpy(rec->errorMsg, "Ma loi khong phai la so", sizeof(rec->errorMsg) - 1);
+        strncpy(rec->errorMsg, "Ma loi khong phai la so",
+                sizeof(rec->errorMsg) - 1);
       } else if (reasonVal < 0 || reasonVal > 3) {
         rec->isValid = 0;
-        strncpy(rec->errorMsg, "Ma loi ngoai pham vi [0-3]", sizeof(rec->errorMsg) - 1);
+        strncpy(rec->errorMsg, "Ma loi ngoai pham vi [0-3]",
+                sizeof(rec->errorMsg) - 1);
       } else {
         rec->reasonCode = reasonVal;
       }
@@ -2023,10 +2032,12 @@ int violationImportCsv(AppDatabase *db) {
         Member *m = &db->members[memberIdx];
         if (m->isDeleted) {
           rec->isValid = 0;
-          strncpy(rec->errorMsg, "Thanh vien da bi xoa", sizeof(rec->errorMsg) - 1);
+          strncpy(rec->errorMsg, "Thanh vien da bi xoa",
+                  sizeof(rec->errorMsg) - 1);
         } else if (m->isActive == STATUS_OUT_CLB) {
           rec->isValid = 0;
-          strncpy(rec->errorMsg, "Thanh vien da ra khoi CLB", sizeof(rec->errorMsg) - 1);
+          strncpy(rec->errorMsg, "Thanh vien da ra khoi CLB",
+                  sizeof(rec->errorMsg) - 1);
         } else {
           strncpy(rec->memberName, m->fullName, MAX_NAME_LEN - 1);
         }
@@ -2057,93 +2068,122 @@ int violationImportCsv(AppDatabase *db) {
     uiClear();
     uiDrawBreadcrumb("[2] Quan ly vi pham -> Preview Import CSV");
 
-    printf("\n" COLOR_BOLD "  XEM TRUOC DU LIEU IMPORT (PREVIEW)" COLOR_RESET "\n");
+    printf("\n" COLOR_BOLD "  XEM TRUOC DU LIEU IMPORT (PREVIEW)" COLOR_RESET
+           "\n");
     printf(COLOR_CYAN "  " LINE_TL);
-    for (int i = 0; i < 5; i++) printf(LINE_H);
+    for (int i = 0; i < 5; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 20; i++) printf(LINE_H);
+    for (int i = 0; i < 20; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_TR "\n" COLOR_RESET);
 
-    printf(COLOR_CYAN "  " LINE_V COLOR_RESET
-                      " STT " COLOR_CYAN LINE_V COLOR_RESET
-                      " Trang thai " COLOR_CYAN LINE_V COLOR_RESET
-                      " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-                      " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-                      " Loi vi pham        " COLOR_CYAN LINE_V COLOR_RESET
-                      " Ghi chu / Ghi chu loi " COLOR_CYAN LINE_V COLOR_RESET "\n");
+    printf(COLOR_CYAN
+           "  " LINE_V COLOR_RESET " STT " COLOR_CYAN LINE_V COLOR_RESET
+           " Trang thai " COLOR_CYAN LINE_V COLOR_RESET
+           " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
+           " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
+           " Loi vi pham        " COLOR_CYAN LINE_V COLOR_RESET
+           " Ghi chu / Ghi chu loi " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
-    for (int i = 0; i < 5; i++) printf(LINE_H);
+    for (int i = 0; i < 5; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 20; i++) printf(LINE_H);
+    for (int i = 0; i < 20; i++)
+      printf(LINE_H);
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_LEFT "\n" COLOR_RESET);
 
     int startIdx = currentPage * pageSize;
     int endIdx = startIdx + pageSize;
-    if (endIdx > count) endIdx = count;
+    if (endIdx > count)
+      endIdx = count;
 
     for (int i = startIdx; i < endIdx; i++) {
       CsvRecord *rec = &records[i];
       printf(COLOR_CYAN "  " LINE_V COLOR_RESET " %-3d ", i + 1);
-      
+
       if (rec->isValid) {
-        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_GREEN "OK        " COLOR_RESET " ");
+        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_GREEN
+                                             "OK        " COLOR_RESET " ");
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", rec->studentId);
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", rec->memberName);
-        printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ", reasonName(rec->reasonCode));
+        printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ",
+               reasonName(rec->reasonCode));
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", rec->notes);
       } else {
-        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "ERROR     " COLOR_RESET " ");
+        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED
+                                             "ERROR     " COLOR_RESET " ");
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", rec->studentId);
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", "(Khong ro)");
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ", "(Loi)");
-        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-20s" COLOR_RESET " ", rec->errorMsg);
+        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-20s" COLOR_RESET
+                                             " ",
+               rec->errorMsg);
       }
       printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 5; i++) printf(LINE_H);
+    for (int i = 0; i < 5; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++) printf(LINE_H);
+    for (int i = 0; i < 12; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 20; i++) printf(LINE_H);
+    for (int i = 0; i < 20; i++)
+      printf(LINE_H);
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++) printf(LINE_H);
+    for (int i = 0; i < 22; i++)
+      printf(LINE_H);
     printf(LINE_BR "\n" COLOR_RESET);
 
-    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET " — Tong: %d | Hop le: %d | Loi: %d (Se bi bo qua)\n",
+    printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET
+           " — Tong: %d | Hop le: %d | Loi: %d (Se bi bo qua)\n",
            currentPage + 1, totalPages, count, validCount, invalidCount);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | y: xac nhan import | q: huy > " COLOR_RESET);
+      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | y: xac nhan import "
+                       "| q: huy > " COLOR_RESET);
       char buf[10];
       readString(buf, sizeof(buf));
       trimSpaces(buf);
       if (strcmp(buf, "n") == 0 || strcmp(buf, "N") == 0) {
-        if (currentPage < totalPages - 1) currentPage++;
+        if (currentPage < totalPages - 1)
+          currentPage++;
       } else if (strcmp(buf, "p") == 0 || strcmp(buf, "P") == 0) {
-        if (currentPage > 0) currentPage--;
+        if (currentPage > 0)
+          currentPage--;
       } else if (strcmp(buf, "y") == 0 || strcmp(buf, "Y") == 0) {
         break;
       } else if (strcmp(buf, "q") == 0 || strcmp(buf, "Q") == 0) {
@@ -2153,7 +2193,9 @@ int violationImportCsv(AppDatabase *db) {
         return RC_ERR_CANCELLED;
       }
     } else {
-      printf(COLOR_CYAN "  Xac nhan ghi nhan %d vi pham hop le? (Y/N): " COLOR_RESET, validCount);
+      printf(COLOR_CYAN
+             "  Xac nhan ghi nhan %d vi pham hop le? (Y/N): " COLOR_RESET,
+             validCount);
       char confirm[4];
       readString(confirm, sizeof(confirm));
       if (confirm[0] == 'y' || confirm[0] == 'Y') {
@@ -2184,12 +2226,16 @@ int violationImportCsv(AppDatabase *db) {
     }
 
     if (db->violationCount >= MAX_VIOLATIONS) {
-      printf(ERR_LOI "Da dat gioi han toi da so luong vi pham! Chi ghi nhan %d vi pham.\n", importedCount);
+      printf(
+          ERR_LOI
+          "Da dat gioi han toi da so luong vi pham! Chi ghi nhan %d vi pham.\n",
+          importedCount);
       break;
     }
 
     int memberIdx = memberFindById(db, rec->studentId);
-    if (memberIdx == -1) continue;
+    if (memberIdx == -1)
+      continue;
     Member *m = &db->members[memberIdx];
 
     Violation newViolation;
@@ -2205,9 +2251,11 @@ int violationImportCsv(AppDatabase *db) {
     newViolation.note[MAX_NOTE_LEN - 1] = '\0';
 
     double rate = FINE_RATE_MEMBER;
-    if (m->role == MEMBER_ROLE_LEADER) rate = FINE_RATE_LEADER;
-    else if (m->role == MEMBER_ROLE_DIRECTOR) rate = FINE_RATE_DIRECTOR;
-    
+    if (m->role == MEMBER_ROLE_LEADER)
+      rate = FINE_RATE_LEADER;
+    else if (m->role == MEMBER_ROLE_DIRECTOR)
+      rate = FINE_RATE_DIRECTOR;
+
     newViolation.fine = rate;
     newViolation.penalty = PENALTY_FINE;
 
@@ -2237,13 +2285,15 @@ int violationImportCsv(AppDatabase *db) {
     int isAbsentInCsv = 0;
     for (int j = 0; j < count; j++) {
       CsvRecord *rec = &records[j];
-      if (rec->isValid && strcmp(rec->studentId, m->studentId) == 0 && rec->reasonCode == REASON_ABSENT) {
+      if (rec->isValid && strcmp(rec->studentId, m->studentId) == 0 &&
+          rec->reasonCode == REASON_ABSENT) {
         isAbsentInCsv = 1;
         break;
       }
     }
 
-    /* If they are not absent in the CSV and had consecutive absences, reset them */
+    /* If they are not absent in the CSV and had consecutive absences, reset
+     * them */
     if (!isAbsentInCsv && m->consecutiveAbsences > 0) {
       int oldAbs = m->consecutiveAbsences;
       m->consecutiveAbsences = 0;
@@ -2251,7 +2301,8 @@ int violationImportCsv(AppDatabase *db) {
 
       /* Log action */
       char descBuf[256];
-      snprintf(descBuf, sizeof(descBuf), "Tu dong reset vang khi import CSV (%d -> 0)", oldAbs);
+      snprintf(descBuf, sizeof(descBuf),
+               "Tu dong reset vang khi import CSV (%d -> 0)", oldAbs);
       logSystemAction(session->studentId, descBuf, m->studentId);
     }
   }
@@ -2261,7 +2312,9 @@ int violationImportCsv(AppDatabase *db) {
 
   printf(ERR_OK "Import thanh cong %d vi pham vao database!\n", importedCount);
   if (resetCount > 0) {
-    printf(ERR_OK "Da tu dong reset vang lien tiep ve 0 cho %d thanh vien di hop day du!\n", resetCount);
+    printf(ERR_OK "Da tu dong reset vang lien tiep ve 0 cho %d thanh vien di "
+                  "hop day du!\n",
+           resetCount);
   }
   logSystemAction(session->studentId, "Import CSV vi pham", filepath);
 
@@ -2269,4 +2322,3 @@ int violationImportCsv(AppDatabase *db) {
   uiPause();
   return RC_OK;
 }
-
