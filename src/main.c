@@ -171,7 +171,7 @@ static void memberManagementMenu(void) {
       break;
     case 2:
       memberEdit(&gDb);
-      uiPause();
+      // uiSleep(1500);
       break;
     case 3:
       memberSearchDetails(&gDb);
@@ -757,5 +757,5 @@ static void setupFirstRun(AppDatabase *db) {
   secureZero(confirm, sizeof(confirm));
 
   memberRebuildIndex(db);
-  uiPause();
+  // uiSleep(2000);
 }
