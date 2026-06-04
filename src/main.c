@@ -185,7 +185,12 @@ static void memberManagementMenu(void) {
       memberViewKicked(&gDb);
       break;
     case 7: {
-      printf("Nhap MSSV can reset mat khau (0 de quay lai): ");
+      uiClear();
+      uiDrawBreadcrumb(
+          "[1] Quan ly thanh vien -> [7] Reset mat khau thanh vien");
+      printf("\n");
+      printf(COLOR_CYAN
+             "  Nhap MSSV can reset mat khau (0 de quay lai): " COLOR_RESET);
       char targetId[MAX_MSSV_LEN];
       readString(targetId, MAX_MSSV_LEN);
       trimSpaces(targetId);
@@ -412,7 +417,7 @@ int main(void) {
   }
 
   printf(ERR_OK "Thoat chuong trinh. Hen gap lai!\n");
-  uiPause();
+  // uiPause();
   return 0;
 }
 
@@ -459,7 +464,7 @@ static void setupFirstRun(AppDatabase *db) {
 
   /* MSSV loop */
   while (1) {
-    printf(COLOR_CYAN "  [1/6] Nhap MSSV (0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap MSSV (0 de thoat): " COLOR_RESET);
     readString(newAdmin.studentId, MAX_MSSV_LEN);
     trimSpaces(newAdmin.studentId);
     mssvAutoUpper(newAdmin.studentId);
@@ -474,7 +479,7 @@ static void setupFirstRun(AppDatabase *db) {
 
   /* Full Name loop */
   while (1) {
-    printf(COLOR_CYAN "  [2/6] Nhap Ho va Ten (0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap Ho va Ten (0 de thoat): " COLOR_RESET);
     readString(newAdmin.fullName, MAX_NAME_LEN);
     trimSpaces(newAdmin.fullName);
     if (strcmp(newAdmin.fullName, "0") == 0) {
@@ -489,7 +494,7 @@ static void setupFirstRun(AppDatabase *db) {
 
   /* Email loop */
   while (1) {
-    printf(COLOR_CYAN "  [3/6] Nhap Email (0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap Email (0 de thoat): " COLOR_RESET);
     readString(newAdmin.email, MAX_EMAIL_LEN);
     trimSpaces(newAdmin.email);
     if (strcmp(newAdmin.email, "0") == 0) {
@@ -507,7 +512,7 @@ static void setupFirstRun(AppDatabase *db) {
 
   /* Phone loop */
   while (1) {
-    printf(COLOR_CYAN "  [4/6] Nhap So dien thoai (0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap So dien thoai (0 de thoat): " COLOR_RESET);
     readString(newAdmin.phone, MAX_PHONE_LEN);
     trimSpaces(newAdmin.phone);
     if (strcmp(newAdmin.phone, "0") == 0) {
@@ -516,38 +521,30 @@ static void setupFirstRun(AppDatabase *db) {
     }
     phoneNormalize(newAdmin.phone);
     if (validatePhone(newAdmin.phone)) {
-      printf(ERR_INFO "Nha mang: %s\n", phoneCarrier(newAdmin.phone));
+      // printf(ERR_INFO "Nha mang: %s\n", phoneCarrier(newAdmin.phone));
       break;
     }
   }
 
   /* Team loop */
   while (1) {
-    printf(COLOR_CYAN "  [5/6] Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, "
-                      "3-Truyen thong, q-Thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  Chon ban (0 de thoat, 1-Hoc thuat, 2-Ke hoach, "
+                      "3-Nhan su, 4-Truyen thong): " COLOR_RESET);
     char buf[32];
     readString(buf, sizeof(buf));
     trimSpaces(buf);
-    if (strcmp(buf, "q") == 0 || strcmp(buf, "exit") == 0) {
+    if (strcmp(buf, "0") == 0) {
       printf(ERR_INFO "Da thoat chuong trinh.\n");
       exit(0);
     }
-    if (strcmp(buf, "0") == 0 && strlen(buf) == 1) {
-      newAdmin.team = TEAM_ACADEMIC;
-      break;
-    }
     int val = -1;
     if (sscanf(buf, "%d", &val) == 1) {
-      if (val == 0) {
-        printf(ERR_INFO "Da thoat chuong trinh.\n");
-        exit(0);
-      }
-      if (val >= TEAM_ACADEMIC && val <= TEAM_MEDIA) {
-        newAdmin.team = val;
+      if (val >= 1 && val <= 4) {
+        newAdmin.team = val - 1;
         break;
       }
     }
-    printf(ERR_LOI "Vui long chon tu 0 den 3 hoac q de thoat!\n");
+    printf(ERR_LOI "Vui long chon tu 0 den 4!\n");
   }
 
   newAdmin.role = MEMBER_ROLE_DIRECTOR;
@@ -564,7 +561,7 @@ static void setupFirstRun(AppDatabase *db) {
            "biet.\n");
     printf("  - Khong chua khoang trang.\n\n");
 
-    printf(COLOR_CYAN "  [6/6] Nhap mat khau moi (0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN "  Nhap mat khau moi (0 de thoat): " COLOR_RESET);
     readPassword(password, sizeof(password));
     if (strcmp(password, "0") == 0) {
       printf(ERR_INFO "Da thoat chuong trinh.\n");
