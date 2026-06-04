@@ -59,8 +59,29 @@ void readPassword(char *buffer, size_t size) {
 
   size_t i = 0;
 #ifdef _WIN32
+  /* Check if stdin is a console/tty */
+  DWORD mode;
+  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+  int isTTY = (hStdin != INVALID_HANDLE_VALUE && GetConsoleMode(hStdin, &mode));
+
+  if (!isTTY) {
+    /* Fallback to standard reading if not a real Windows console (e.g. Git Bash, redirected stdin) */
+    if (fgets(buffer, (int)size, stdin) != NULL) {
+      size_t len = strlen(buffer);
+      if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+      }
+      if (len > 1 && buffer[len - 2] == '\r') {
+        buffer[len - 2] = '\0';
+      }
+    } else {
+      buffer[0] = '\0';
+    }
+    return;
+  }
+
   int ch;
-  while ((ch = _getch()) != '\r' && ch != EOF) {
+  while ((ch = _getch()) != '\r' && ch != '\n' && ch != EOF) {
     if (ch == '\b' || ch == 127) {
       /* Backspace */
       if (i > 0) {
