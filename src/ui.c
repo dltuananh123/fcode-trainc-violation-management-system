@@ -579,6 +579,7 @@ void uiDrawLogo(void) {
 }
 
 void uiDrawHelp(void) {
+  uiSetBoxWidth(UI_TERM_WIDTH);
   uiClear();
   printf(COLOR_BLUE BOX_TL);
   for (int i = 0; i < UI_TERM_WIDTH - 2; i++) {

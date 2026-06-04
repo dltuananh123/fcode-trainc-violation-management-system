@@ -972,7 +972,7 @@ void memberViewProfile(AppDatabase *db) {
 
   /* Title row */
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf(COLOR_DIM " ");
+  printf(COLOR_DIM "  ");
   printUtf8Padded("Thong tin profile ca nhan", 66, 1);
   printf(COLOR_RESET COLOR_BLUE BOX_V COLOR_RESET "\n");
 
