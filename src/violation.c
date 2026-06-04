@@ -333,10 +333,17 @@ int violationViewAllFiltered(AppDatabase *db) {
 
       if (totalPages > 1) {
         printf("\n");
-        printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
-        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
-        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
-        printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
+        printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET
+                         "\n");
+        printf(COLOR_DIM
+               "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM
+               ": Trang truoc | " COLOR_BOLD COLOR_YELLOW
+               "n" COLOR_RESET COLOR_DIM ": Trang tiep     │" COLOR_RESET "\n");
+        printf(COLOR_DIM
+               "  │ " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM
+               ": Thoat                           │" COLOR_RESET "\n");
+        printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET
+                         "\n");
         printf(COLOR_CYAN "  > " COLOR_RESET);
         char buf[10];
         readString(buf, sizeof(buf));
@@ -2281,10 +2288,20 @@ int violationImportCsv(AppDatabase *db) {
 
     if (totalPages > 1) {
       printf("\n");
-      printf(COLOR_DIM "  ┌─────────────────────────────────────────────────┐" COLOR_RESET "\n");
-      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
-      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "y" COLOR_RESET COLOR_DIM ": Xac nhan import | " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Huy thao tac │" COLOR_RESET "\n");
-      printf(COLOR_DIM "  └─────────────────────────────────────────────────┘" COLOR_RESET "\n");
+      printf(COLOR_DIM
+             "  ┌─────────────────────────────────────────────────┐" COLOR_RESET
+             "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM
+                       ": Trang truoc | " COLOR_BOLD COLOR_YELLOW
+                       "n" COLOR_RESET COLOR_DIM
+                       ": Trang tiep                  │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "y" COLOR_RESET COLOR_DIM
+                       ": Xac nhan import | " COLOR_BOLD COLOR_YELLOW
+                       "0" COLOR_RESET COLOR_DIM
+                       ": Huy thao tac            │" COLOR_RESET "\n");
+      printf(COLOR_DIM
+             "  └─────────────────────────────────────────────────┘" COLOR_RESET
+             "\n");
       printf(COLOR_CYAN "  > " COLOR_RESET);
       char buf[10];
       readString(buf, sizeof(buf));
@@ -2299,7 +2316,7 @@ int violationImportCsv(AppDatabase *db) {
         }
       } else if (strcmp(buf, "y") == 0 || strcmp(buf, "Y") == 0) {
         break;
-      } else if (strcmp(buf, "0") == 0 || strcmp(buf, "0") == 0) {
+      } else if (strcmp(buf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
         free(records);
         uiPause();
