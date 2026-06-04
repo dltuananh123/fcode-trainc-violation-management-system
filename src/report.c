@@ -468,12 +468,14 @@ void reportDashboard(const AppDatabase *db) {
     }
   }
 
-  /* 2. Top 5 violators (active and non-deleted members only) */
+  /* 2. Top 5 violators (active and non-deleted members only with violations) */
   const Member *sorted[MAX_MEMBERS] = {NULL};
   int activeCount = 0;
   for (int i = 0; i < db->memberCount; i++) {
     if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_ACTIVE) {
-      sorted[activeCount++] = &db->members[i];
+      if (countMemberViolations(db, db->members[i].studentId) > 0) {
+        sorted[activeCount++] = &db->members[i];
+      }
     }
   }
 
@@ -485,7 +487,7 @@ void reportDashboard(const AppDatabase *db) {
 
   int showCount = activeCount < 5 ? activeCount : 5;
   if (showCount == 0) {
-    uiDrawMenuRow("  - Khong co du lieu thanh vien hoat dong.");
+    uiDrawMenuRow("  - Khong co thanh vien nao vi pham.");
   } else {
     for (int i = 0; i < showCount; i++) {
       int count = countMemberViolations(db, sorted[i]->studentId);
