@@ -56,6 +56,9 @@ static void memberMenu(void) {
 
     choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 7);
 
+    /* Smooth UX: Brief pause for visual feedback */
+    uiClear();
+
     switch (choice) {
     case 1:
       memberViewProfile(&gDb);
@@ -382,8 +385,8 @@ int main(void) {
   /* Display FCODE Firebird logo on startup */
   uiDrawLogo();
 
-  /* Smooth UX: Small delay to let user appreciate the ASCII art */
-  uiSleep(1200);
+  /* Smooth UX: Let user appreciate the ASCII art */
+  uiSleep(1500);
 
   /* Load data from files */
   if (fileioLoadAll(&gDb) != 0) {
