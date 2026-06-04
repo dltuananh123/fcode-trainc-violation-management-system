@@ -747,8 +747,9 @@ int fileioExportArchive(AppDatabase *db) {
 
   /* Encrypt data with PIN byte key */
   unsigned char pinByte = (unsigned char)(pinHashValue & 0xFF);
-  if (pinByte == 0)
+  if (pinByte == 0) {
     pinByte = 0xAA;
+  }
 
   /* Encrypt and write Accounts */
   if (db->accountCount > 0) {
@@ -756,8 +757,9 @@ int fileioExportArchive(AppDatabase *db) {
     unsigned char *buf = malloc(sz);
     if (buf) {
       memcpy(buf, db->accounts, sz);
-      for (size_t i = 0; i < sz; i++)
+      for (size_t i = 0; i < sz; i++) {
         buf[i] ^= pinByte;
+      }
       fwrite(buf, 1, sz, fp);
       free(buf);
     }
@@ -769,8 +771,9 @@ int fileioExportArchive(AppDatabase *db) {
     unsigned char *buf = malloc(sz);
     if (buf) {
       memcpy(buf, db->members, sz);
-      for (size_t i = 0; i < sz; i++)
+      for (size_t i = 0; i < sz; i++) {
         buf[i] ^= pinByte;
+      }
       fwrite(buf, 1, sz, fp);
       free(buf);
     }
@@ -782,8 +785,9 @@ int fileioExportArchive(AppDatabase *db) {
     unsigned char *buf = malloc(sz);
     if (buf) {
       memcpy(buf, db->violations, sz);
-      for (size_t i = 0; i < sz; i++)
+      for (size_t i = 0; i < sz; i++) {
         buf[i] ^= pinByte;
+      }
       fwrite(buf, 1, sz, fp);
       free(buf);
     }
@@ -959,20 +963,24 @@ int fileioImportArchive(AppDatabase *db) {
   if ((accCount > 0 && !tempAccounts) || (memCount > 0 && !tempMembers) ||
       (vioCount > 0 && !tempViolations)) {
     printf(ERR_LOI "Loi cap phat bo nho he thong!\n");
-    if (tempAccounts)
+    if (tempAccounts) {
       free(tempAccounts);
-    if (tempMembers)
+    }
+    if (tempMembers) {
       free(tempMembers);
-    if (tempViolations)
+    }
+    if (tempViolations) {
       free(tempViolations);
+    }
     fclose(fp);
     uiPause();
     return -1;
   }
 
   unsigned char pinByte = (unsigned char)(filePinHash & 0xFF);
-  if (pinByte == 0)
+  if (pinByte == 0) {
     pinByte = 0xAA;
+  }
 
   /* Read Accounts */
   if (accCount > 0) {
@@ -981,8 +989,9 @@ int fileioImportArchive(AppDatabase *db) {
       printf(ERR_LOI "Loi doc danh sach tai khoan!\n");
       goto cleanup;
     }
-    for (size_t i = 0; i < sz; i++)
+    for (size_t i = 0; i < sz; i++) {
       ((unsigned char *)tempAccounts)[i] ^= pinByte;
+    }
   }
 
   /* Read Members */
@@ -992,8 +1001,9 @@ int fileioImportArchive(AppDatabase *db) {
       printf(ERR_LOI "Loi doc danh sach thanh vien!\n");
       goto cleanup;
     }
-    for (size_t i = 0; i < sz; i++)
+    for (size_t i = 0; i < sz; i++) {
       ((unsigned char *)tempMembers)[i] ^= pinByte;
+    }
   }
 
   /* Read Violations */
@@ -1003,8 +1013,9 @@ int fileioImportArchive(AppDatabase *db) {
       printf(ERR_LOI "Loi doc danh sach vi pham!\n");
       goto cleanup;
     }
-    for (size_t i = 0; i < sz; i++)
+    for (size_t i = 0; i < sz; i++) {
       ((unsigned char *)tempViolations)[i] ^= pinByte;
+    }
   }
 
   /* Read system_audit.log */
@@ -1033,13 +1044,16 @@ int fileioImportArchive(AppDatabase *db) {
   db->violationCount = vioCount;
   db->nextViolationId = nextVioId;
 
-  if (accCount > 0)
+  if (accCount > 0) {
     memcpy(db->accounts, tempAccounts, sizeof(Account) * (size_t)accCount);
-  if (memCount > 0)
+  }
+  if (memCount > 0) {
     memcpy(db->members, tempMembers, sizeof(Member) * (size_t)memCount);
-  if (vioCount > 0)
+  }
+  if (vioCount > 0) {
     memcpy(db->violations, tempViolations,
            sizeof(Violation) * (size_t)vioCount);
+  }
 
   free(tempAccounts);
   free(tempMembers);
@@ -1049,8 +1063,9 @@ int fileioImportArchive(AppDatabase *db) {
   if (fileioSaveAccounts(db) != 0 || fileioSaveMembers(db) != 0 ||
       fileioSaveViolations(db) != 0) {
     printf(ERR_LOI "Khong the ghi du lieu ra o dia goc!\n");
-    if (logBuf)
+    if (logBuf) {
       free(logBuf);
+    }
     uiPause();
     return -1;
   }
@@ -1083,12 +1098,15 @@ int fileioImportArchive(AppDatabase *db) {
   return 0;
 
 cleanup:
-  if (tempAccounts)
+  if (tempAccounts) {
     free(tempAccounts);
-  if (tempMembers)
+  }
+  if (tempMembers) {
     free(tempMembers);
-  if (tempViolations)
+  }
+  if (tempViolations) {
     free(tempViolations);
+  }
   fclose(fp);
   uiPause();
   return -1;

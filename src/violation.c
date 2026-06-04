@@ -2071,23 +2071,29 @@ int violationImportCsv(AppDatabase *db) {
     printf("\n" COLOR_BOLD "  XEM TRUOC DU LIEU IMPORT (PREVIEW)" COLOR_RESET
            "\n");
     printf(COLOR_CYAN "  " LINE_TL);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_TR "\n" COLOR_RESET);
 
     printf(COLOR_CYAN
@@ -2099,29 +2105,36 @@ int violationImportCsv(AppDatabase *db) {
            " Ghi chu / Ghi chu loi " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_DOWN);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_LEFT "\n" COLOR_RESET);
 
     int startIdx = currentPage * pageSize;
     int endIdx = startIdx + pageSize;
-    if (endIdx > count)
+    if (endIdx > count) {
       endIdx = count;
+    }
 
     for (int i = startIdx; i < endIdx; i++) {
       CsvRecord *rec = &records[i];
@@ -2149,23 +2162,29 @@ int violationImportCsv(AppDatabase *db) {
     }
 
     printf(COLOR_CYAN "  " LINE_BL);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++) {
       printf(LINE_H);
+    }
     printf(LINE_T_UP);
-    for (int i = 0; i < 22; i++)
+    for (int i = 0; i < 22; i++) {
       printf(LINE_H);
+    }
     printf(LINE_BR "\n" COLOR_RESET);
 
     printf("  Trang " COLOR_BOLD "%d/%d" COLOR_RESET
@@ -2179,11 +2198,13 @@ int violationImportCsv(AppDatabase *db) {
       readString(buf, sizeof(buf));
       trimSpaces(buf);
       if (strcmp(buf, "n") == 0 || strcmp(buf, "N") == 0) {
-        if (currentPage < totalPages - 1)
+        if (currentPage < totalPages - 1) {
           currentPage++;
+        }
       } else if (strcmp(buf, "p") == 0 || strcmp(buf, "P") == 0) {
-        if (currentPage > 0)
+        if (currentPage > 0) {
           currentPage--;
+        }
       } else if (strcmp(buf, "y") == 0 || strcmp(buf, "Y") == 0) {
         break;
       } else if (strcmp(buf, "q") == 0 || strcmp(buf, "Q") == 0) {
@@ -2234,8 +2255,9 @@ int violationImportCsv(AppDatabase *db) {
     }
 
     int memberIdx = memberFindById(db, rec->studentId);
-    if (memberIdx == -1)
+    if (memberIdx == -1) {
       continue;
+    }
     Member *m = &db->members[memberIdx];
 
     Violation newViolation;
@@ -2251,10 +2273,11 @@ int violationImportCsv(AppDatabase *db) {
     newViolation.note[MAX_NOTE_LEN - 1] = '\0';
 
     double rate = FINE_RATE_MEMBER;
-    if (m->role == MEMBER_ROLE_LEADER)
+    if (m->role == MEMBER_ROLE_LEADER) {
       rate = FINE_RATE_LEADER;
-    else if (m->role == MEMBER_ROLE_DIRECTOR)
+    } else if (m->role == MEMBER_ROLE_DIRECTOR) {
       rate = FINE_RATE_DIRECTOR;
+    }
 
     newViolation.fine = rate;
     newViolation.penalty = PENALTY_FINE;
