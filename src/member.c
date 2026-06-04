@@ -145,7 +145,6 @@ int memberAdd(AppDatabase *db) {
 
   if (db->memberCount >= MAX_MEMBERS) {
     printf(ERR_LOI "Da dat gioi han so luong thanh vien (%d)!\n", MAX_MEMBERS);
-    uiPause();
     return -1;
   }
 
@@ -334,7 +333,6 @@ int memberAdd(AppDatabase *db) {
   if (fileioSaveMembers(db) != 0) {
     printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
     db->memberCount--;
-    uiPause();
     return -1;
   }
 
@@ -343,7 +341,6 @@ int memberAdd(AppDatabase *db) {
     db->memberCount--;
     db->accountCount--;
     (void)fileioSaveMembers(db);
-    uiPause();
     return -1;
   }
 
@@ -368,7 +365,7 @@ int memberAdd(AppDatabase *db) {
   memberRebuildIndex(db);
 
   /* Smooth UX: Brief pause to let user see success message */
-  uiSleep(2000);
+  uiSleep(400);
 
   return 0;
 }
@@ -745,7 +742,6 @@ int memberEdit(AppDatabase *db) {
   /* Save */
   if (fileioSaveMembers(db) != 0) {
     printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
-    uiPause();
     return -1;
   }
   if (roleChanged) {
@@ -758,7 +754,6 @@ int memberEdit(AppDatabase *db) {
   if (session != NULL) {
     logSystemAction(session->studentId, "Sua thong tin TV", m->studentId);
   }
-  uiSleep(2000);
   return 0;
 }
 
@@ -1640,7 +1635,6 @@ int memberKickOrRestore(AppDatabase *db) {
   /* Prevent self-action */
   if (strcmp(session->studentId, m->studentId) == 0) {
     printf(ERR_LOI "Khong the tu kick hoac tu khoi phuc chinh ban!\n");
-    uiPause();
     return RC_ERR_INVALID;
   }
 
@@ -1664,7 +1658,6 @@ int memberKickOrRestore(AppDatabase *db) {
   if (m->role == MEMBER_ROLE_DIRECTOR && !isSuperAdmin) {
     printf(ERR_LOI "Chi Super Admin moi co quyen kick/khoi "
                    "phuc thanh vien Ban chu nhiem khac!\n");
-    uiPause();
     return RC_ERR_AUTH;
   }
 
@@ -1783,7 +1776,6 @@ int memberKickOrRestore(AppDatabase *db) {
         db->violationCount = oldViolationCount;
       }
       printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo kick.\n\n");
-      uiPause();
       return RC_ERR_IO;
     }
 
@@ -1797,7 +1789,6 @@ int memberKickOrRestore(AppDatabase *db) {
       }
       (void)fileioSaveMembers(db);
       printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo kick.\n\n");
-      uiPause();
       return RC_ERR_IO;
     }
 
@@ -1814,7 +1805,6 @@ int memberKickOrRestore(AppDatabase *db) {
         (void)fileioSaveAccounts(db);
       }
       printf(ERR_LOI "Khong the ghi file vi pham! Huy bo kick.\n\n");
-      uiPause();
       return RC_ERR_IO;
     }
 
@@ -1870,7 +1860,6 @@ int memberKickOrRestore(AppDatabase *db) {
         db->accounts[accIdx].failCount = oldFailCount;
       }
       printf(ERR_LOI "Khong the ghi file thanh vien! Huy bo khoi phuc.\n\n");
-      uiPause();
       return RC_ERR_IO;
     }
 
@@ -1882,7 +1871,6 @@ int memberKickOrRestore(AppDatabase *db) {
       db->accounts[accIdx].failCount = oldFailCount;
       (void)fileioSaveMembers(db);
       printf(ERR_LOI "Khong the ghi file tai khoan! Huy bo khoi phuc.\n\n");
-      uiPause();
       return RC_ERR_IO;
     }
 
@@ -1891,7 +1879,6 @@ int memberKickOrRestore(AppDatabase *db) {
            m->fullName);
     logSystemAction(session->studentId, "Khoi phuc TV", m->studentId);
   }
-  uiSleep(2000);
   return RC_OK;
 }
 

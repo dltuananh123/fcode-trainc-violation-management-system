@@ -167,18 +167,22 @@ static void memberManagementMenu(void) {
     switch (choice) {
     case 1:
       memberAdd(&gDb);
+      uiPause();
       break;
     case 2:
       memberEdit(&gDb);
+      uiPause();
       break;
     case 3:
       memberSearchDetails(&gDb);
+      uiPause();
       break;
     case 4:
       memberListAll(&gDb);
       break;
     case 5:
       memberKickOrRestore(&gDb);
+      uiPause();
       break;
     case 6:
       memberViewKicked(&gDb);
@@ -207,15 +211,13 @@ static void memberManagementMenu(void) {
             if (session != NULL) {
               logSystemAction(session->studentId, "Reset mat khau", targetId);
             }
-            uiSleep(1500);
-          } else {
-            uiPause();
           }
           done = 1;
           break;
         }
         uiPause();
       }
+      uiPause();
       break;
     }
     default:
@@ -255,6 +257,7 @@ static void violationManagementMenu(void) {
     switch (choice) {
     case 1:
       violationRecord(&gDb);
+      uiPause();
       break;
     case 2:
       violationMarkPaid(&gDb);
@@ -275,6 +278,7 @@ static void violationManagementMenu(void) {
       break;
     case 7:
       violationVoid(&gDb);
+      uiPause();
       break;
     case 8:
       violationImportCsv(&gDb);
@@ -753,5 +757,5 @@ static void setupFirstRun(AppDatabase *db) {
   secureZero(confirm, sizeof(confirm));
 
   memberRebuildIndex(db);
-  uiSleep(2000);
+  uiPause();
 }

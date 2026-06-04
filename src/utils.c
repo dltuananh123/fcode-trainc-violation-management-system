@@ -65,8 +65,7 @@ void readPassword(char *buffer, size_t size) {
   int isTTY = (hStdin != INVALID_HANDLE_VALUE && GetConsoleMode(hStdin, &mode));
 
   if (!isTTY) {
-    /* Fallback to standard reading if not a real Windows console (e.g. Git
-     * Bash, redirected stdin) */
+    /* Fallback to standard reading if not a real Windows console (e.g. Git Bash, redirected stdin) */
     if (fgets(buffer, (int)size, stdin) != NULL) {
       size_t len = strlen(buffer);
       if (len > 0 && buffer[len - 1] == '\n') {
