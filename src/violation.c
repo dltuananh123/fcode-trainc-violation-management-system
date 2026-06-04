@@ -2277,11 +2277,11 @@ int violationImportCsv(AppDatabase *db) {
     printf(LINE_TR "\n" COLOR_RESET);
 
     printf(COLOR_CYAN
-           "  " LINE_V COLOR_RESET " STT " COLOR_CYAN LINE_V COLOR_RESET
-           " Trang thai " COLOR_CYAN LINE_V COLOR_RESET
-           " MSSV       " COLOR_CYAN LINE_V COLOR_RESET
-           " Ho va ten            " COLOR_CYAN LINE_V COLOR_RESET
-           " Loi vi pham          " COLOR_CYAN LINE_V COLOR_RESET
+           "  " LINE_V COLOR_RESET " STT  " COLOR_CYAN LINE_V COLOR_RESET
+           " Trang thai  " COLOR_CYAN LINE_V COLOR_RESET
+           " MSSV        " COLOR_CYAN LINE_V COLOR_RESET
+           " Ho va ten             " COLOR_CYAN LINE_V COLOR_RESET
+           " Loi vi pham         " COLOR_CYAN LINE_V COLOR_RESET
            " Ghi chu / Ghi chu loi " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
