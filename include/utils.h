@@ -147,6 +147,22 @@ const char *reasonName(int reasonId);
 void getExeDir(char *buffer, size_t size);
 
 /**
+ * @brief Resolves a file path relative to the directory containing the running
+ * executable.
+ *
+ * If the input path is already absolute, it is copied directly.
+ * If relative, it is resolved to: exeDir / subDir / inputPath.
+ *
+ * @param subDir Optional subdirectory name (e.g., "data", "export", "reports"),
+ * can be NULL/empty.
+ * @param inputPath The input path or filename.
+ * @param outPath Buffer to store the resolved absolute path.
+ * @param outSize The size of the output buffer.
+ */
+void resolvePath(const char *subDir, const char *inputPath, char *outPath,
+                 size_t outSize);
+
+/**
  * @brief Salter and Hasher for passwords using key stretched FNV-1a.
  *
  * @param password The plain text password.

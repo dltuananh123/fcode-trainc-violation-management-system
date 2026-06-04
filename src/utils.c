@@ -293,6 +293,47 @@ void getExeDir(char *buffer, size_t size) {
 #endif
 }
 
+void resolvePath(const char *subDir, const char *inputPath, char *outPath,
+                 size_t outSize) {
+  if (outPath == NULL || outSize == 0) {
+    return;
+  }
+
+  int isAbsolute = 0;
+  if (inputPath != NULL && strlen(inputPath) > 0) {
+#ifdef _WIN32
+    if ((strlen(inputPath) > 1 && inputPath[1] == ':') ||
+        inputPath[0] == '\\' || inputPath[0] == '/') {
+      isAbsolute = 1;
+    }
+#else
+    if (inputPath[0] == '/') {
+      isAbsolute = 1;
+    }
+#endif
+  }
+
+  if (isAbsolute) {
+    strncpy(outPath, inputPath, outSize - 1);
+    outPath[outSize - 1] = '\0';
+  } else {
+    char exeDir[512];
+    char sep[2] = "/";
+#ifdef _WIN32
+    sep[0] = '\\';
+#endif
+    getExeDir(exeDir, sizeof(exeDir));
+
+    if (subDir != NULL && strlen(subDir) > 0) {
+      snprintf(outPath, outSize, "%s%s%s%s%s", exeDir, sep, subDir, sep,
+               (inputPath ? inputPath : ""));
+    } else {
+      snprintf(outPath, outSize, "%s%s%s", exeDir, sep,
+               (inputPath ? inputPath : ""));
+    }
+  }
+}
+
 typedef struct {
   unsigned char data[64];
   unsigned int datalen;
