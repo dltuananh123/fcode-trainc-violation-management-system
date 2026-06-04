@@ -724,7 +724,7 @@ unsigned int calculateCrc32(const unsigned char *data, size_t length) {
 }
 
 /* ============================================================
- * UI/UX HELPERS - Smooth Delays
+ * UI/UX HELPERS - Smooth Transitions
  * ============================================================ */
 
 void uiSleep(int milliseconds) {

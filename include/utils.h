@@ -212,7 +212,7 @@ void logSystemAction(const char *actor, const char *action, const char *target);
 void viewSystemLogs(void);
 
 /* ============================================================
- * UI/UX HELPERS - Smooth Delays
+ * UI/UX HELPERS - Smooth Transitions
  * ============================================================ */
 
 /**

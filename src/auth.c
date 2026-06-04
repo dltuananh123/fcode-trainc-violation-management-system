@@ -74,6 +74,13 @@ int authLogin(AppDatabase *db) {
 
       printf(COLOR_CYAN "  MSSV (0 de thoat): " COLOR_RESET);
       readString(studentId, sizeof(studentId));
+
+      /* Check for EOF (end of input) - handle gracefully */
+      if (feof(stdin)) {
+        printf(ERR_INFO "Ket thuc input. Thoat chuong trinh.\n");
+        return -1;
+      }
+
       trimSpaces(studentId);
       if (strcmp(studentId, "0") == 0) {
         printf(ERR_INFO "Da thoat chuong trinh.\n");
@@ -90,7 +97,12 @@ int authLogin(AppDatabase *db) {
     printf(COLOR_CYAN "  Mat khau: " COLOR_RESET);
     readPassword(password, sizeof(password));
 
-    if (strlen(password) == 0) {
+    /* Check for EOF after password input */
+    if (feof(stdin) || strlen(password) == 0) {
+      if (feof(stdin)) {
+        printf(ERR_INFO "Ket thuc input. Thoat chuong trinh.\n");
+        return -1;
+      }
       snprintf(errMsg, sizeof(errMsg), ERR_LOI "Mat khau khong duoc de trong!");
       secureZero(password, sizeof(password));
       continue;
@@ -159,7 +171,7 @@ int authLogin(AppDatabase *db) {
            studentId, accountRoleName(acc->role));
 
     /* Smooth UX: Brief pause before menu transition */
-    uiSleep(600);
+    uiSleep(500);
 
     /* Force change default password if needed */
     if (acc->isDefaultPassword) {
@@ -197,8 +209,8 @@ void authLogout(AppDatabase *db) {
   memset(&currentSession, 0, sizeof(Account));
   printf(ERR_OK "Da dang xuat!\n");
 
-  /* Smooth UX: Brief pause before returning to login */
-  uiSleep(800);
+  /* Smooth UX: Brief pause to let user see message */
+  uiSleep(600);
 
   uiClear();
 }
