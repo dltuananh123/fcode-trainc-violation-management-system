@@ -308,12 +308,12 @@ void reportSortMembersByViolations(const AppDatabase *db) {
              "%d" COLOR_RESET " thanh vien\n",
              currentPage + 1, totalPages, activeCount);
 
-      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
+      printf(COLOR_DIM "  p: trang truoc | n: trang tiep | 0: thoat" COLOR_RESET
                        " > ");
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') {
+      if (c == '0') {
         break;
       }
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
@@ -332,7 +332,6 @@ void reportExportTxt(const AppDatabase *db) {
 
   double collected[4];
   double outstanding[4];
-  char exeDir[512];
   char filePath[2048];
   char timestampForFile[32];
   char timestampDisplay[32];
@@ -352,23 +351,13 @@ void reportExportTxt(const AppDatabase *db) {
            timeInfo);
 
   char reportsDir[1024];
-  getExeDir(exeDir, sizeof(exeDir));
+  char reportFilename[256];
+  resolvePath("reports", NULL, reportsDir, sizeof(reportsDir));
+  (void)MKDIR(reportsDir);
 
-#ifdef _WIN32
-  snprintf(reportsDir, sizeof(reportsDir), "%s\\reports", exeDir);
-#else
-  snprintf(reportsDir, sizeof(reportsDir), "%s/reports", exeDir);
-#endif
-
-  MKDIR(reportsDir);
-
-#ifdef _WIN32
-  snprintf(filePath, sizeof(filePath), "%s\\violation_report_%s.txt",
-           reportsDir, timestampForFile);
-#else
-  snprintf(filePath, sizeof(filePath), "%s/violation_report_%s.txt", reportsDir,
+  snprintf(reportFilename, sizeof(reportFilename), "violation_report_%s.txt",
            timestampForFile);
-#endif
+  resolvePath("reports", reportFilename, filePath, sizeof(filePath));
 
   FILE *fp = fopen(filePath, "w");
   if (fp == NULL) {
