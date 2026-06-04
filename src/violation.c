@@ -28,13 +28,16 @@ static double calculateFine(int memberRole) {
 
 static int selectViolationReason(int *reason) {
   printf("\n");
-  printf(COLOR_CYAN "  Chon ly do vi pham:\n" COLOR_RESET);
-  printf("  0. Khong mac ao CLB\n");
-  printf("  1. Vang hop\n");
-  printf("  2. Khong tham gia hoat dong\n");
-  printf("  " COLOR_RED "3. Bao luc\n" COLOR_RESET);
-  *reason = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET,
-                           REASON_NO_JACKET, REASON_VIOLENCE);
+  printf(COLOR_CYAN "  Chon ly do vi pham (0 de quay lai):\n" COLOR_RESET);
+  printf("  1. Khong mac ao CLB\n");
+  printf("  2. Vang hop/Train-C\n");
+  printf("  3. Khong tham gia hoat dong\n");
+  printf("  " COLOR_RED "4. Bao luc\n" COLOR_RESET);
+  int choice = readMenuChoice(COLOR_CYAN "  Nhap lua chon: " COLOR_RESET, 0, 4);
+  if (choice == 0) {
+    return -1;
+  }
+  *reason = choice - 1;
   return 0;
 }
 
@@ -331,14 +334,14 @@ int violationViewAllFiltered(AppDatabase *db) {
       if (totalPages > 1) {
         printf("\n");
         printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
-        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
-        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
+        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
+        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
         printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
         printf(COLOR_CYAN "  > " COLOR_RESET);
         char buf[10];
         readString(buf, sizeof(buf));
         char c = buf[0];
-        if (c == 'q' || c == 'Q') {
+        if (c == '0') {
           exitPagination = 1;
           break;
         }
@@ -423,8 +426,12 @@ int violationRecord(AppDatabase *db) {
           printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
                  teamName(m->team));
         }
-        int choice =
-            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice = readMenuChoice(
+            COLOR_CYAN "  Chon STT (0 de quay lai): " COLOR_RESET, 0, count);
+        if (choice == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n");
+          return RC_ERR_CANCELLED;
+        }
         memberIdx = indices[choice - 1];
       }
     }
@@ -456,7 +463,8 @@ int violationRecord(AppDatabase *db) {
   /* Select reason */
   int reason;
   if (selectViolationReason(&reason) != 0) {
-    return -1;
+    printf(ERR_INFO "Da huy thao tac.\n");
+    return RC_ERR_CANCELLED;
   }
 
   /* Create violation */
@@ -614,47 +622,75 @@ int violationCheckAllOutClb(AppDatabase *db) {
   Account *session = authGetSession();
   REQUIRE_DIRECTOR(session);
 
-  printf("\nKIEM TRA NGUONG OUT CLB\n");
-  printf("+------------+----------------------+-----------+------------+\n");
-  printf("| MSSV       | Ho va ten            | Vang LT   | Trang thai |\n");
-  printf("+------------+----------------------+-----------+------------+\n");
+  static const TableColumn OUT_CLB_COLS[] = {
+      {12, "MSSV"}, {22, "Ho va ten"}, {12, "Vang LT"}, {15, "Trang thai"}};
+  static const int OUT_CLB_COL_COUNT =
+      (int)(sizeof(OUT_CLB_COLS) / sizeof(OUT_CLB_COLS[0]));
+
+  uiClear();
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [6] Kiem tra nguong Out CLB");
+  printf("\n");
+  printf(COLOR_BOLD "  DANH SACH THANH VIEN CAN CHU Y\n" COLOR_RESET);
+
+  uiTableBegin(OUT_CLB_COLS, OUT_CLB_COL_COUNT);
 
   int found = 0;
 
   for (int i = 0; i < db->memberCount; i++) {
     Member *m = &db->members[i];
+    if (m->isDeleted) {
+      continue;
+    }
 
     if (m->consecutiveAbsences >= 2 || m->isActive == STATUS_OUT_CLB) {
       const char *status;
+      const char *color = "";
       if (m->isActive == STATUS_OUT_CLB) {
         status = "Out CLB";
+        color = COLOR_RED;
       } else if (m->consecutiveAbsences >= 4) {
         status = "QUA NGUONG";
+        color = COLOR_RED;
       } else if (m->consecutiveAbsences == 3) {
         status = "CANH BAO";
+        color = COLOR_YELLOW;
       } else {
         status = "Theo doi";
+        color = COLOR_GRAY;
       }
 
-      printf("| %-10.10s | %-20.20s | %-9d | %-10.10s |\n", m->studentId,
-             m->fullName, m->consecutiveAbsences, status);
+      char absStr[16];
+      snprintf(absStr, sizeof(absStr), "%d", m->consecutiveAbsences);
+
+      uiTableRowBegin();
+      uiTableCell(m->studentId, 12, "");
+      uiTableCell(m->fullName, 22, "");
+      uiTableCell(absStr, 12, "");
+      uiTableCell(status, 15, color);
+      uiTableRowEnd();
       found++;
     }
   }
 
-  printf("+------------+----------------------+-----------+------------+\n");
+  uiTableEnd(OUT_CLB_COLS, OUT_CLB_COL_COUNT);
 
   if (found == 0) {
-    printf("[THONG BAO] Khong co thanh vien nao gan nguong Out CLB\n");
+    printf("  " COLOR_GREEN
+           "[THONG BAO] Khong co thanh vien nao gan nguong Out CLB" COLOR_RESET
+           "\n");
   } else {
-    printf("Tong: %d thanh vien can chu y\n", found);
+    printf("  Tong: " COLOR_BOLD "%d" COLOR_RESET " thanh vien can chu y\n",
+           found);
   }
 
-  printf("\nChu thich:\n");
-  printf("  Theo doi  : Vang 2 buoi lien tiep\n");
-  printf("  CANH BAO  : Vang 3 buoi lien tiep (them 1 buoi -> Out)\n");
-  printf("  QUA NGUONG: Vang qua 3 buoi, cho Ban chu nhiem xu ly\n");
-  printf("  Out CLB   : Da bi Out CLB\n\n");
+  printf("\n  " COLOR_BOLD "Chu thich:" COLOR_RESET "\n");
+  printf("    - " COLOR_GRAY "Theo doi" COLOR_RESET
+         "  : Vang 2 buoi lien tiep\n");
+  printf("    - " COLOR_YELLOW "CANH BAO" COLOR_RESET
+         "  : Vang 3 buoi lien tiep (them 1 buoi -> Out)\n");
+  printf("    - " COLOR_RED "QUA NGUONG" COLOR_RESET
+         " : Vang tu 4 buoi tro len, cho Ban chu nhiem xu ly\n");
+  printf("    - " COLOR_RED "Out CLB" COLOR_RESET "   : Da bi Out CLB\n\n");
   return RC_OK;
 }
 
@@ -1011,8 +1047,12 @@ int violationMarkPaid(AppDatabase *db) {
           printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
                  teamName(m->team));
         }
-        int choice =
-            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice = readMenuChoice(
+            COLOR_CYAN "  Chon STT (0 de quay lai): " COLOR_RESET, 0, count);
+        if (choice == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n");
+          return RC_ERR_CANCELLED;
+        }
         memberIdx = indices[choice - 1];
       }
     }
@@ -1342,8 +1382,13 @@ int violationViewByMSSV(AppDatabase *db) {
           printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
                  teamName(m->team));
         }
-        int choice =
-            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice = readMenuChoice(
+            COLOR_CYAN "  Chon STT (0 de quay lai): " COLOR_RESET, 0, count);
+        if (choice == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n");
+          uiPause();
+          return RC_ERR_CANCELLED;
+        }
         memberIdx = indices[choice - 1];
       }
     }
@@ -1427,12 +1472,12 @@ int violationViewByMSSV(AppDatabase *db) {
            currentPage + 1, totalPages, found);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
+      printf(COLOR_DIM "  p: trang truoc | n: trang tiep | 0: thoat" COLOR_RESET
                        " > ");
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') {
+      if (c == '0') {
         break;
       }
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
@@ -1460,6 +1505,10 @@ int violationSearchByDate(AppDatabase *db) {
   Account *session = authGetSession();
   REQUIRE_DIRECTOR(session);
 
+  uiClear();
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [5] Tim kiem vi pham theo ngay");
+  printf("\n");
+
   if (db->violationCount == 0) {
     printf(ERR_INFO "Khong co vi pham nao trong du lieu.\n");
     uiPause();
@@ -1471,11 +1520,12 @@ int violationSearchByDate(AppDatabase *db) {
   time_t start;
   time_t end;
 
-  uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> [5] Tim kiem vi pham theo ngay");
-
 date_input:
   while (1) {
+    uiClear();
+    uiDrawBreadcrumb("[2] Quan ly vi pham -> [5] Tim kiem vi pham theo ngay");
+    printf("\n");
+
     while (1) {
       printf(COLOR_CYAN
              "  Nhap ngay bat dau (dd/mm/yyyy, 0 de quay lai): " COLOR_RESET);
@@ -1483,7 +1533,6 @@ date_input:
       trimSpaces(startBuf);
       if (strcmp(startBuf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
-        uiPause();
         return RC_ERR_CANCELLED;
       }
       if (validateDate(startBuf)) {
@@ -1499,7 +1548,6 @@ date_input:
       trimSpaces(endBuf);
       if (strcmp(endBuf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
-        uiPause();
         return RC_ERR_CANCELLED;
       }
       if (validateDate(endBuf)) {
@@ -1513,6 +1561,7 @@ date_input:
     }
     printf(ERR_LOI "Ngay bat dau phai truoc hoac bang ngay ket thuc! Vui long "
                    "nhap lai.\n");
+    uiPause();
   }
 
   /* Collect matching violation indices */
@@ -1528,7 +1577,7 @@ date_input:
   if (found == 0) {
     printf(ERR_INFO "Khong co vi pham nao trong khoang ngay nay.\n");
     uiPause();
-    return RC_OK;
+    goto date_input;
   }
 
   int totalPages = (found + ROWS_PER_PAGE - 1) / ROWS_PER_PAGE;
@@ -1556,12 +1605,12 @@ date_input:
            currentPage + 1, totalPages, found);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
+      printf(COLOR_DIM "  p: trang truoc | n: trang tiep | 0: thoat" COLOR_RESET
                        " > ");
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') {
+      if (c == '0') {
         goto date_input;
       }
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
@@ -1585,7 +1634,7 @@ int violationVoid(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Huy vi pham");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [7] Huy vi pham");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -1624,8 +1673,12 @@ int violationVoid(AppDatabase *db) {
           printf("  %d. %s - %s (%s)\n", i + 1, m->studentId, m->fullName,
                  teamName(m->team));
         }
-        int choice =
-            readMenuChoice(COLOR_CYAN "  Chon STT: " COLOR_RESET, 1, count);
+        int choice = readMenuChoice(
+            COLOR_CYAN "  Chon STT (0 de quay lai): " COLOR_RESET, 0, count);
+        if (choice == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n");
+          return RC_ERR_CANCELLED;
+        }
         memberIdx = indices[choice - 1];
       }
     }
@@ -1900,9 +1953,10 @@ int violationImportCsv(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Import vi pham tu file CSV");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [8] Import vi pham tu file CSV");
 
   char filepath[512];
+  char finalPath[2048];
   FILE *fp = NULL;
   while (1) {
     printf(COLOR_CYAN "  Nhap duong dan file CSV (vd: template.csv, 0 de quay "
@@ -1920,7 +1974,7 @@ int violationImportCsv(AppDatabase *db) {
       filepath[sizeof(filepath) - 1] = '\0';
       printf(ERR_INFO
              "Ban khong nhap duong dan. Su dung file mac dinh: " COLOR_YELLOW
-             "template.csv" COLOR_RESET "\n");
+             "export/template.csv" COLOR_RESET "\n");
     }
 
     /* Check for malicious characters in path to prevent OS command injection or
@@ -1940,9 +1994,35 @@ int violationImportCsv(AppDatabase *db) {
       continue;
     }
 
-    fp = fopen(filepath, "r");
+    /* Resolve relative paths to exeDir/export/ */
+    int isAbsolute = 0;
+#ifdef _WIN32
+    if ((strlen(filepath) > 1 && filepath[1] == ':') || filepath[0] == '\\' ||
+        filepath[0] == '/') {
+      isAbsolute = 1;
+    }
+#else
+    if (filepath[0] == '/') {
+      isAbsolute = 1;
+    }
+#endif
+    if (isAbsolute) {
+      strncpy(finalPath, filepath, sizeof(finalPath) - 1);
+      finalPath[sizeof(finalPath) - 1] = '\0';
+    } else {
+      char exeDir[512];
+      char sep[2] = "/";
+#ifdef _WIN32
+      sep[0] = '\\';
+#endif
+      getExeDir(exeDir, sizeof(exeDir));
+      snprintf(finalPath, sizeof(finalPath), "%s%sexport%s%s", exeDir, sep, sep,
+               filepath);
+    }
+
+    fp = fopen(finalPath, "r");
     if (fp == NULL) {
-      printf(ERR_LOI "Khong tim thay hoac khong the mo file: %s!\n", filepath);
+      printf(ERR_LOI "Khong tim thay hoac khong the mo file: %s!\n", finalPath);
       continue;
     }
     break;
@@ -2202,8 +2282,8 @@ int violationImportCsv(AppDatabase *db) {
     if (totalPages > 1) {
       printf("\n");
       printf(COLOR_DIM "  ┌─────────────────────────────────────────────────┐" COLOR_RESET "\n");
-      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
-      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "y" COLOR_RESET COLOR_DIM ": Xac nhan import | " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Huy thao tac │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "y" COLOR_RESET COLOR_DIM ": Xac nhan import | " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Huy thao tac │" COLOR_RESET "\n");
       printf(COLOR_DIM "  └─────────────────────────────────────────────────┘" COLOR_RESET "\n");
       printf(COLOR_CYAN "  > " COLOR_RESET);
       char buf[10];
@@ -2219,7 +2299,7 @@ int violationImportCsv(AppDatabase *db) {
         }
       } else if (strcmp(buf, "y") == 0 || strcmp(buf, "Y") == 0) {
         break;
-      } else if (strcmp(buf, "q") == 0 || strcmp(buf, "Q") == 0) {
+      } else if (strcmp(buf, "0") == 0 || strcmp(buf, "0") == 0) {
         printf(ERR_INFO "Da huy thao tac.\n");
         free(records);
         uiPause();

@@ -170,9 +170,9 @@ int memberAdd(AppDatabase *db) {
   }
 
   /* Show MSSV decode */
-  printf(ERR_INFO "MSSV: %s → Campus: %s | Khối: %s\n", newMember.studentId,
-         mssvCampusName(newMember.studentId[0]),
-         mssvDivisionName(newMember.studentId[1]));
+  // printf(ERR_INFO "MSSV: %s → Campus: %s | Khối: %s\n", newMember.studentId,
+  //        mssvCampusName(newMember.studentId[0]),
+  //        mssvDivisionName(newMember.studentId[1]));
 
   /* Full name with re-prompt */
   while (1) {
@@ -206,22 +206,32 @@ int memberAdd(AppDatabase *db) {
     trimSpaces(newMember.phone);
     phoneNormalize(newMember.phone);
     if (validatePhoneUnique(newMember.phone, db, NULL)) {
-      printf(ERR_INFO "Nha mang: %s\n", phoneCarrier(newMember.phone));
+      // printf(ERR_INFO "Nha mang: %s\n", phoneCarrier(newMember.phone));
       break;
     }
   }
 
   /* Team selection with re-prompt */
-  newMember.team = readMenuChoice(
-      COLOR_CYAN "  Chon ban (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, "
-                 "3-Truyen thong): " COLOR_RESET,
-      TEAM_ACADEMIC, TEAM_MEDIA);
+  int teamChoice = readMenuChoice(
+      COLOR_CYAN "  Chon ban (0 de quay lai, 1-Hoc thuat, 2-Ke hoach, "
+                 "3-Nhan su, 4-Truyen thong): " COLOR_RESET,
+      0, 4);
+  if (teamChoice == 0) {
+    printf(ERR_INFO "Da huy thao tac.\n");
+    return -1;
+  }
+  newMember.team = teamChoice - 1;
 
   /* Role selection with re-prompt */
-  newMember.role =
-      readMenuChoice(COLOR_CYAN "  Chon chuc vu (0-Thanh vien, 1-Truong nhom, "
-                                "2-Ban chu nhiem): " COLOR_RESET,
-                     MEMBER_ROLE_MEMBER, MEMBER_ROLE_DIRECTOR);
+  int roleChoice = readMenuChoice(
+      COLOR_CYAN "  Chon chuc vu (0 de quay lai, 1-Thanh vien, 2-Truong nhom, "
+                 "3-Ban chu nhiem): " COLOR_RESET,
+      0, 3);
+  if (roleChoice == 0) {
+    printf(ERR_INFO "Da huy thao tac.\n");
+    return -1;
+  }
+  newMember.role = roleChoice - 1;
 
   /* Set defaults */
   newMember.violationCount = 0;
@@ -414,9 +424,10 @@ int memberEdit(AppDatabase *db) {
 
   /* Team selection — Enter to keep */
   while (1) {
-    printf(COLOR_CYAN "  Ban moi (0-Hoc thuat, 1-Ke hoach, 2-Nhan su, 3-Truyen "
-                      "thong)" COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET,
-           m->team);
+    printf(COLOR_CYAN
+           "  Ban moi (0 de thoat, 1-Hoc thuat, 2-Ke hoach, 3-Nhan su, "
+           "4-Truyen thong)" COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET,
+           m->team + 1);
     char buf[32];
     readString(buf, sizeof(buf));
     trimSpaces(buf);
@@ -424,21 +435,26 @@ int memberEdit(AppDatabase *db) {
       break;
     }
     int val = 0;
-    if (sscanf(buf, "%d", &val) == 1 && val >= TEAM_ACADEMIC &&
-        val <= TEAM_MEDIA) {
-      m->team = val;
-      break;
+    if (sscanf(buf, "%d", &val) == 1) {
+      if (val == 0) {
+        printf(ERR_INFO "Da huy thao tac.\n");
+        return 0;
+      }
+      if (val >= 1 && val <= 4) {
+        m->team = val - 1;
+        break;
+      }
     }
-    printf(ERR_LOI "Vui long chon 0-3!\n");
+    printf(ERR_LOI "Vui long chon 0 de thoat, hoac 1-4!\n");
   }
 
   /* Role selection — Enter to keep */
   int oldRole = m->role;
   while (1) {
-    printf(COLOR_CYAN "  Chuc vu moi (0-Thanh vien, 1-Truong nhom, "
-                      "2-Ban chu nhiem)" COLOR_RESET COLOR_DIM
+    printf(COLOR_CYAN "  Chuc vu moi (0 de thoat, 1-Thanh vien, 2-Truong nhom, "
+                      "3-Ban chu nhiem)" COLOR_RESET COLOR_DIM
                       " [%d]: " COLOR_RESET,
-           m->role);
+           m->role + 1);
     char buf[32];
     readString(buf, sizeof(buf));
     trimSpaces(buf);
@@ -446,12 +462,17 @@ int memberEdit(AppDatabase *db) {
       break;
     }
     int val = 0;
-    if (sscanf(buf, "%d", &val) == 1 && val >= MEMBER_ROLE_MEMBER &&
-        val <= MEMBER_ROLE_DIRECTOR) {
-      m->role = val;
-      break;
+    if (sscanf(buf, "%d", &val) == 1) {
+      if (val == 0) {
+        printf(ERR_INFO "Da huy thao tac.\n");
+        return 0;
+      }
+      if (val >= 1 && val <= 3) {
+        m->role = val - 1;
+        break;
+      }
     }
-    printf(ERR_LOI "Vui long chon 0-2!\n");
+    printf(ERR_LOI "Vui long chon 0 de thoat, hoac 1-3!\n");
   }
   int roleChanged = (oldRole != m->role);
 
@@ -1210,14 +1231,14 @@ void memberListAll(AppDatabase *db) {
 
     printf("\n");
     printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
-    printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
-    printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
+    printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
+    printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
     printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
     printf(COLOR_CYAN "  > " COLOR_RESET);
     char buf[10];
     readString(buf, sizeof(buf));
     char c = buf[0];
-    if (c == 'q' || c == 'Q') {
+    if (c == '0') {
       break;
     }
     if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {

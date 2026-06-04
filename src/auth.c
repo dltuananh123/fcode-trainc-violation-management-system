@@ -72,9 +72,13 @@ int authLogin(AppDatabase *db) {
       }
       printLoginBanner();
 
-      printf(COLOR_CYAN "  MSSV: " COLOR_RESET);
+      printf(COLOR_CYAN "  MSSV (0 de thoat): " COLOR_RESET);
       readString(studentId, sizeof(studentId));
       trimSpaces(studentId);
+      if (strcmp(studentId, "0") == 0) {
+        printf(ERR_INFO "Da thoat chuong trinh.\n");
+        return -1;
+      }
       if (validateNotEmpty(studentId)) {
         mssvValid = 1;
       } else {
@@ -161,7 +165,7 @@ int authLogin(AppDatabase *db) {
     if (acc->isDefaultPassword) {
       printf("\n");
       printf(ERR_CANH_BAO "Ban dang su dung mat khau mac dinh!\n");
-      printf("Bat buoc doi mat khau truoc khi tiep tuc.\n\n");
+      printf(ERR_CANH_BAO "Bat buoc doi mat khau truoc khi tiep tuc.\n\n");
 
       /* Must change password before proceeding */
       int changed = authChangePassword(db, 1);

@@ -33,10 +33,10 @@
  * COLORED ERROR/SUCCESS/WARNING PREFIXES
  * ============================================================ */
 
-#define ERR_LOI COLOR_RED "[LOI] " COLOR_RESET
-#define ERR_CANH_BAO COLOR_YELLOW "[CANH BAO] " COLOR_RESET
-#define ERR_OK COLOR_GREEN "[OK] " COLOR_RESET
-#define ERR_INFO COLOR_CYAN "[INFO] " COLOR_RESET
+#define ERR_LOI COLOR_RED "  [ERROR] " COLOR_RESET
+#define ERR_CANH_BAO COLOR_YELLOW "  [WARN] " COLOR_RESET
+#define ERR_OK COLOR_GREEN "  [OK] " COLOR_RESET
+#define ERR_INFO COLOR_CYAN "  [INFO] " COLOR_RESET
 
 /* ============================================================
  * LAYOUT CONSTANTS

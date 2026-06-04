@@ -82,39 +82,27 @@ static void initPaths(void) {
     return;
   }
 
-  char exeDir[MAX_PATH_BASE];
-  getExeDir(exeDir, sizeof(exeDir));
+  char dataDir[MAX_PATH_BASE + 10];
+  resolvePath("data", NULL, dataDir, sizeof(dataDir));
+  (void)MKDIR(dataDir);
 
-  char dataDir[MAX_PATH_BASE + 5];
-#ifdef _WIN32
-  snprintf(dataDir, sizeof(dataDir), "%s\\data", exeDir);
-  const char *sep = "\\";
-#else
-  snprintf(dataDir, sizeof(dataDir), "%s/data", exeDir);
-  const char *sep = "/";
-#endif
+  resolvePath("data", "members.dat", pathMembers, sizeof(pathMembers));
+  resolvePath("data", "violations.dat", pathViolations, sizeof(pathViolations));
+  resolvePath("data", "accounts.dat", pathAccounts, sizeof(pathAccounts));
 
-  /* Ensure data directory exists next to the executable */
-  if (MKDIR(dataDir) != 0) {
-    /* If directory exists, MKDIR returns non-zero on some systems,
-       but we don't need to treat it as a hard error here. */
-  }
+  resolvePath("data", "members.dat.tmp", pathTmpMembers,
+              sizeof(pathTmpMembers));
+  resolvePath("data", "violations.dat.tmp", pathTmpViolations,
+              sizeof(pathTmpViolations));
+  resolvePath("data", "accounts.dat.tmp", pathTmpAccounts,
+              sizeof(pathTmpAccounts));
 
-  snprintf(pathMembers, MAX_PATH_FULL, "%s%smembers.dat", dataDir, sep);
-  snprintf(pathViolations, MAX_PATH_FULL, "%s%sviolations.dat", dataDir, sep);
-  snprintf(pathAccounts, MAX_PATH_FULL, "%s%saccounts.dat", dataDir, sep);
-
-  snprintf(pathTmpMembers, MAX_PATH_FULL, "%s%smembers.dat.tmp", dataDir, sep);
-  snprintf(pathTmpViolations, MAX_PATH_FULL, "%s%sviolations.dat.tmp", dataDir,
-           sep);
-  snprintf(pathTmpAccounts, MAX_PATH_FULL, "%s%saccounts.dat.tmp", dataDir,
-           sep);
-
-  snprintf(pathBakMembers, MAX_PATH_FULL, "%s%smembers.dat.bak", dataDir, sep);
-  snprintf(pathBakViolations, MAX_PATH_FULL, "%s%sviolations.dat.bak", dataDir,
-           sep);
-  snprintf(pathBakAccounts, MAX_PATH_FULL, "%s%saccounts.dat.bak", dataDir,
-           sep);
+  resolvePath("data", "members.dat.bak", pathBakMembers,
+              sizeof(pathBakMembers));
+  resolvePath("data", "violations.dat.bak", pathBakViolations,
+              sizeof(pathBakViolations));
+  resolvePath("data", "accounts.dat.bak", pathBakAccounts,
+              sizeof(pathBakAccounts));
 
   pathsInitialized = 1;
 }
@@ -708,24 +696,19 @@ int fileioExportArchive(AppDatabase *db) {
     printf(ERR_LOI "Ma PIN phai co dung 4 ky tu so!\n");
   }
 
-  /* Target output path (Save inside 'data/' folder) */
-  char dataDir[512];
+  /* Target output path (Save inside 'export/' folder next to exe) */
+  char exportDir[512];
   char outPath[1024];
-  char sep[2] = "/";
-#ifdef _WIN32
-  sep[0] = '\\';
-#endif
-
-  getExeDir(dataDir, sizeof(dataDir));
-  strncat(dataDir, sep, sizeof(dataDir) - strlen(dataDir) - 1);
-  strncat(dataDir, "data", sizeof(dataDir) - strlen(dataDir) - 1);
-  snprintf(outPath, sizeof(outPath), "%s%s%s", dataDir, sep, filename);
+  resolvePath("export", NULL, exportDir, sizeof(exportDir));
+  (void)MKDIR(exportDir);
+  resolvePath("export", filename, outPath, sizeof(outPath));
 
   FILE *fp = fopen(outPath, "wb");
   if (fp == NULL) {
     printf(ERR_LOI "Khong the khoi tao hoac mo file de ghi: %s\n", filename);
-    printf(ERR_INFO "Hay dam bao thu muc du lieu ton tai va co quyen ghi: %s\n",
-           dataDir);
+    printf(ERR_INFO
+           "Hay dam bao thu muc xuat du lieu ton tai va co quyen ghi: %s\n",
+           exportDir);
     uiPause();
     return -1;
   }
@@ -829,7 +812,7 @@ int fileioExportArchive(AppDatabase *db) {
     logSystemAction(session->studentId, "Export du lieu", filename);
   }
 
-  printf("\n" ERR_OK "Xuat file du lieu thanh cong vao thu muc 'data': %s\n",
+  printf("\n" ERR_OK "Xuat file du lieu thanh cong vao thu muc 'export': %s\n",
          filename);
   printf(ERR_INFO "Duong dan day du: %s\n", outPath);
   printf(ERR_INFO "Vui long nho ma PIN da nhap de import duoc o may khac.\n");
@@ -848,8 +831,9 @@ int fileioImportArchive(AppDatabase *db) {
 
   char filename[256];
   while (1) {
-    printf(COLOR_CYAN "  Nhap ten file backup can nhap tu thu muc 'data' (mac "
-                      "dinh: backup.bin, 0 de thoat): " COLOR_RESET);
+    printf(COLOR_CYAN
+           "  Nhap ten file backup can nhap tu thu muc 'export' (mac "
+           "dinh: backup.bin, 0 de thoat): " COLOR_RESET);
     readString(filename, sizeof(filename));
     trimSpaces(filename);
 
@@ -862,7 +846,7 @@ int fileioImportArchive(AppDatabase *db) {
       printf(
           ERR_INFO
           "Ban khong nhap ten file. He thong tim file mac dinh: " COLOR_YELLOW
-          "data/backup.bin" COLOR_RESET "\n");
+          "export/backup.bin" COLOR_RESET "\n");
     }
 
     /* Validate path traversal or forbidden filesystem characters */
@@ -883,25 +867,18 @@ int fileioImportArchive(AppDatabase *db) {
     break;
   }
 
-  /* Target path (Read from 'data/' folder) */
-  char dataDir[512];
+  /* Target path (Read from 'export/' folder next to exe) */
+  char exportDir[512];
   char inPath[1024];
-  char sep[2] = "/";
-#ifdef _WIN32
-  sep[0] = '\\';
-#endif
-
-  getExeDir(dataDir, sizeof(dataDir));
-  strncat(dataDir, sep, sizeof(dataDir) - strlen(dataDir) - 1);
-  strncat(dataDir, "data", sizeof(dataDir) - strlen(dataDir) - 1);
-  snprintf(inPath, sizeof(inPath), "%s%s%s", dataDir, sep, filename);
+  resolvePath("export", NULL, exportDir, sizeof(exportDir));
+  resolvePath("export", filename, inPath, sizeof(inPath));
 
   FILE *fp = fopen(inPath, "rb");
   if (fp == NULL) {
     printf(ERR_LOI "Khong tim thay file backup: %s\n", filename);
     printf(ERR_INFO "Vui long dam bao file backup nay da duoc copy vao thu muc "
-                    "du lieu: %s\n",
-           dataDir);
+                    "xuat du lieu: %s\n",
+           exportDir);
     uiPause();
     return -1;
   }

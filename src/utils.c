@@ -293,6 +293,47 @@ void getExeDir(char *buffer, size_t size) {
 #endif
 }
 
+void resolvePath(const char *subDir, const char *inputPath, char *outPath,
+                 size_t outSize) {
+  if (outPath == NULL || outSize == 0) {
+    return;
+  }
+
+  int isAbsolute = 0;
+  if (inputPath != NULL && strlen(inputPath) > 0) {
+#ifdef _WIN32
+    if ((strlen(inputPath) > 1 && inputPath[1] == ':') ||
+        inputPath[0] == '\\' || inputPath[0] == '/') {
+      isAbsolute = 1;
+    }
+#else
+    if (inputPath[0] == '/') {
+      isAbsolute = 1;
+    }
+#endif
+  }
+
+  if (isAbsolute) {
+    strncpy(outPath, inputPath, outSize - 1);
+    outPath[outSize - 1] = '\0';
+  } else {
+    char exeDir[512];
+    char sep[2] = "/";
+#ifdef _WIN32
+    sep[0] = '\\';
+#endif
+    getExeDir(exeDir, sizeof(exeDir));
+
+    if (subDir != NULL && strlen(subDir) > 0) {
+      snprintf(outPath, outSize, "%s%s%s%s%s", exeDir, sep, subDir, sep,
+               (inputPath ? inputPath : ""));
+    } else {
+      snprintf(outPath, outSize, "%s%s%s", exeDir, sep,
+               (inputPath ? inputPath : ""));
+    }
+  }
+}
+
 typedef struct {
   unsigned char data[64];
   unsigned int datalen;
@@ -566,14 +607,23 @@ void viewSystemLogs(void) {
 
   FILE *f = fopen(auditPath, "rb");
   if (f == NULL) {
-    printf(ERR_LOI "Khong tim thay file nhat ky he thong!\n");
+    /* Attempt to create the system audit log file if it does not exist yet */
+    f = fopen(auditPath, "wb");
+    if (f != NULL) {
+      fclose(f);
+      f = fopen(auditPath, "rb");
+    }
+  }
+
+  if (f == NULL) {
+    printf(ERR_LOI "Khong the khoi tao hoac mo file nhat ky he thong!\n");
     printf(ERR_INFO "Thuong truc tai: %s\n", auditPath);
     uiPause();
     return;
   }
 
   uiClear();
-  uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong");
+  uiDrawBreadcrumb("[4] Quan ly he thong -> [2] Xem nhat ky he thong");
 
   char line[1024];
   int lineCount = 0;
@@ -598,7 +648,7 @@ void viewSystemLogs(void) {
 
     lineCount++;
 
-    printf(COLOR_GRAY "%4d. " COLOR_RESET, lineCount);
+    printf("  " COLOR_GRAY "%4d. " COLOR_RESET, lineCount);
     printf(COLOR_CYAN LINE_V COLOR_RESET " ");
 
     char timePart[64];
@@ -639,7 +689,8 @@ void viewSystemLogs(void) {
           ;
         }
       }
-      uiDrawBreadcrumb("MENU BAN CHU NHIEM > Nhat ky he thong (tiep)");
+      uiDrawBreadcrumb(
+          "[4] Quan ly he thong -> [2] Xem nhat ky he thong (tiep)");
     }
   }
 

@@ -310,14 +310,14 @@ void reportSortMembersByViolations(const AppDatabase *db) {
 
       printf("\n");
       printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
-      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
-      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc | " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "0" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
       printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
       printf(COLOR_CYAN "  > " COLOR_RESET);
       char buf[10];
       readString(buf, sizeof(buf));
       char c = buf[0];
-      if (c == 'q' || c == 'Q') {
+      if (c == '0') {
         break;
       }
       if ((c == 'n' || c == 'N') && currentPage < totalPages - 1) {
@@ -336,7 +336,6 @@ void reportExportTxt(const AppDatabase *db) {
 
   double collected[4];
   double outstanding[4];
-  char exeDir[512];
   char filePath[2048];
   char timestampForFile[32];
   char timestampDisplay[32];
@@ -356,23 +355,13 @@ void reportExportTxt(const AppDatabase *db) {
            timeInfo);
 
   char reportsDir[1024];
-  getExeDir(exeDir, sizeof(exeDir));
+  char reportFilename[256];
+  resolvePath("reports", NULL, reportsDir, sizeof(reportsDir));
+  (void)MKDIR(reportsDir);
 
-#ifdef _WIN32
-  snprintf(reportsDir, sizeof(reportsDir), "%s\\reports", exeDir);
-#else
-  snprintf(reportsDir, sizeof(reportsDir), "%s/reports", exeDir);
-#endif
-
-  MKDIR(reportsDir);
-
-#ifdef _WIN32
-  snprintf(filePath, sizeof(filePath), "%s\\violation_report_%s.txt",
-           reportsDir, timestampForFile);
-#else
-  snprintf(filePath, sizeof(filePath), "%s/violation_report_%s.txt", reportsDir,
+  snprintf(reportFilename, sizeof(reportFilename), "violation_report_%s.txt",
            timestampForFile);
-#endif
+  resolvePath("reports", reportFilename, filePath, sizeof(filePath));
 
   FILE *fp = fopen(filePath, "w");
   if (fp == NULL) {
@@ -483,12 +472,14 @@ void reportDashboard(const AppDatabase *db) {
     }
   }
 
-  /* 2. Top 5 violators (active and non-deleted members only) */
+  /* 2. Top 5 violators (active and non-deleted members only with violations) */
   const Member *sorted[MAX_MEMBERS] = {NULL};
   int activeCount = 0;
   for (int i = 0; i < db->memberCount; i++) {
     if (!db->members[i].isDeleted && db->members[i].isActive == STATUS_ACTIVE) {
-      sorted[activeCount++] = &db->members[i];
+      if (countMemberViolations(db, db->members[i].studentId) > 0) {
+        sorted[activeCount++] = &db->members[i];
+      }
     }
   }
 
@@ -500,7 +491,7 @@ void reportDashboard(const AppDatabase *db) {
 
   int showCount = activeCount < 5 ? activeCount : 5;
   if (showCount == 0) {
-    uiDrawMenuRow("  - Khong co du lieu thanh vien hoat dong.");
+    uiDrawMenuRow("  - Khong co thanh vien nao vi pham.");
   } else {
     for (int i = 0; i < showCount; i++) {
       int count = countMemberViolations(db, sorted[i]->studentId);
@@ -555,13 +546,13 @@ void reportDashboard(const AppDatabase *db) {
                 "  [TIEN DO THU TIEN PHAT]" COLOR_RESET);
 
   char issuedStr[128];
-  snprintf(issuedStr, sizeof(issuedStr),
-           "    - Tong tien phat da phat: %.0f VND", totalIssued);
+  snprintf(issuedStr, sizeof(issuedStr), "- Tong tien phat da phat: %.0f VND",
+           totalIssued);
 
   uiDrawMenuRowFmt("  %-66.66s", issuedStr);
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("    - Tong tien phat da thu:  ");
+  printf("  - Tong tien phat da thu:  ");
   printf(COLOR_GREEN "%.0f VND" COLOR_RESET, totalPaid);
 
   char digits[32];
@@ -583,7 +574,7 @@ void reportDashboard(const AppDatabase *db) {
   }
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("    Tien do: [");
+  printf("  Tien do: [");
   printf(COLOR_GREEN);
   for (int i = 0; i < filledBlocks; i++) {
     printf("\xE2\x96\x88");
