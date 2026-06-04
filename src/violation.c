@@ -1626,7 +1626,7 @@ int violationVoid(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Huy vi pham");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [7] Huy vi pham");
 
   /* Search member by MSSV or name with re-prompt */
   char input[MAX_NAME_LEN];
@@ -1945,7 +1945,7 @@ int violationImportCsv(AppDatabase *db) {
   REQUIRE_DIRECTOR(session);
 
   uiClear();
-  uiDrawBreadcrumb("[2] Quan ly vi pham -> Import vi pham tu file CSV");
+  uiDrawBreadcrumb("[2] Quan ly vi pham -> [8] Import vi pham tu file CSV");
 
   char filepath[512];
   char finalPath[2048];

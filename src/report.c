@@ -542,13 +542,13 @@ void reportDashboard(const AppDatabase *db) {
                 "  [TIEN DO THU TIEN PHAT]" COLOR_RESET);
 
   char issuedStr[128];
-  snprintf(issuedStr, sizeof(issuedStr),
-           "    - Tong tien phat da phat: %.0f VND", totalIssued);
+  snprintf(issuedStr, sizeof(issuedStr), "- Tong tien phat da phat: %.0f VND",
+           totalIssued);
 
   uiDrawMenuRowFmt("  %-66.66s", issuedStr);
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("    - Tong tien phat da thu:  ");
+  printf("  - Tong tien phat da thu:  ");
   printf(COLOR_GREEN "%.0f VND" COLOR_RESET, totalPaid);
 
   char digits[32];
@@ -570,7 +570,7 @@ void reportDashboard(const AppDatabase *db) {
   }
 
   printf(COLOR_BLUE BOX_V COLOR_RESET);
-  printf("    Tien do: [");
+  printf("  Tien do: [");
   printf(COLOR_GREEN);
   for (int i = 0; i < filledBlocks; i++) {
     printf("\xE2\x96\x88");
