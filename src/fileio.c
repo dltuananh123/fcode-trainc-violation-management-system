@@ -866,16 +866,16 @@ int fileioImportArchive(AppDatabase *db) {
     }
 
     /* Validate path traversal or forbidden filesystem characters */
-    int is_valid = 1;
+    int isValid = 1;
     for (int i = 0; filename[i] != '\0'; i++) {
       char c = filename[i];
       if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' ||
           c == '"' || c == '<' || c == '>' || c == '|') {
-        is_valid = 0;
+        isValid = 0;
         break;
       }
     }
-    if (!is_valid) {
+    if (!isValid) {
       printf(ERR_LOI "Ten file chua ky tu dac biet khong hop le (/, \\, :, *, "
                      "?, \", <, >, |)!\n");
       continue;

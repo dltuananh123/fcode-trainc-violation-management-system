@@ -1917,16 +1917,16 @@ int violationImportCsv(AppDatabase *db) {
 
     /* Check for malicious characters in path to prevent OS command injection or
      * directory issues */
-    int is_valid = 1;
+    int isValid = 1;
     for (int i = 0; filepath[i] != '\0'; i++) {
       char c = filepath[i];
       if (c == '*' || c == '?' || c == '"' || c == '<' || c == '>' ||
           c == '|') {
-        is_valid = 0;
+        isValid = 0;
         break;
       }
     }
-    if (!is_valid) {
+    if (!isValid) {
       printf(ERR_LOI
              "Duong dan file chua ky tu khong hop le (*, ?, \", <, >, |)!\n");
       continue;
