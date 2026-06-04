@@ -2282,7 +2282,7 @@ int violationImportCsv(AppDatabase *db) {
            " MSSV        " COLOR_CYAN LINE_V COLOR_RESET
            " Ho va ten             " COLOR_CYAN LINE_V COLOR_RESET
            " Loi vi pham         " COLOR_CYAN LINE_V COLOR_RESET
-           " Ghi chu / Ghi chu loi " COLOR_CYAN LINE_V COLOR_RESET "\n");
+           " Ghi chu / Lỗi        " COLOR_CYAN LINE_V COLOR_RESET "\n");
 
     printf(COLOR_CYAN "  " LINE_T_RIGHT);
     for (int i = 0; i < 5; i++) {
@@ -2328,8 +2328,8 @@ int violationImportCsv(AppDatabase *db) {
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ",
                reasonName(rec->reasonCode));
         char truncatedNotes[24];
-        truncateString(rec->notes, truncatedNotes, 20);
-        printf(COLOR_CYAN LINE_V COLOR_RESET " %-22s ", truncatedNotes);
+        truncateString(rec->notes, truncatedNotes, 18);
+        printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", truncatedNotes);
       } else {
         printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED
                                              "ERROR     " COLOR_RESET " ");
@@ -2337,8 +2337,8 @@ int violationImportCsv(AppDatabase *db) {
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", "(Khong ro)");
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ", "(Loi)");
         char truncatedError[24];
-        truncateString(rec->errorMsg, truncatedError, 20);
-        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-22s" COLOR_RESET
+        truncateString(rec->errorMsg, truncatedError, 18);
+        printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-20s" COLOR_RESET
                                              " ",
                truncatedError);
       }
