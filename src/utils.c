@@ -758,3 +758,24 @@ void uiSleep(int milliseconds) {
   nanosleep(&ts, NULL);
 #endif
 }
+
+void truncateString(const char *src, char *dest, int maxWidth) {
+  if (src == NULL || dest == NULL || maxWidth <= 0) {
+    return;
+  }
+
+  int len = (int)strlen(src);
+  if (len <= maxWidth) {
+    /* No truncation needed */
+    strcpy(dest, src);
+  } else {
+    /* Truncate and add "..." */
+    int copyLen = maxWidth - 3; /* Reserve space for "..." */
+    if (copyLen < 1) {
+      copyLen = 1; /* At least 1 char + "..." */
+    }
+    strncpy(dest, src, copyLen);
+    dest[copyLen] = '\0';
+    strcat(dest, "...");
+  }
+}

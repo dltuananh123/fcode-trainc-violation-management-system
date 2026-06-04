@@ -2327,16 +2327,20 @@ int violationImportCsv(AppDatabase *db) {
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", rec->memberName);
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ",
                reasonName(rec->reasonCode));
-        printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", rec->notes);
+        char truncatedNotes[24];
+        truncateString(rec->notes, truncatedNotes, 20);
+        printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", truncatedNotes);
       } else {
         printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED
                                              "ERROR     " COLOR_RESET " ");
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-10s ", rec->studentId);
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-20s ", "(Khong ro)");
         printf(COLOR_CYAN LINE_V COLOR_RESET " %-18s ", "(Loi)");
+        char truncatedError[24];
+        truncateString(rec->errorMsg, truncatedError, 20);
         printf(COLOR_CYAN LINE_V COLOR_RESET " " COLOR_RED "%-20s" COLOR_RESET
                                              " ",
-               rec->errorMsg);
+               truncatedError);
       }
       printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
     }
