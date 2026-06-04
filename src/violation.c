@@ -2066,7 +2066,7 @@ int violationImportCsv(AppDatabase *db) {
       filepath[sizeof(filepath) - 1] = '\0';
       printf(ERR_INFO
              "Ban khong nhap duong dan. Su dung file mac dinh: " COLOR_YELLOW
-             "export/template.csv" COLOR_RESET "\n");
+             "template.csv" COLOR_RESET "\n");
     }
 
     /* Check for malicious characters in path to prevent OS command injection or
@@ -2086,7 +2086,7 @@ int violationImportCsv(AppDatabase *db) {
       continue;
     }
 
-    /* Resolve relative paths to exeDir/export/ */
+    /* Resolve relative paths to exeDir/ */
     int isAbsolute = 0;
 #ifdef _WIN32
     if ((strlen(filepath) > 1 && filepath[1] == ':') || filepath[0] == '\\' ||
@@ -2108,7 +2108,7 @@ int violationImportCsv(AppDatabase *db) {
       sep[0] = '\\';
 #endif
       getExeDir(exeDir, sizeof(exeDir));
-      snprintf(finalPath, sizeof(finalPath), "%s%sexport%s%s", exeDir, sep, sep,
+      snprintf(finalPath, sizeof(finalPath), "%s%s%s", exeDir, sep,
                filepath);
     }
 
