@@ -120,44 +120,83 @@ int validateMSSVFormat(const char *mssv) {
     return 0;
   }
 
-  if (strlen(mssv) != 8) {
-    printf(ERR_LOI "MSSV phai dung 8 ky tu (dang XY123456)! "
-                   "Ban nhap %d ky tu.\n",
-           (int)strlen(mssv));
-    return 0;
-  }
-
-  /* Char 0: Campus */
-  const char *campus = "SHDCQshdcq";
-  if (strchr(campus, mssv[0]) == NULL) {
-    printf(ERR_LOI "Ky tu dau tien phai la Campus: "
-                   "S(HCM), H(HN), D(DN), C(CT), Q(QN)!\n");
-    return 0;
-  }
-
-  /* Char 1: Division */
-  const char *division = "EAS eas";
-  if (strchr(division, mssv[1]) == NULL) {
-    printf(ERR_LOI "Ky tu thu hai phai la khoi nganh: "
-                   "E(Engineering), A(Arts), S(Social)!\n");
-    return 0;
-  }
-
-  /* Chars 2-7: 6 digits */
-  for (int i = 2; i < 8; i++) {
-    if (mssv[i] < '0' || mssv[i] > '9') {
-      printf(ERR_LOI "6 ky tu cuoi cua MSSV phai la so!\n");
-      return 0;
-    }
-  }
-
   /* No spaces */
   if (strchr(mssv, ' ') != NULL) {
     printf(ERR_LOI "MSSV khong duoc chua khoang trang!\n");
     return 0;
   }
 
-  return 1;
+  size_t len = strlen(mssv);
+
+  /* Validate campus and division prefixes if they look like letters */
+  if (len >= 2 &&
+      ((mssv[0] >= 'A' && mssv[0] <= 'Z') ||
+       (mssv[0] >= 'a' && mssv[0] <= 'z')) &&
+      ((mssv[1] >= 'A' && mssv[1] <= 'Z') ||
+       (mssv[1] >= 'a' && mssv[1] <= 'z'))) {
+    /* Validate campus prefix character */
+    const char *campuses = "SHDCQIGMEJKshdcqigmejk";
+    if (strchr(campuses, mssv[0]) == NULL) {
+      printf(ERR_LOI "Ky tu dau tien cua ma Campus khong hop le!\n");
+      return 0;
+    }
+
+    /* Validate division/major prefix character */
+    const char *divisions = "EASIDCLNPReasidclnpr";
+    if (strchr(divisions, mssv[1]) == NULL) {
+      printf(ERR_LOI "Ky tu thu hai cua ma nganh khong hop le!\n");
+      return 0;
+    }
+  }
+
+  /* Option B: 4, 5, or 6 digits only */
+  if (len >= 4 && len <= 6) {
+    int allDigits = 1;
+    for (size_t i = 0; i < len; i++) {
+      if (mssv[i] < '0' || mssv[i] > '9') {
+        allDigits = 0;
+        break;
+      }
+    }
+    if (allDigits) {
+      return 1;
+    }
+  }
+
+  /* Option A: 2 letter prefix + 4, 5, or 6 digits */
+  if (len >= 6 && len <= 8) {
+    char prefix[3];
+    prefix[0] = (char)toupper((unsigned char)mssv[0]);
+    prefix[1] = (char)toupper((unsigned char)mssv[1]);
+    prefix[2] = '\0';
+
+    const char *validPrefixes[] = {"SE", "HE", "DE", "QE", "CE", "IA", "SI",
+                                   "SB", "GD", "MC", "EL", "EN", "JP", "KR"};
+    int prefixValid = 0;
+    for (size_t i = 0; i < sizeof(validPrefixes) / sizeof(validPrefixes[0]);
+         i++) {
+      if (strcmp(prefix, validPrefixes[i]) == 0) {
+        prefixValid = 1;
+        break;
+      }
+    }
+
+    if (prefixValid) {
+      int allDigits = 1;
+      for (size_t i = 2; i < len; i++) {
+        if (mssv[i] < '0' || mssv[i] > '9') {
+          allDigits = 0;
+          break;
+        }
+      }
+      if (allDigits) {
+        return 1;
+      }
+    }
+  }
+
+  printf(ERR_LOI "MSSV khong dung dinh dang (vd: SE123456, 123456)!\n");
+  return 0;
 }
 
 int validateMSSV(const char *mssv, const AppDatabase *db) {
@@ -338,198 +377,133 @@ void nameAutoFix(char *name) {
  * EMAIL
  * ============================================================ */
 
-static int isValidEmailChar(char c, int isLocal) {
-  if (c >= 'a' && c <= 'z') {
-    return 1;
-  }
-  if (c >= 'A' && c <= 'Z') {
-    return 1;
-  }
-  if (c >= '0' && c <= '9') {
-    return 1;
-  }
-  if (isLocal) {
-    return c == '.' || c == '_' || c == '%' || c == '+' || c == '-';
-  }
-  return c == '.' || c == '-';
-}
-
 int validateEmail(const char *email) {
   if (email == NULL || email[0] == '\0') {
     printf(ERR_LOI "Email khong duoc de trong!\n");
     return 0;
   }
 
-  int len = (int)strlen(email);
-  if (len > 100) {
-    printf(ERR_LOI "Email khong duoc vuot qua 100 ky tu!\n");
-    return 0;
-  }
-
-  /* No spaces */
-  if (strchr(email, ' ') != NULL) {
-    printf(ERR_LOI "Email khong duoc chua khoang trang!\n");
-    return 0;
-  }
-
-  /* Find @ */
   const char *at = strchr(email, '@');
-  if (at == NULL) {
-    printf(ERR_LOI "Email phai chua dau \"@\"!\n");
+  if (at == NULL || at == email) {
+    printf(ERR_LOI "Email khong hop le (thieu @ hoac ten email)!\n");
     return 0;
   }
 
-  /* Only one @ */
-  if (strchr(at + 1, '@') != NULL) {
-    printf(ERR_LOI "Email chi duoc chua mot dau \"@\"!\n");
+  char localPart[256];
+  size_t localLen = (size_t)(at - email);
+  if (localLen >= sizeof(localPart)) {
+    printf(ERR_LOI "Email qua dai!\n");
     return 0;
   }
+  strncpy(localPart, email, localLen);
+  localPart[localLen] = '\0';
 
-  /* Text before @ */
-  if (at == email) {
-    printf(ERR_LOI "Email phai co ten truoc dau \"@\"!\n");
-    return 0;
+  char domain[256];
+  strncpy(domain, at + 1, sizeof(domain) - 1);
+  domain[sizeof(domain) - 1] = '\0';
+
+  /* Convert domain to lowercase for comparison */
+  for (int i = 0; domain[i]; i++) {
+    domain[i] = (char)tolower((unsigned char)domain[i]);
   }
 
-  /* Local part (before @) length validation */
-  int localLen = (int)(at - email);
-  if (localLen > 64) {
-    printf(ERR_LOI "Phan ten email truoc dau \"@\" khong duoc qua 64 ky tu!\n");
-    return 0;
-  }
-
-  /* Validate local part (before @) */
-  for (const char *p = email; p < at; p++) {
-    if (!isValidEmailChar(*p, 1)) {
-      printf(ERR_LOI "Email chua ky tu khong hop le trong phan ten!\n");
-      return 0;
-    }
-  }
-
-  /* No consecutive dots in local part */
-  for (const char *p = email; p < at - 1; p++) {
-    if (*p == '.' && *(p + 1) == '.') {
-      printf(ERR_LOI "Email khong duoc chua dau cham lien tiep!\n");
-      return 0;
-    }
-  }
-
-  /* Local part cannot start or end with dot */
-  if (email[0] == '.' || at[-1] == '.') {
-    printf(ERR_LOI "Email khong duoc bat dau hoac ket thuc bang dau cham!\n");
-    return 0;
-  }
-
-  /* Domain after @ */
-  const char *domain = at + 1;
-  if (domain[0] == '\0') {
-    printf(ERR_LOI "Email phai co ten mien sau dau \"@\"!\n");
-    return 0;
-  }
-
-  /* Domain length validation */
-  int domainLen = (int)strlen(domain);
-  if (domainLen > 253) {
-    printf(ERR_LOI "Ten mien email sau dau \"@\" khong duoc qua 253 ky tu!\n");
-    return 0;
-  }
-
-  /* Validate domain characters */
-  for (const char *p = domain; *p != '\0'; p++) {
-    if (!isValidEmailChar(*p, 0)) {
-      printf(ERR_LOI "Email chua ky tu khong hop le trong ten mien!\n");
-      return 0;
-    }
-  }
-
-  /* Domain must contain . */
-  const char *lastDot = strrchr(domain, '.');
-  if (lastDot == NULL) {
-    printf(ERR_LOI "Email phai co ten mien hop le (vd: gmail.com)!\n");
-    return 0;
-  }
-
-  /* No consecutive dots */
-  if (strstr(domain, "..") != NULL) {
-    printf(ERR_LOI "Email khong duoc chua dau cham lien tiep!\n");
-    return 0;
-  }
-
-  /* Split domain by '.' and check label lengths and hyphens */
-  const char *startLabel = domain;
-  while (1) {
-    const char *endLabel = strchr(startLabel, '.');
-    int labelLen;
-    if (endLabel == NULL) {
-      labelLen = (int)strlen(startLabel);
-    } else {
-      labelLen = (int)(endLabel - startLabel);
-    }
-
-    if (labelLen == 0) {
-      printf(ERR_LOI "Ten mien co label rong!\n");
-      return 0;
-    }
-    if (labelLen > 63) {
-      printf(ERR_LOI "Moi phan cua ten mien khong duoc qua 63 ky tu!\n");
-      return 0;
-    }
-    if (startLabel[0] == '-' || startLabel[labelLen - 1] == '-') {
-      printf(ERR_LOI "Phan ten mien khong duoc bat dau hoac ket thuc bang dau "
-                     "gach ngang!\n");
+  /* 1. Check FPT edu mail */
+  if (strcmp(domain, "fpt.edu.vn") == 0 || strcmp(domain, "fpt.edu") == 0) {
+    /* Regex:
+     * ^[A-Za-z]+[A-Za-z]*([A-Za-z]{2,})?(?i)(SE|HE|DE|QE|CE|IA|SI|SB|GD|MC|EL|EN|JP|KR)?\d{4,6}$
+     */
+    size_t len = strlen(localPart);
+    if (len < 5) { /* At least 1 letter + 4 digits = 5 */
+      printf(ERR_LOI "Email FPT phai co dang <ten><MSSV>@fpt.edu.vn!\n");
       return 0;
     }
 
-    if (endLabel == NULL) {
-      break;
+    size_t digitStart = len;
+    while (digitStart > 0 && localPart[digitStart - 1] >= '0' &&
+           localPart[digitStart - 1] <= '9') {
+      digitStart--;
     }
-    startLabel = endLabel + 1;
-  }
 
-  /* TLD must be at least 2 letters */
-  const char *tld = lastDot + 1;
-  int tldLen = (int)strlen(tld);
-  if (tldLen < 2) {
-    printf(
-        ERR_LOI
-        "Domain phai co it nhat 2 ky tu sau dau cham cuoi (vd: .com, .vn)!\n");
-    return 0;
-  }
-
-  /* TLD must be only letters */
-  for (const char *p = tld; *p != '\0'; p++) {
-    if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z'))) {
-      printf(ERR_LOI "Duoi domain chi duoc chua chu cai (vd: .com, .vn)!\n");
+    size_t numDigits = len - digitStart;
+    if (numDigits < 4 || numDigits > 6) {
+      printf(ERR_LOI
+             "Email FPT phai ket thuc bang 4, 5, hoac 6 chu so MSSV!\n");
       return 0;
     }
-  }
 
-  /* Soft warn for uncommon TLDs */
-  static const char *commonTlds[] = {"com", "vn",  "net", "org",  "edu",
-                                     "io",  "dev", "gov", "info", "co",
-                                     "me",  "app", NULL};
-  int knownTld = 0;
-  for (int i = 0; commonTlds[i] != NULL; i++) {
-    int match = 1;
-    for (int j = 0; tld[j] != '\0' || commonTlds[i][j] != '\0'; j++) {
-      if (tolower((unsigned char)tld[j]) !=
-          tolower((unsigned char)commonTlds[i][j])) {
-        match = 0;
-        break;
+    /* Characters before digits must be only letters */
+    for (size_t i = 0; i < digitStart; i++) {
+      char c = localPart[i];
+      if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+        printf(ERR_LOI
+               "Phan ten truoc MSSV trong email FPT chi duoc chua chu cai!\n");
+        return 0;
       }
     }
-    if (match) {
-      knownTld = 1;
-      break;
+
+    if (digitStart < 1) {
+      printf(ERR_LOI "Email FPT phai bat dau bang chu cai!\n");
+      return 0;
     }
-  }
-  if (!knownTld) {
-    printf(ERR_CANH_BAO "Ten mien quoc gia hoac to chuc \".%s\" la it pho "
-                        "bien. Vui long kiem tra lai.\n",
-           tld);
+
+    return 1;
   }
 
-  return 1;
+  /* 2. Check Google mail */
+  if (strcmp(domain, "gmail.com") == 0) {
+    size_t len = strlen(localPart);
+    if (len < 6 || len > 30) {
+      printf(ERR_LOI "Email Google phai tu 6 den 30 ky tu!\n");
+      return 0;
+    }
+    for (size_t i = 0; i < len; i++) {
+      char c = localPart[i];
+      if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
+        printf(ERR_LOI "Email Google chua ky tu khong hop le!\n");
+        return 0;
+      }
+    }
+    if (localPart[0] == '.' || localPart[len - 1] == '.') {
+      printf(ERR_LOI
+             "Email Google khong duoc bat dau hoac ket thuc bang dau cham!\n");
+      return 0;
+    }
+    if (strstr(localPart, "..") != NULL) {
+      printf(ERR_LOI "Email Google khong duoc chua hai dau cham lien tiep!\n");
+      return 0;
+    }
+    return 1;
+  }
+
+  /* 3. Check Microsoft mail */
+  if (strcmp(domain, "outlook.com") == 0 ||
+      strcmp(domain, "hotmail.com") == 0 || strcmp(domain, "live.com") == 0) {
+    size_t len = strlen(localPart);
+    if (len < 1 || len > 64) {
+      printf(ERR_LOI "Email Microsoft khong hop le!\n");
+      return 0;
+    }
+    for (size_t i = 0; i < len; i++) {
+      char c = localPart[i];
+      if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
+        printf(ERR_LOI "Email Microsoft chua ky tu khong hop le!\n");
+        return 0;
+      }
+    }
+    if (localPart[0] == '.' || localPart[len - 1] == '.') {
+      printf(
+          ERR_LOI
+          "Email Microsoft khong duoc bat dau hoac ket thuc bang dau cham!\n");
+      return 0;
+    }
+    return 1;
+  }
+
+  printf(ERR_LOI
+         "Chi chap nhan email hop le cua FPT, Google, hoac Microsoft!\n");
+  return 0;
 }
 
 int validateEmailUnique(const char *email, const AppDatabase *db,
