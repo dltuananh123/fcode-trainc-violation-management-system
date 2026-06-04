@@ -504,32 +504,71 @@ int validateEmail(const char *email) {
     }
   }
 
-  /* Soft warn for uncommon TLDs */
-  static const char *commonTlds[] = {"com", "vn",  "net", "org",  "edu",
-                                     "io",  "dev", "gov", "info", "co",
-                                     "me",  "app", NULL};
-  int knownTld = 0;
-  for (int i = 0; commonTlds[i] != NULL; i++) {
-    int match = 1;
-    for (int j = 0; tld[j] != '\0' || commonTlds[i][j] != '\0'; j++) {
-      if (tolower((unsigned char)tld[j]) !=
-          tolower((unsigned char)commonTlds[i][j])) {
-        match = 0;
+  /* Specific domain and local part checks requested by user */
+  char lowerDomain[256];
+  if (domainLen >= (int)sizeof(lowerDomain)) {
+    return 0;
+  }
+  for (int i = 0; i < domainLen; i++) {
+    lowerDomain[i] = (char)tolower((unsigned char)domain[i]);
+  }
+  lowerDomain[domainLen] = '\0';
+
+  if (strcmp(lowerDomain, "gmail.com") == 0) {
+    return 1;
+  } else if (strcmp(lowerDomain, "outlook.com") == 0 ||
+             strcmp(lowerDomain, "hotmail.com") == 0) {
+    return 1;
+  } else if (strcmp(lowerDomain, "fpt.edu") == 0 ||
+             strcmp(lowerDomain, "fpt.edu.vn") == 0) {
+    char localPart[256];
+    if (localLen >= (int)sizeof(localPart)) {
+      printf(ERR_LOI "Email truoc dau \"@\" qua dai!\n");
+      return 0;
+    }
+    strncpy(localPart, email, (size_t)localLen);
+    localPart[localLen] = '\0';
+
+    int digitCount = 0;
+    while (localLen - 1 - digitCount >= 0) {
+      char c = localPart[localLen - 1 - digitCount];
+      if (c >= '0' && c <= '9') {
+        digitCount++;
+      } else {
         break;
       }
     }
-    if (match) {
-      knownTld = 1;
-      break;
-    }
-  }
-  if (!knownTld) {
-    printf(ERR_CANH_BAO "Ten mien quoc gia hoac to chuc \".%s\" la it pho "
-                        "bien. Vui long kiem tra lai.\n",
-           tld);
-  }
 
-  return 1;
+    if (digitCount != 5 && digitCount != 6) {
+      printf(
+          ERR_LOI
+          "Email sinh vien FPT phai ket thuc bang 5 hoac 6 chu so (MSSV)!\n");
+      return 0;
+    }
+
+    int letterCount = localLen - digitCount;
+    if (letterCount <= 0) {
+      printf(ERR_LOI
+             "Email sinh vien FPT phai bat dau bang chu cai truoc phan so!\n");
+      return 0;
+    }
+
+    for (int i = 0; i < letterCount; i++) {
+      char c = localPart[i];
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
+        printf(ERR_LOI
+               "Email sinh vien FPT chi duoc chua chu cai va chu so!\n");
+        return 0;
+      }
+    }
+    return 1;
+  } else {
+    printf(
+        ERR_LOI
+        "He thong chi chap nhan email Google (gmail.com), Microsoft "
+        "(outlook.com, hotmail.com) hoac email FPT (fpt.edu.vn, fpt.edu)!\n");
+    return 0;
+  }
 }
 
 int validateEmailUnique(const char *email, const AppDatabase *db,
