@@ -285,6 +285,10 @@ int memberAdd(AppDatabase *db) {
   }
 
   memberRebuildIndex(db);
+
+  /* Smooth UX: Brief pause to let user see success message */
+  uiSleep(400);
+
   return 0;
 }
 
@@ -1204,8 +1208,12 @@ void memberListAll(AppDatabase *db) {
            "%d" COLOR_RESET " thanh vien\n",
            currentPage + 1, totalPages, activeCount);
 
-    printf(COLOR_DIM "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET
-                     " > ");
+    printf("\n");
+    printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
+    printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
+    printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
+    printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
+    printf(COLOR_CYAN "  > " COLOR_RESET);
     char buf[10];
     readString(buf, sizeof(buf));
     char c = buf[0];

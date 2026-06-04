@@ -377,6 +377,9 @@ int main(void) {
   /* Display FCODE Firebird logo on startup */
   uiDrawLogo();
 
+  /* Smooth UX: Small delay to let user appreciate the ASCII art */
+  uiSleep(1200);
+
   /* Load data from files */
   if (fileioLoadAll(&gDb) != 0) {
     printf(ERR_LOI "Khong the tai du lieu! "
@@ -391,6 +394,9 @@ int main(void) {
     printf(ERR_OK "Tai du lieu thanh cong!\n");
     printf(COLOR_GRAY "  - Thanh vien: %d/%d\n", gDb.memberCount, MAX_MEMBERS);
     printf("  - Vi pham: %d\n" COLOR_RESET, gDb.violationCount);
+
+    /* Smooth UX: Brief pause before login screen */
+    uiSleep(800);
   }
 
   /* Main application loop */

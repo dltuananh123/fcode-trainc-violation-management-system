@@ -671,3 +671,18 @@ unsigned int calculateCrc32(const unsigned char *data, size_t length) {
   }
   return crc ^ 0xFFFFFFFFU;
 }
+
+/* ============================================================
+ * UI/UX HELPERS - Smooth Delays
+ * ============================================================ */
+
+void uiSleep(int milliseconds) {
+#ifdef _WIN32
+  Sleep((DWORD)milliseconds);
+#else
+  struct timespec ts;
+  ts.tv_sec = milliseconds / 1000;
+  ts.tv_nsec = (milliseconds % 1000) * 1000000;
+  nanosleep(&ts, NULL);
+#endif
+}

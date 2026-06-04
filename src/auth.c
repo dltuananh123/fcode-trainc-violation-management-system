@@ -154,6 +154,9 @@ int authLogin(AppDatabase *db) {
                   "Chao mung %s (%s)\n",
            studentId, accountRoleName(acc->role));
 
+    /* Smooth UX: Brief pause before menu transition */
+    uiSleep(600);
+
     /* Force change default password if needed */
     if (acc->isDefaultPassword) {
       printf("\n");
@@ -189,6 +192,10 @@ void authLogout(AppDatabase *db) {
   sessionActive = 0;
   memset(&currentSession, 0, sizeof(Account));
   printf(ERR_OK "Da dang xuat!\n");
+
+  /* Smooth UX: Brief pause before returning to login */
+  uiSleep(800);
+
   uiClear();
 }
 

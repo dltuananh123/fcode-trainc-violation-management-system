@@ -329,8 +329,12 @@ int violationViewAllFiltered(AppDatabase *db) {
              currentPage + 1, totalPages, found);
 
       if (totalPages > 1) {
-        printf(COLOR_DIM
-               "  n: trang tiep | p: trang truoc | q: thoat" COLOR_RESET " > ");
+        printf("\n");
+        printf(COLOR_DIM "  ┌────────────────────────────────────┐" COLOR_RESET "\n");
+        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
+        printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Thoat                   │" COLOR_RESET "\n");
+        printf(COLOR_DIM "  └────────────────────────────────────┘" COLOR_RESET "\n");
+        printf(COLOR_CYAN "  > " COLOR_RESET);
         char buf[10];
         readString(buf, sizeof(buf));
         char c = buf[0];
@@ -562,6 +566,10 @@ int violationRecord(AppDatabase *db) {
   if (session != NULL) {
     logSystemAction(session->studentId, "Ghi nhan vi pham", member->studentId);
   }
+
+  /* Smooth UX: Brief pause to let user see success message */
+  uiSleep(400);
+
   return RC_OK;
 }
 
@@ -2192,8 +2200,12 @@ int violationImportCsv(AppDatabase *db) {
            currentPage + 1, totalPages, count, validCount, invalidCount);
 
     if (totalPages > 1) {
-      printf(COLOR_DIM "  n: trang tiep | p: trang truoc | y: xac nhan import "
-                       "| q: huy > " COLOR_RESET);
+      printf("\n");
+      printf(COLOR_DIM "  ┌─────────────────────────────────────────────────┐" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "n" COLOR_RESET COLOR_DIM ": Trang tiep | " COLOR_BOLD COLOR_YELLOW "p" COLOR_RESET COLOR_DIM ": Trang truoc │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  │ " COLOR_BOLD COLOR_YELLOW "y" COLOR_RESET COLOR_DIM ": Xac nhan import | " COLOR_BOLD COLOR_YELLOW "q" COLOR_RESET COLOR_DIM ": Huy thao tac │" COLOR_RESET "\n");
+      printf(COLOR_DIM "  └─────────────────────────────────────────────────┘" COLOR_RESET "\n");
+      printf(COLOR_CYAN "  > " COLOR_RESET);
       char buf[10];
       readString(buf, sizeof(buf));
       trimSpaces(buf);
