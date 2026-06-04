@@ -72,9 +72,13 @@ int authLogin(AppDatabase *db) {
       }
       printLoginBanner();
 
-      printf(COLOR_CYAN "  MSSV: " COLOR_RESET);
+      printf(COLOR_CYAN "  MSSV (0 de thoat): " COLOR_RESET);
       readString(studentId, sizeof(studentId));
       trimSpaces(studentId);
+      if (strcmp(studentId, "0") == 0) {
+        printf(ERR_INFO "Da thoat chuong trinh.\n");
+        return -1;
+      }
       if (validateNotEmpty(studentId)) {
         mssvValid = 1;
       } else {
