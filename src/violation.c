@@ -2221,12 +2221,11 @@ int violationImportCsv(AppDatabase *db) {
       readString(confirm, sizeof(confirm));
       if (confirm[0] == 'y' || confirm[0] == 'Y') {
         break;
-      } else {
-        printf(ERR_INFO "Da huy thao tac.\n");
-        free(records);
-        uiPause();
-        return RC_ERR_CANCELLED;
       }
+      printf(ERR_INFO "Da huy thao tac.\n");
+      free(records);
+      uiPause();
+      return RC_ERR_CANCELLED;
     }
   }
 
