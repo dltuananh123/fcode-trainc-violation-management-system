@@ -385,6 +385,7 @@ int violationRecord(AppDatabase *db) {
 
   if (db->violationCount >= MAX_VIOLATIONS) {
     printf(ERR_LOI "Da dat gioi han so luong vi pham (%d)!\n", MAX_VIOLATIONS);
+    uiPause();
     return RC_ERR_FULL;
   }
 
@@ -455,6 +456,7 @@ int violationRecord(AppDatabase *db) {
   if (member->isActive != STATUS_ACTIVE) {
     printf(ERR_LOI "Thanh vien \"%s\" da thoat CLB! Khong the ghi vi pham.\n",
            member->fullName);
+    uiPause();
     return -1;
   }
 
@@ -628,6 +630,7 @@ int violationRecord(AppDatabase *db) {
     printf(ERR_LOI "Khong the luu du lieu vi pham!\n");
     db->violationCount = oldViolationCount;
     *member = oldMemberState;
+    uiPause();
     return RC_ERR_IO;
   }
 
@@ -636,6 +639,7 @@ int violationRecord(AppDatabase *db) {
     *member = oldMemberState;
     (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
+    uiPause();
     return RC_ERR_IO;
   }
 
@@ -645,7 +649,7 @@ int violationRecord(AppDatabase *db) {
   }
 
   /* Smooth UX: Brief pause to let user see success message */
-  uiSleep(400);
+  uiSleep(2000);
 
   return RC_OK;
 }
@@ -1865,6 +1869,7 @@ int violationVoid(AppDatabase *db) {
 
   if (activeViolCount == 0) {
     printf(ERR_OK "Thanh vien nay khong co vi pham nao de huy.\n\n");
+    uiPause();
     return RC_OK;
   }
 
@@ -2010,6 +2015,7 @@ int violationVoid(AppDatabase *db) {
     m->violationCount = oldViolationCount;
     m->consecutiveAbsences = oldConsecutiveAbsences;
     printf(ERR_LOI "Khong the luu du lieu vi pham!\n");
+    uiPause();
     return RC_ERR_IO;
   }
 
@@ -2024,6 +2030,7 @@ int violationVoid(AppDatabase *db) {
     m->consecutiveAbsences = oldConsecutiveAbsences;
     (void)fileioSaveViolations(db);
     printf(ERR_LOI "Khong the luu du lieu thanh vien!\n");
+    uiPause();
     return RC_ERR_IO;
   }
 
@@ -2032,6 +2039,8 @@ int violationVoid(AppDatabase *db) {
   snprintf(logMsg, sizeof(logMsg), "Huy vi pham #%d, ly do: %s", target->id,
            reason);
   logSystemAction(session->studentId, logMsg, m->studentId);
+
+  uiSleep(2000);
 
   return RC_OK;
 }
@@ -2108,8 +2117,7 @@ int violationImportCsv(AppDatabase *db) {
       sep[0] = '\\';
 #endif
       getExeDir(exeDir, sizeof(exeDir));
-      snprintf(finalPath, sizeof(finalPath), "%s%s%s", exeDir, sep,
-               filepath);
+      snprintf(finalPath, sizeof(finalPath), "%s%s%s", exeDir, sep, filepath);
     }
 
     fp = fopen(finalPath, "r");
