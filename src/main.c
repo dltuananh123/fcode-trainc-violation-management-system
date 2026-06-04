@@ -592,6 +592,120 @@ static void setupFirstRun(AppDatabase *db) {
     break;
   }
 
+  /* Confirmation / edit loop */
+  int confirmed = 0;
+  while (!confirmed) {
+    uiClear();
+    uiSetBoxWidth(MENU_BOX_W);
+
+    /* Draw Box Header */
+    printf(COLOR_BLUE BOX_TL);
+    for (int i = 0; i < MENU_BOX_W - 2; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_TR COLOR_RESET "\n");
+
+    printf(COLOR_BLUE BOX_V COLOR_RESET);
+    printf(COLOR_BOLD COLOR_YELLOW
+           " XAC NHAN THONG TIN BAN CHU NHIEM " COLOR_RESET);
+    /* " XAC NHAN THONG TIN BAN CHU NHIEM " is 34 characters */
+    for (int i = 34; i < MENU_BOX_W - 2; i++) {
+      printf(" ");
+    }
+    printf(COLOR_BLUE BOX_V COLOR_RESET "\n");
+
+    printf(COLOR_BLUE "\xE2\x95\xA0");
+    for (int i = 0; i < MENU_BOX_W - 2; i++) {
+      printf(BOX_H);
+    }
+    printf("\xE2\x95\xA3" COLOR_RESET "\n");
+
+#define PRINT_SETUP_ROW(label, value)                                          \
+  do {                                                                         \
+    char rowBuf[256];                                                          \
+    snprintf(rowBuf, sizeof(rowBuf), "  %-12s %s", label, value);              \
+    uiDrawMenuRow(rowBuf);                                                     \
+  } while (0)
+
+    PRINT_SETUP_ROW("MSSV:", newAdmin.studentId);
+    PRINT_SETUP_ROW("Ho ten:", newAdmin.fullName);
+    PRINT_SETUP_ROW("Email:", newAdmin.email);
+    PRINT_SETUP_ROW("Sdt:", newAdmin.phone);
+    PRINT_SETUP_ROW("Ban:", teamName(newAdmin.team));
+    PRINT_SETUP_ROW("Mat khau:", "********");
+
+#undef PRINT_SETUP_ROW
+
+    printf(COLOR_BLUE BOX_BL);
+    for (int i = 0; i < MENU_BOX_W - 2; i++) {
+      printf(BOX_H);
+    }
+    printf(BOX_BR COLOR_RESET "\n");
+    printf("\n");
+
+    printf(
+        COLOR_CYAN
+        "  An Enter de xac nhan, E de sua thong tin, 0 de thoat: " COLOR_RESET);
+    char choice[32];
+    readString(choice, sizeof(choice));
+    trimSpaces(choice);
+
+    if (strcmp(choice, "0") == 0) {
+      printf(ERR_INFO "Da thoat chuong trinh.\n");
+      exit(0);
+    } else if (choice[0] == 'e' || choice[0] == 'E') {
+      int res = memberEditInPlace(db, &newAdmin, 1, 1);
+      if (res == -1) {
+        printf(ERR_INFO "Da thoat chuong trinh.\n");
+        exit(0);
+      }
+
+      /* Ask to change password */
+      printf(COLOR_CYAN
+             "  Ban co muon doi mat khau khong? (Y/N) [N]: " COLOR_RESET);
+      char pwChoice[32];
+      readString(pwChoice, sizeof(pwChoice));
+      trimSpaces(pwChoice);
+      if (pwChoice[0] == 'y' || pwChoice[0] == 'Y') {
+        while (1) {
+          printf("\n  Tieu chuan mat khau:\n");
+          printf("  - Chieu dai tu 8 den 30 ky tu.\n");
+          printf(
+              "  - Chua it nhat 1 chu hoa, 1 chu thuong, 1 chu so, 1 ky tu dac "
+              "biet.\n");
+          printf("  - Khong chua khoang trang.\n\n");
+
+          printf(COLOR_CYAN "  Nhap mat khau moi (0 de thoat): " COLOR_RESET);
+          readPassword(password, sizeof(password));
+          if (strcmp(password, "0") == 0) {
+            printf(ERR_INFO "Da thoat chuong trinh.\n");
+            exit(0);
+          }
+
+          if (!validatePassword(password)) {
+            continue;
+          }
+
+          printf(COLOR_CYAN "  Xac nhan mat khau (0 de thoat): " COLOR_RESET);
+          readPassword(confirm, sizeof(confirm));
+          if (strcmp(confirm, "0") == 0) {
+            printf(ERR_INFO "Da thoat chuong trinh.\n");
+            exit(0);
+          }
+
+          if (strcmp(password, confirm) != 0) {
+            printf(ERR_LOI
+                   "Mat khau xac nhan khong khop! Vui long nhap lai.\n");
+            continue;
+          }
+          break;
+        }
+      }
+    } else if (strlen(choice) == 0) {
+      confirmed = 1;
+    }
+  }
+
   /* Add to database */
   db->members[0] = newAdmin;
   db->memberCount = 1;

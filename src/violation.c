@@ -506,9 +506,14 @@ int violationRecord(AppDatabase *db) {
 
   /* Note with validation */
   while (1) {
-    printf(COLOR_CYAN "  Ghi chu (Enter de bo qua): " COLOR_RESET);
+    printf(COLOR_CYAN "  Ghi chu (Enter de bo qua, 0 de huy): " COLOR_RESET);
     readString(newViolation.note, MAX_NOTE_LEN);
     trimSpaces(newViolation.note);
+    if (strcmp(newViolation.note, "0") == 0) {
+      *member = oldMemberState;
+      printf(ERR_INFO "Da huy ghi nhan vi pham.\n");
+      return RC_ERR_CANCELLED;
+    }
     if (strlen(newViolation.note) == 0) {
       break;
     }
@@ -517,44 +522,101 @@ int violationRecord(AppDatabase *db) {
     }
   }
 
-  /* PREVIEW before saving */
-  printf("\n");
-  uiDrawSeparator();
-  printf(COLOR_BOLD "  XAC NHAN VI PHAM\n" COLOR_RESET);
-  printf("  Thanh vien:  %s (%s)\n", member->fullName, member->studentId);
-  printf("  Loi:         %s\n", reasonName(newViolation.reason));
-  printf("  Ngay:        ");
-  char timeBuf[20];
-  formatTime(newViolation.violationTime, timeBuf, sizeof(timeBuf));
-  printf("%s\n", timeBuf);
-  if (newViolation.penalty == PENALTY_OUT_CLB) {
-    printf("  Xu ly:      " COLOR_RED "OUT CLB" COLOR_RESET "\n");
-  } else {
-    printf("  Tien phat:  " COLOR_PURPLE "%.0f VND" COLOR_RESET "\n",
-           newViolation.fine);
-  }
-  printf("  Tong VP chua dong: %d → %d\n", member->violationCount,
-         member->violationCount + 1);
-  if (newViolation.fine > 0) {
-    printf("  Tong no:    %.0f → %.0f VND\n", member->totalFine,
-           member->totalFine + newViolation.fine);
-  }
-  uiDrawSeparator();
-
-  /* Confirm */
-  while (1) {
-    printf(COLOR_CYAN "  Xac nhan ghi vi pham? (Y/N): " COLOR_RESET);
-    char confirm[4];
-    readString(confirm, sizeof(confirm));
-    if (confirm[0] == 'y' || confirm[0] == 'Y') {
-      break;
+  /* Confirmation / edit loop */
+  int confirmed = 0;
+  while (!confirmed) {
+    /* PREVIEW before saving */
+    printf("\n");
+    uiDrawSeparator();
+    printf(COLOR_BOLD "  XAC NHAN VI PHAM\n" COLOR_RESET);
+    printf("  Thanh vien:  %s (%s)\n", member->fullName, member->studentId);
+    printf("  Loi:         %s\n", reasonName(newViolation.reason));
+    if (strlen(newViolation.note) > 0) {
+      printf("  Ghi chu:     %s\n", newViolation.note);
     }
-    if (confirm[0] == 'n' || confirm[0] == 'N') {
+    printf("  Ngay:        ");
+    char timeBuf[20];
+    formatTime(newViolation.violationTime, timeBuf, sizeof(timeBuf));
+    printf("%s\n", timeBuf);
+    if (newViolation.penalty == PENALTY_OUT_CLB) {
+      printf("  Xu ly:      " COLOR_RED "OUT CLB" COLOR_RESET "\n");
+    } else {
+      printf("  Tien phat:  " COLOR_PURPLE "%.0f VND" COLOR_RESET "\n",
+             newViolation.fine);
+    }
+    printf("  Tong VP chua dong: %d → %d\n", oldMemberState.violationCount,
+           oldMemberState.violationCount + 1);
+    if (newViolation.fine > 0) {
+      printf("  Tong no:    %.0f → %.0f VND\n", oldMemberState.totalFine,
+             oldMemberState.totalFine + newViolation.fine);
+    }
+    uiDrawSeparator();
+
+    printf(
+        COLOR_CYAN
+        "  Nhan Enter de xac nhan, E de sua thong tin, 0 de huy: " COLOR_RESET);
+    char choice[32];
+    readString(choice, sizeof(choice));
+    trimSpaces(choice);
+
+    if (strcmp(choice, "0") == 0) {
       *member = oldMemberState;
       printf(ERR_INFO "Da huy ghi nhan vi pham.\n");
       return RC_ERR_CANCELLED;
+    } else if (choice[0] == 'e' || choice[0] == 'E') {
+      /* Reset member state to edit violation */
+      *member = oldMemberState;
+
+      /* Edit reason */
+      int editReason;
+      if (selectViolationReason(&editReason) != 0) {
+        printf(ERR_INFO "Da huy ghi nhan vi pham.\n");
+        return RC_ERR_CANCELLED;
+      }
+      newViolation.reason = editReason;
+
+      /* Recalculate penalty/fine */
+      switch (editReason) {
+      case REASON_VIOLENCE:
+        handleViolence(db, member, &newViolation);
+        break;
+      case REASON_ABSENT:
+        handleAbsent(db, member, &newViolation);
+        break;
+      case REASON_NO_JACKET:
+      case REASON_NO_ACTIVITY:
+      default:
+        newViolation.fine = calculateFine(member->role);
+        newViolation.penalty = PENALTY_FINE;
+        member->consecutiveAbsences = 0;
+        break;
+      }
+
+      /* Edit note */
+      while (1) {
+        printf(COLOR_CYAN
+               "  Ghi chu moi (Enter de giu nguyen [%s], 0 de huy): ",
+               newViolation.note);
+        char noteBuf[MAX_NOTE_LEN];
+        readString(noteBuf, sizeof(noteBuf));
+        trimSpaces(noteBuf);
+        if (strcmp(noteBuf, "0") == 0) {
+          *member = oldMemberState;
+          printf(ERR_INFO "Da huy ghi nhan vi pham.\n");
+          return RC_ERR_CANCELLED;
+        }
+        if (strlen(noteBuf) == 0) {
+          break;
+        }
+        if (sanitizeInput(noteBuf)) {
+          strncpy(newViolation.note, noteBuf, MAX_NOTE_LEN - 1);
+          newViolation.note[MAX_NOTE_LEN - 1] = '\0';
+          break;
+        }
+      }
+    } else if (strlen(choice) == 0) {
+      confirmed = 1;
     }
-    printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
   }
 
   /* Save */
@@ -1836,29 +1898,52 @@ int violationVoid(AppDatabase *db) {
     }
   }
 
-  /* Confirm voiding */
-  printf("\n");
-  uiDrawSeparator();
-  printf(COLOR_BOLD "  XAC NHAN HUY VI PHAM\n" COLOR_RESET);
-  printf("  Thanh vien:  %s (%s)\n", m->fullName, m->studentId);
-  printf("  ID vi pham:  #%d\n", target->id);
-  printf("  Loi vi pham: %s\n", reasonName(target->reason));
-  printf("  Ly do huy:   %s\n", reason);
-  uiDrawSeparator();
+  /* Confirmation / edit loop */
+  int confirmed = 0;
+  while (!confirmed) {
+    /* Confirm voiding */
+    printf("\n");
+    uiDrawSeparator();
+    printf(COLOR_BOLD "  XAC NHAN HUY VI PHAM\n" COLOR_RESET);
+    printf("  Thanh vien:  %s (%s)\n", m->fullName, m->studentId);
+    printf("  ID vi pham:  #%d\n", target->id);
+    printf("  Loi vi pham: %s\n", reasonName(target->reason));
+    printf("  Ly do huy:   %s\n", reason);
+    uiDrawSeparator();
 
-  while (1) {
-    printf(COLOR_CYAN
-           "  Ban co chac chan muon huy vi pham nay? (Y/N): " COLOR_RESET);
-    char confirm[4];
-    readString(confirm, sizeof(confirm));
-    if (confirm[0] == 'y' || confirm[0] == 'Y') {
-      break;
-    }
-    if (confirm[0] == 'n' || confirm[0] == 'N') {
+    printf(COLOR_CYAN "  Nhan Enter de xac nhan huy, E de sua ly do, 0 de quay "
+                      "lai: " COLOR_RESET);
+    char choiceStr[32];
+    readString(choiceStr, sizeof(choiceStr));
+    trimSpaces(choiceStr);
+
+    if (strcmp(choiceStr, "0") == 0) {
       printf(ERR_INFO "Da huy thao tac.\n");
       return RC_ERR_CANCELLED;
+    } else if (choiceStr[0] == 'e' || choiceStr[0] == 'E') {
+      while (1) {
+        printf(COLOR_CYAN "  Nhap ly do huy vi pham moi (Enter de giu nguyen "
+                          "[%s], 0 de huy): ",
+               reason);
+        char reasonBuf[MAX_NOTE_LEN];
+        readString(reasonBuf, sizeof(reasonBuf));
+        trimSpaces(reasonBuf);
+        if (strcmp(reasonBuf, "0") == 0) {
+          printf(ERR_INFO "Da huy thao tac.\n\n");
+          return RC_ERR_CANCELLED;
+        }
+        if (strlen(reasonBuf) == 0) {
+          break;
+        }
+        if (sanitizeInput(reasonBuf)) {
+          strncpy(reason, reasonBuf, MAX_NOTE_LEN - 1);
+          reason[MAX_NOTE_LEN - 1] = '\0';
+          break;
+        }
+      }
+    } else if (strlen(choiceStr) == 0) {
+      confirmed = 1;
     }
-    printf(ERR_LOI "Vui long nhap Y (Co) hoac N (Khong)!\n");
   }
 
   /* Backup states for restoration on failure */

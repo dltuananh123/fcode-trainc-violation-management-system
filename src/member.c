@@ -241,6 +241,74 @@ int memberAdd(AppDatabase *db) {
   newMember.isDeleted = 0;
   newMember.deletedAt = 0;
 
+  /* Confirmation / edit loop */
+  int confirmed = 0;
+  while (!confirmed) {
+    uiClear();
+    uiDrawBreadcrumb(
+        "[1] Quan ly thanh vien -> [1] Them thanh vien moi -> Xac nhan");
+    printf("\n");
+    printf(COLOR_CYAN "  " LINE_TL);
+    for (int i = 0; i < DETAIL_CARD_W; i++) {
+      printf(LINE_H);
+    }
+    printf(LINE_TR "\n" COLOR_RESET);
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+    printf(" " COLOR_BOLD COLOR_BLUE "%-*s" COLOR_RESET, DETAIL_CARD_W - 1,
+           "XAC NHAN THONG TIN THANH VIEN MOI");
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+    printf(COLOR_CYAN "  " LINE_T_RIGHT);
+    for (int i = 0; i < DETAIL_CARD_W; i++) {
+      printf(LINE_H);
+    }
+    printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+#define PRINT_CONFIRM_ROW(label, value, val_color)                             \
+  do {                                                                         \
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);                                \
+    printf(" %-20s %s", label, val_color);                                     \
+    printUtf8Padded(value, 48, 1);                                             \
+    printf(COLOR_RESET COLOR_CYAN LINE_V COLOR_RESET "\n");                    \
+  } while (0)
+
+    PRINT_CONFIRM_ROW("MSSV:", newMember.studentId, COLOR_CYAN);
+    PRINT_CONFIRM_ROW("Ho va ten:", newMember.fullName, COLOR_BOLD);
+    PRINT_CONFIRM_ROW("Email:", newMember.email, "");
+    PRINT_CONFIRM_ROW("So dien thoai:", newMember.phone, "");
+    PRINT_CONFIRM_ROW("Ban hoat dong:", teamName(newMember.team), COLOR_GREEN);
+    PRINT_CONFIRM_ROW("Chuc vu:", memberRoleName(newMember.role), COLOR_YELLOW);
+
+    printf(COLOR_CYAN "  " LINE_BL);
+    for (int i = 0; i < DETAIL_CARD_W; i++) {
+      printf(LINE_H);
+    }
+    printf(LINE_BR "\n" COLOR_RESET);
+    printf("\n");
+
+    printf(
+        COLOR_CYAN
+        "  Nhan Enter de xac nhan, E de sua thong tin, 0 de huy: " COLOR_RESET);
+    char choice[32];
+    readString(choice, sizeof(choice));
+    trimSpaces(choice);
+
+    if (strcmp(choice, "0") == 0) {
+      printf(ERR_INFO "Da huy thao tac.\n");
+      return -1;
+    } else if (choice[0] == 'e' || choice[0] == 'E') {
+      int res = memberEditInPlace(db, &newMember, 1, 0);
+      if (res == -1) {
+        printf(ERR_INFO "Da huy thao tac.\n");
+        return -1;
+      }
+    } else if (strlen(choice) == 0) {
+      confirmed = 1;
+    }
+  }
+#undef PRINT_CONFIRM_ROW
+
   /* Add member to database */
   db->members[db->memberCount++] = newMember;
 
@@ -307,18 +375,24 @@ int memberAdd(AppDatabase *db) {
  * ============================================================ */
 
 /* Edit helper: prompt with current value, Enter keeps old, re-prompt on error
+ * Returns 0 on success/keep, -1 if cancelled (input is '0')
  */
-static void editField(const char *label, char *current, size_t maxLen,
-                      int (*validator)(const char *)) {
+static int editField(const char *label, char *current, size_t maxLen,
+                     int (*validator)(const char *)) {
   while (1) {
     printf(COLOR_CYAN "  %s" COLOR_RESET "[%s]: ", label, current);
     char buffer[256];
     readString(buffer, sizeof(buffer));
     trimSpaces(buffer);
 
+    /* 0 = Cancel entire operation */
+    if (strcmp(buffer, "0") == 0) {
+      return -1;
+    }
+
     /* Enter = keep old value */
     if (strlen(buffer) == 0) {
-      return;
+      return 0;
     }
 
     /* Validate new value */
@@ -328,8 +402,160 @@ static void editField(const char *label, char *current, size_t maxLen,
 
     strncpy(current, buffer, maxLen - 1);
     current[maxLen - 1] = '\0';
-    return;
+    return 0;
   }
+}
+
+int memberEditInPlace(AppDatabase *db, Member *m, int canEditMSSV,
+                      int isFirstRun) {
+  int aborted = 0;
+
+  printf("\n");
+  printf(COLOR_DIM
+         "  Nhap thong tin moi (Enter = giu nguyen, 0 = huy):\n" COLOR_RESET);
+  uiDrawSeparator();
+
+  /* MSSV */
+  if (canEditMSSV) {
+    while (1) {
+      printf(COLOR_CYAN "  MSSV          " COLOR_RESET "[%s]: ", m->studentId);
+      char buffer[256];
+      readString(buffer, sizeof(buffer));
+      trimSpaces(buffer);
+      if (strcmp(buffer, "0") == 0) {
+        aborted = 1;
+        break;
+      }
+      if (strlen(buffer) == 0) {
+        break;
+      }
+      mssvAutoUpper(buffer);
+      if (validateMSSV(buffer, db)) {
+        strncpy(m->studentId, buffer, MAX_MSSV_LEN - 1);
+        m->studentId[MAX_MSSV_LEN - 1] = '\0';
+        break;
+      }
+    }
+  }
+
+  /* Ho va ten */
+  if (!aborted) {
+    if (editField("Ho va ten     ", m->fullName, MAX_NAME_LEN, validateName) ==
+        -1) {
+      aborted = 1;
+    } else {
+      nameAutoFix(m->fullName);
+    }
+  }
+
+  /* Email */
+  if (!aborted) {
+    while (1) {
+      printf(COLOR_CYAN "  Email         " COLOR_RESET "[%s]: ", m->email);
+      char buffer[256];
+      readString(buffer, sizeof(buffer));
+      trimSpaces(buffer);
+      if (strcmp(buffer, "0") == 0) {
+        aborted = 1;
+        break;
+      }
+      if (strlen(buffer) == 0) {
+        break;
+      }
+      for (int i = 0; buffer[i]; i++) {
+        buffer[i] = (char)tolower((unsigned char)buffer[i]);
+      }
+      if (validateEmailUnique(buffer, db, m->studentId)) {
+        strncpy(m->email, buffer, MAX_EMAIL_LEN - 1);
+        m->email[MAX_EMAIL_LEN - 1] = '\0';
+        break;
+      }
+    }
+  }
+
+  /* Phone */
+  if (!aborted) {
+    while (1) {
+      printf(COLOR_CYAN "  So dien thoai" COLOR_RESET "[%s]: ", m->phone);
+      char buffer[256];
+      readString(buffer, sizeof(buffer));
+      trimSpaces(buffer);
+      if (strcmp(buffer, "0") == 0) {
+        aborted = 1;
+        break;
+      }
+      if (strlen(buffer) == 0) {
+        break;
+      }
+      char normalized[MAX_PHONE_LEN];
+      strncpy(normalized, buffer, MAX_PHONE_LEN - 1);
+      normalized[MAX_PHONE_LEN - 1] = '\0';
+      phoneNormalize(normalized);
+      if (validatePhoneUnique(normalized, db, m->studentId)) {
+        strncpy(m->phone, normalized, MAX_PHONE_LEN - 1);
+        m->phone[MAX_PHONE_LEN - 1] = '\0';
+        break;
+      }
+    }
+  }
+
+  /* Team selection */
+  if (!aborted) {
+    while (1) {
+      printf(COLOR_CYAN
+             "  Ban moi (0 de huy, 1-Hoc thuat, 2-Ke hoach, 3-Nhan su, "
+             "4-Truyen thong)" COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET,
+             m->team + 1);
+      char buf[32];
+      readString(buf, sizeof(buf));
+      trimSpaces(buf);
+      if (strlen(buf) == 0) {
+        break;
+      }
+      int val = 0;
+      if (sscanf(buf, "%d", &val) == 1) {
+        if (val == 0) {
+          aborted = 1;
+          break;
+        }
+        if (val >= 1 && val <= 4) {
+          m->team = val - 1;
+          break;
+        }
+      }
+      printf(ERR_LOI "Vui long chon 0 de huy, hoac 1-4!\n");
+    }
+  }
+
+  /* Role selection */
+  if (!aborted && !isFirstRun) {
+    while (1) {
+      printf(COLOR_CYAN "  Chuc vu moi (0 de huy, 1-Thanh vien, 2-Truong nhom, "
+                        "3-Ban chu nhiem)" COLOR_RESET COLOR_DIM
+                        " [%d]: " COLOR_RESET,
+             m->role + 1);
+      char buf[32];
+      readString(buf, sizeof(buf));
+      trimSpaces(buf);
+      if (strlen(buf) == 0) {
+        break;
+      }
+      int val = 0;
+      if (sscanf(buf, "%d", &val) == 1) {
+        if (val == 0) {
+          aborted = 1;
+          break;
+        }
+        if (val >= 1 && val <= 3) {
+          m->role = val - 1;
+          break;
+        }
+      }
+      printf(ERR_LOI "Vui long chon 0 de huy, hoac 1-3!\n");
+    }
+  }
+
+  return aborted ? -1 : 0;
 }
 
 int memberEdit(AppDatabase *db) {
@@ -362,120 +588,120 @@ int memberEdit(AppDatabase *db) {
   }
 
   Member *m = &db->members[memberIndex];
+  Member backup = *m; /* Backup in case of cancel */
 
-  /* Show current info */
-  printf("\n");
-  printf(COLOR_BOLD "  Thong tin hien tai:\n" COLOR_RESET);
-  printf(COLOR_DIM "  MSSV: %s [KHONG THE SUA]\n" COLOR_RESET, m->studentId);
-  printf("  Ho ten:     %s\n", m->fullName);
-  printf("  Email:      %s\n", m->email);
-  printf("  SDT:        %s\n", m->phone);
-  printf("  Ban:        %s\n", teamName(m->team));
-  printf("  Chuc vu:    %s\n", memberRoleName(m->role));
-  printf("  Trang thai: %s\n", m->isActive ? COLOR_GREEN "Hoat dong" COLOR_RESET
-                                           : COLOR_RED "Out CLB" COLOR_RESET);
+  int confirmed = 0;
+  while (!confirmed) {
+    /* Show current info */
+    uiClear();
+    uiDrawBreadcrumb("[1] Quan ly thanh vien -> [2] Sua thong tin thanh vien");
+    printf("\n");
+    printf(COLOR_BOLD "  Thong tin hien tai:\n" COLOR_RESET);
+    printf(COLOR_DIM "  MSSV: %s [KHONG THE SUA]\n" COLOR_RESET, m->studentId);
+    printf("  Ho ten:     %s\n", m->fullName);
+    printf("  Email:      %s\n", m->email);
+    printf("  SDT:        %s\n", m->phone);
+    printf("  Ban:        %s\n", teamName(m->team));
+    printf("  Chuc vu:    %s\n", memberRoleName(m->role));
+    printf("  Trang thai: %s\n", m->isActive ? COLOR_GREEN
+                                     "Hoat dong" COLOR_RESET
+                                             : COLOR_RED "Out CLB" COLOR_RESET);
 
-  printf("\n");
-  printf(COLOR_DIM "  Nhap thong tin moi (Enter = giu nguyen):\n" COLOR_RESET);
-  uiDrawSeparator();
-
-  /* Edit fields — Enter keeps old, re-prompt on invalid */
-  editField("Ho va ten     ", m->fullName, MAX_NAME_LEN, validateName);
-  nameAutoFix(m->fullName);
-
-  /* Email — re-prompt on validation failure */
-  while (1) {
-    printf(COLOR_CYAN "  Email         " COLOR_RESET "[%s]: ", m->email);
-    char buffer[256];
-    readString(buffer, sizeof(buffer));
-    trimSpaces(buffer);
-    if (strlen(buffer) == 0) {
-      break;
+    int res = memberEditInPlace(db, m, 0, 0);
+    if (res == -1) {
+      *m = backup; /* Restore backup */
+      printf(ERR_INFO "Da huy sua thong tin thanh vien.\n");
+      return 0;
     }
-    for (int i = 0; buffer[i]; i++) {
-      buffer[i] = (char)tolower((unsigned char)buffer[i]);
+
+    /* Show confirmation screen */
+    uiClear();
+    uiDrawBreadcrumb(
+        "[1] Quan ly thanh vien -> [2] Sua thong tin thanh vien -> Xac nhan");
+    printf("\n");
+    printf(COLOR_CYAN "  " LINE_TL);
+    for (int i = 0; i < DETAIL_CARD_W; i++) {
+      printf(LINE_H);
     }
-    if (validateEmailUnique(buffer, db, m->studentId)) {
-      strncpy(m->email, buffer, MAX_EMAIL_LEN - 1);
-      m->email[MAX_EMAIL_LEN - 1] = '\0';
-      break;
+    printf(LINE_TR "\n" COLOR_RESET);
+
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);
+    printf(" " COLOR_BOLD COLOR_BLUE "%-*s" COLOR_RESET, DETAIL_CARD_W - 1,
+           "XAC NHAN THAY DOI THONG TIN THANH VIEN");
+    printf(COLOR_CYAN LINE_V COLOR_RESET "\n");
+
+    printf(COLOR_CYAN "  " LINE_T_RIGHT);
+    for (int i = 0; i < DETAIL_CARD_W; i++) {
+      printf(LINE_H);
+    }
+    printf(LINE_T_LEFT "\n" COLOR_RESET);
+
+#define PRINT_EDIT_CONFIRM_ROW(label, oldVal, newVal, val_color)               \
+  do {                                                                         \
+    char compBuf[256];                                                         \
+    if (strcmp(oldVal, newVal) == 0) {                                         \
+      snprintf(compBuf, sizeof(compBuf), "%s", oldVal);                        \
+    } else {                                                                   \
+      snprintf(compBuf, sizeof(compBuf), "%s -> %s", oldVal, newVal);          \
+    }                                                                          \
+    printf(COLOR_CYAN "  " LINE_V COLOR_RESET);                                \
+    printf(" %-20s %s", label, val_color);                                     \
+    printUtf8Padded(compBuf, 48, 1);                                           \
+    printf(COLOR_RESET COLOR_CYAN LINE_V COLOR_RESET "\n");                    \
+  } while (0)
+
+    PRINT_EDIT_CONFIRM_ROW("MSSV:", backup.studentId, m->studentId, COLOR_CYAN);
+    PRINT_EDIT_CONFIRM_ROW("Ho va ten:", backup.fullName, m->fullName,
+                           COLOR_BOLD);
+    PRINT_EDIT_CONFIRM_ROW("Email:", backup.email, m->email, "");
+    PRINT_EDIT_CONFIRM_ROW("So dien thoai:", backup.phone, m->phone, "");
+
+    {
+      char oldTeamStr[64], newTeamStr[64];
+      strncpy(oldTeamStr, teamName(backup.team), sizeof(oldTeamStr) - 1);
+      oldTeamStr[sizeof(oldTeamStr) - 1] = '\0';
+      strncpy(newTeamStr, teamName(m->team), sizeof(newTeamStr) - 1);
+      newTeamStr[sizeof(newTeamStr) - 1] = '\0';
+      PRINT_EDIT_CONFIRM_ROW("Ban hoat dong:", oldTeamStr, newTeamStr,
+                             COLOR_GREEN);
+    }
+
+    {
+      char oldRoleStr[64], newRoleStr[64];
+      strncpy(oldRoleStr, memberRoleName(backup.role), sizeof(oldRoleStr) - 1);
+      oldRoleStr[sizeof(oldRoleStr) - 1] = '\0';
+      strncpy(newRoleStr, memberRoleName(m->role), sizeof(newRoleStr) - 1);
+      newRoleStr[sizeof(newRoleStr) - 1] = '\0';
+      PRINT_EDIT_CONFIRM_ROW("Chuc vu:", oldRoleStr, newRoleStr, COLOR_YELLOW);
+    }
+
+    printf(COLOR_CYAN "  " LINE_BL);
+    for (int i = 0; i < DETAIL_CARD_W; i++) {
+      printf(LINE_H);
+    }
+    printf(LINE_BR "\n" COLOR_RESET);
+    printf("\n");
+
+    printf(
+        COLOR_CYAN
+        "  Nhan Enter de luu thay doi, E de sua tiep, 0 de huy: " COLOR_RESET);
+    char choice[32];
+    readString(choice, sizeof(choice));
+    trimSpaces(choice);
+
+    if (strcmp(choice, "0") == 0) {
+      *m = backup; /* Restore backup */
+      printf(ERR_INFO "Da huy sua thong tin thanh vien.\n");
+      return 0;
+    } else if (choice[0] == 'e' || choice[0] == 'E') {
+      /* Continue loop */
+    } else if (strlen(choice) == 0) {
+      confirmed = 1;
     }
   }
+#undef PRINT_EDIT_CONFIRM_ROW
 
-  /* Phone — re-prompt on validation failure */
-  while (1) {
-    printf(COLOR_CYAN "  So dien thoai" COLOR_RESET "[%s]: ", m->phone);
-    char buffer[256];
-    readString(buffer, sizeof(buffer));
-    trimSpaces(buffer);
-    if (strlen(buffer) == 0) {
-      break;
-    }
-    char normalized[MAX_PHONE_LEN];
-    strncpy(normalized, buffer, MAX_PHONE_LEN - 1);
-    normalized[MAX_PHONE_LEN - 1] = '\0';
-    phoneNormalize(normalized);
-    if (validatePhoneUnique(normalized, db, m->studentId)) {
-      strncpy(m->phone, normalized, MAX_PHONE_LEN - 1);
-      m->phone[MAX_PHONE_LEN - 1] = '\0';
-      break;
-    }
-  }
-
-  /* Team selection — Enter to keep */
-  while (1) {
-    printf(COLOR_CYAN
-           "  Ban moi (0 de thoat, 1-Hoc thuat, 2-Ke hoach, 3-Nhan su, "
-           "4-Truyen thong)" COLOR_RESET COLOR_DIM " [%d]: " COLOR_RESET,
-           m->team + 1);
-    char buf[32];
-    readString(buf, sizeof(buf));
-    trimSpaces(buf);
-    if (strlen(buf) == 0) {
-      break;
-    }
-    int val = 0;
-    if (sscanf(buf, "%d", &val) == 1) {
-      if (val == 0) {
-        printf(ERR_INFO "Da huy thao tac.\n");
-        return 0;
-      }
-      if (val >= 1 && val <= 4) {
-        m->team = val - 1;
-        break;
-      }
-    }
-    printf(ERR_LOI "Vui long chon 0 de thoat, hoac 1-4!\n");
-  }
-
-  /* Role selection — Enter to keep */
-  int oldRole = m->role;
-  while (1) {
-    printf(COLOR_CYAN "  Chuc vu moi (0 de thoat, 1-Thanh vien, 2-Truong nhom, "
-                      "3-Ban chu nhiem)" COLOR_RESET COLOR_DIM
-                      " [%d]: " COLOR_RESET,
-           m->role + 1);
-    char buf[32];
-    readString(buf, sizeof(buf));
-    trimSpaces(buf);
-    if (strlen(buf) == 0) {
-      break;
-    }
-    int val = 0;
-    if (sscanf(buf, "%d", &val) == 1) {
-      if (val == 0) {
-        printf(ERR_INFO "Da huy thao tac.\n");
-        return 0;
-      }
-      if (val >= 1 && val <= 3) {
-        m->role = val - 1;
-        break;
-      }
-    }
-    printf(ERR_LOI "Vui long chon 0 de thoat, hoac 1-3!\n");
-  }
-  int roleChanged = (oldRole != m->role);
-
+  int roleChanged = (backup.role != m->role);
   if (roleChanged) {
     /* Update account role */
     for (int i = 0; i < db->accountCount; i++) {

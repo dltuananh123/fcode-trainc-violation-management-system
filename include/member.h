@@ -79,6 +79,19 @@ int memberValidateInput(const Member *m, const AppDatabase *db);
  */
 int memberEdit(AppDatabase *db);
 
+/**
+ * @brief Edit a member's fields in-place (used for pre-confirmation editing).
+ *
+ * @param db Pointer to the AppDatabase
+ * @param m Pointer to the Member struct to modify
+ * @param canEditMSSV Boolean flag indicating if MSSV can be edited
+ * @param isFirstRun Boolean flag indicating if this is called during first-run
+ * setup
+ * @return 0 on success, -1 if cancelled/aborted
+ */
+int memberEditInPlace(AppDatabase *db, Member *m, int canEditMSSV,
+                      int isFirstRun);
+
 /* ============================================================
  * Story 2.3 — Search and View Member Details
  * ============================================================ */
